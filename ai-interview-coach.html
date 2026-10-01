@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Interview Coach</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+:root{--ink:#0f172a;--mut:#64748b;--pri:#4f46e5;--pri2:#7c3aed;--bg:#f6f7fd;--card:#fff;--line:#e6e8f3;--ok:#059669;--warn:#d97706;--bad:#dc2626;--sh:0 4px 24px rgba(30,32,90,.07);--soft:var(--soft);--soft2:var(--soft2);--hov:var(--hov);--track:#e8eaf6;--drop:var(--drop);--hdr:var(--hdr);--glow:var(--glow);--okbg:var(--okbg);--warnbg:var(--warnbg);--badbg:var(--badbg)}
+:root[data-theme=dark]{color-scheme:dark;--ink:#f1f1f4;--mut:#9a9aa5;--pri:#818cf8;--bg:#000;--card:#0e0e10;--line:#232327;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--sh:0 4px 24px rgba(0,0,0,.6);--soft:#1a1a24;--soft2:#131318;--hov:#151518;--track:#26262b;--drop:#0a0a0c;--hdr:rgba(0,0,0,.85);--glow:#17172b;--okbg:#0a3325;--warnbg:#3a2a06;--badbg:#3b0f0f}
+*{box-sizing:border-box;margin:0}
+body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+button{font:inherit;cursor:pointer}
+h1{font-size:clamp(2rem,5vw,3.4rem);line-height:1.1;letter-spacing:-.03em}
+h2{font-size:1.6rem;letter-spacing:-.02em}h3{font-size:1.05rem}
+.grad{background:linear-gradient(135deg,var(--pri),var(--pri2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 20px 100px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--sh);padding:22px;transition:.2s}
+.card.h:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(79,70,229,.14)}
+.mut{color:var(--mut);font-size:.92rem}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:11px 20px;font-weight:600;color:var(--ink);transition:.15s}
+.btn:hover{border-color:var(--pri);color:var(--pri)}.btn:active{transform:scale(.97)}
+.btn.p{background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;border:0;box-shadow:0 6px 18px rgba(79,70,229,.3)}
+.btn.p:hover{filter:brightness(1.08);color:#fff}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.sp{justify-content:space-between}
+.g{display:grid;gap:16px}.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.main2{display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start}
+.chip{display:inline-block;padding:5px 12px;border-radius:99px;background:var(--soft);color:var(--pri);font-size:.8rem;font-weight:600;border:1px solid transparent}
+.chip.sel{background:var(--pri);color:#fff}button.chip:hover{border-color:var(--pri)}
+.ok{background:var(--okbg);color:var(--ok)}.warn{background:var(--warnbg);color:var(--warn)}.blue{background:var(--glow);color:var(--pri)}
+header.top{position:sticky;top:0;z-index:20;background:var(--hdr);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+header .in{max-width:1080px;margin:auto;padding:12px 20px;display:flex;align-items:center;gap:22px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;cursor:pointer;letter-spacing:-.02em}
+.logo i{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--pri),var(--pri2));display:grid;place-items:center;color:#fff;font-style:normal;font-size:.9rem}
+nav.links{display:flex;gap:4px;flex:1}
+nav button,.tabs button{background:none;border:0;padding:8px 14px;border-radius:10px;color:var(--mut);font-weight:600}
+nav button:hover{background:var(--soft);color:var(--pri)}nav button.on,.tabs button.on{color:var(--pri);background:var(--soft)}
+.av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#a5b4fc,var(--pri2));color:#fff;font-weight:700;border:0}
+.menu{position:absolute;right:20px;top:58px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh);padding:8px;min-width:190px}
+.menu button{display:block;width:100%;text-align:left;background:none;border:0;padding:9px 12px;border-radius:8px}.menu button:hover{background:var(--soft2)}
+.tabs{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);z-index:20;justify-content:space-around;padding:6px}
+.tabs button{display:flex;flex-direction:column;align-items:center;font-size:.7rem;padding:6px 8px}.tabs b{font-size:1.1rem}
+.hero{text-align:center;padding:70px 0 40px;background:radial-gradient(ellipse at 50% 0,var(--glow),transparent 60%)}
+.hero p{max-width:600px;margin:18px auto 28px;color:var(--mut);font-size:1.1rem}
+.ico{width:44px;height:44px;border-radius:12px;background:var(--soft);display:grid;place-items:center;font-size:1.3rem;margin-bottom:12px}
+.drop{border:2px dashed #b9bff0;border-radius:20px;padding:48px 20px;text-align:center;background:var(--drop);transition:.2s}
+.drop.over{background:var(--soft);border-color:var(--pri);transform:scale(1.01)}
+.bar{height:8px;background:var(--track);border-radius:9px;overflow:hidden}.bar>div{height:100%;background:linear-gradient(90deg,var(--pri),var(--pri2));border-radius:9px;transition:width .8s ease}
+.ring{position:relative;flex:none}.ring svg{display:block}.ring circle{transition:stroke-dashoffset 1.2s ease}
+.rv{position:absolute;inset:0;display:grid;place-content:center;text-align:center}.rv b{font-size:2rem;line-height:1}.rv small{color:var(--mut);font-size:.72rem}
+textarea,input[type=text],input[type=email]{width:100%;border:1.5px solid var(--line);border-radius:14px;padding:14px;font:inherit;background:var(--card);outline:none;transition:.15s}
+textarea{min-height:200px;resize:vertical}textarea:focus,input:focus{border-color:var(--pri);box-shadow:0 0 0 4px rgba(79,70,229,.12)}
+.opt{border:1.5px solid var(--line);border-radius:14px;padding:14px;background:var(--card);text-align:left;transition:.15s;flex:1;min-width:140px}
+.opt:hover{border-color:var(--pri)}.opt.sel{border-color:var(--pri);background:var(--soft2);box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+.err{color:var(--bad);font-size:.88rem;margin-top:8px}.errbox{background:var(--badbg);color:var(--bad);border-radius:12px;padding:12px 14px}
+.q{font-size:1.4rem;font-weight:700;letter-spacing:-.02em;line-height:1.35}
+.tr{display:grid;grid-template-columns:1.3fr 1fr 1fr .8fr .6fr 1fr .5fr;gap:10px;align-items:center;padding:14px 8px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:10px}
+.tr:hover{background:var(--hov)}.tr.hd{cursor:default;font-size:.75rem;text-transform:uppercase;color:var(--mut);letter-spacing:.05em}.tr.hd:hover{background:none}
+.qr{display:grid;grid-template-columns:1fr 70px 150px;gap:10px;align-items:center;padding:14px 8px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:10px}.qr:hover{background:var(--hov)}
+ul.l{list-style:none;padding:0;display:grid;gap:8px}ul.l li{padding-left:24px;position:relative;font-size:.95rem}ul.l li:before{position:absolute;left:0;font-weight:800}
+ul.s li:before{content:"✓";color:var(--ok)}ul.w li:before{content:"!";color:var(--warn)}ul.r li:before{content:"→";color:var(--pri)}
+.mod{position:fixed;inset:0;background:rgba(15,23,42,.5);display:grid;place-items:center;z-index:50;padding:16px;animation:f .2s}
+.mod>div{background:var(--card);border-radius:20px;padding:24px;max-width:720px;width:100%;max-height:90vh;overflow:auto}
+.toast{color:var(--bg);position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:12px;z-index:60;animation:f .25s}
+.spin{width:44px;height:44px;border:4px solid var(--glow);border-top-color:var(--pri);border-radius:50%;animation:r .8s linear infinite;margin:auto}
+.sk{background:linear-gradient(90deg,var(--track),var(--hov),var(--track));background-size:200%;animation:sh 1.2s infinite;border-radius:14px;height:70px}
+.tg{padding:8px 12px}.fade{animation:f .4s ease}
+@keyframes f{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes r{to{transform:rotate(360deg)}}
+@keyframes sh{to{background-position:-200%}}
+.tb{display:flex;align-items:flex-end;gap:14px;height:150px}.tb>div{flex:1;text-align:center;font-size:.75rem}.tb span{display:block;border-radius:8px 8px 0 0;background:linear-gradient(180deg,var(--pri2),var(--pri));margin-bottom:6px;transition:height .8s}
+@media(max-width:860px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr}.main2{grid-template-columns:1fr}}
+@media(max-width:760px){nav.links{display:none}.tabs{display:flex}.g2,.g4{grid-template-columns:1fr}.g4.stats{grid-template-columns:1fr 1fr}
+.tr.hd{display:none}.tr{grid-template-columns:1fr auto;gap:4px}.tr>:nth-child(n+3):nth-child(-n+5){display:none}.qr{grid-template-columns:1fr auto}.qr>:nth-child(3){grid-column:1/-1}
+.wrap{padding-bottom:110px}.hero{padding-top:40px}.q{font-size:1.15rem}.btn{padding:12px 16px}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect}=React;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const clamp=v=>Math.max(45,Math.min(97,Math.round(v)));
+const avg=a=>Math.round(a.reduce((x,y)=>x+y,0)/a.length);
+const lab=s=>s>=88?["Excellent","ok"]:s>=78?["Strong","blue"]:["Needs Improvement","warn"];
+
+/* ---------- MOCK DATA ---------- */
+const QBANK=[["Can you explain a machine learning project you worked on and the impact it had?","Technical"],["Your CV mentions a transformer-based classifier. How did you choose and evaluate the model?","Technical"],["Tell me about a time you disagreed with a teammate on a technical decision.","Behavioral"],["How would you handle an imbalanced dataset in a classification task?","Technical"],["Describe how you deployed a model or service to the cloud.","Technical"],["Tell me about a deadline you nearly missed. What did you do?","Behavioral"],["What is the difference between BERT and Sentence Transformers for similarity tasks?","Technical"],["How do you monitor a model's performance after deployment?","Technical"],["Describe a time you had to learn a new tool quickly.","Behavioral"],["Why do you want to work as an AI Engineer, and where do you see yourself in 3 years?","Behavioral"]];
+const HISTORY=[{id:"h4",date:"Sep 24, 2026",role:"AI Engineer",type:"Technical",diff:"Intermediate",n:10,score:84,status:"Completed"},{id:"h3",date:"Sep 17, 2026",role:"Machine Learning Engineer",type:"Mixed",diff:"Intermediate",n:10,score:82,status:"Completed"},{id:"h2",date:"Sep 9, 2026",role:"Data Scientist",type:"Behavioral",diff:"Beginner",n:5,score:80,status:"Completed"},{id:"h1",date:"Aug 30, 2026",role:"AI Engineer",type:"Technical",diff:"Intermediate",n:15,score:83,status:"Completed"}];
+const SKILLS={Communication:88,Relevance:86,Confidence:82,Clarity:81,"Technical Depth":76};
+const ROLES=["AI Engineer","Machine Learning Engineer","Data Scientist","Software Engineer","Backend Developer","Frontend Developer","Data Analyst"];
+const OFF=[4,-8,7,-3,5,-10,2,6,-5,3];
+
+function buildQs({type,n}){
+  const pool=QBANK.filter(q=>type==="Mixed"||q[1]===type);
+  return Array.from({length:n},(_,i)=>{const b=pool[i%pool.length];return i<pool.length?b:[b[0]+" (Follow-up: go deeper on the trade-offs.)",b[1]]});
+}
+function makeEval(s,type,ans=""){
+  const W=["Could quantify the project impact more clearly.","The answer could be more structured.","Some technical details were missing."];
+  const S=type==="Technical"?["Clearly explained the technical approach.","Demonstrated practical experience.","Provided relevant examples."]:["Showed strong ownership and self-awareness.","Kept a clear, logical narrative.","Communicated professionally and calmly."];
+  const w=W.slice(0,s>=90?1:s>=80?2:3); if(ans&&ans.length<200)w.unshift("The answer was brief; add more depth and detail.");
+  return{score:s,cats:{Relevance:clamp(s+4),Clarity:clamp(s-3),"Technical Depth":clamp(s-5),Confidence:clamp(s-1)},strengths:S,weaknesses:w.slice(0,3),
+    tip:type==="Technical"?"Use the STAR method (Situation, Task, Action, Result) and close with a measurable outcome.":"Structure this with STAR and end with what you learned.",
+    ideal:type==="Technical"?"\"At my last internship I built a ticket-routing classifier. The problem was 30% manual triage delay, so I fine-tuned DistilBERT on 40k labelled tickets, compared it against a TF-IDF baseline, and tracked macro-F1. Accuracy rose from 71% to 89%, cutting triage time by about 30%. I deployed it behind a FastAPI service and monitored drift weekly.\"":"\"In a group project, my teammate and I disagreed on the model architecture. I suggested we run a quick two-day benchmark on both. The results favoured his approach, so we adopted it, and I documented the comparison. We shipped on time and I learned to settle debates with data.\""};
+}
+
+/* ---------- API LAYER (mock) — swap each body for a FastAPI call ---------- */
+const api={
+  async uploadCV(file,onProgress){ // TODO: POST /api/cv/upload (multipart/form-data) -> FastAPI parses PDF/DOCX
+    for(let p=10;p<=100;p+=10){onProgress(p);await sleep(160)} return{id:"cv_001",name:file.name}},
+  async startInterview(cfg){ // TODO: POST /api/interviews {cv_id, role, type, difficulty, n} -> GenAI generates CV-aware questions
+    await sleep(1400); return{id:"s_"+Date.now(),questions:buildQs(cfg)}},
+  async submitAnswer(sid,i,answer){ // TODO: POST /api/interviews/{sid}/answers -> stored in PostgreSQL
+    await sleep(300); return{ok:true}},
+  async getEvaluation(sid,q,answer){ // TODO: GET /api/interviews/{sid}/evaluation -> Sentence Transformers/BERT score + GenAI feedback
+    await sleep(1900); const s=clamp(62+Math.min(answer.length/14,22)+(/\d/.test(answer)?7:0)+(/result|impact|improv/i.test(answer)?4:0)); return makeEval(s,q[1],answer)},
+  async getInterviewResults(s){ // TODO: GET /api/interviews/{id}/results
+    await sleep(800); return{meta:s,items:buildQs(s).map((q,i)=>({q,ev:makeEval(clamp(s.score+OFF[i%10]),q[1])}))}},
+  async getInterviewHistory(){ // TODO: GET /api/users/me/interviews
+    await sleep(700); return HISTORY}
+};
+
+/* ---------- SHARED UI ---------- */
+const Ring=({v,size=130,label="/ 100"})=>{const r=size/2-9,c=2*Math.PI*r,[o,setO]=useState(0);useEffect(()=>{const t=setTimeout(()=>setO(v),60);return()=>clearTimeout(t)},[v]);
+  return <div className="ring" style={{width:size,height:size}}><svg width={size} height={size}><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#4f46e5"/><stop offset="1" stopColor="#7c3aed"/></linearGradient></defs><circle cx={size/2} cy={size/2} r={r} fill="none" style={{stroke:"var(--track)"}} strokeWidth="9"/><circle cx={size/2} cy={size/2} r={r} fill="none" stroke="url(#rg)" strokeWidth="9" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c*(1-o/100)} transform={`rotate(-90 ${size/2} ${size/2})`}/></svg><div className="rv"><b>{v}</b><small>{label}</small></div></div>};
+const Bar=({n,v})=>{const[w,setW]=useState(0);useEffect(()=>{const t=setTimeout(()=>setW(v),60);return()=>clearTimeout(t)},[v]);return <div><div className="row sp" style={{fontSize:".9rem",marginBottom:5}}><span>{n}</span><b>{v}%</b></div><div className="bar"><div style={{width:w+"%"}}/></div></div>};
+const Modal=({children,onClose})=><div className="mod" onClick={onClose}><div onClick={e=>e.stopPropagation()}>{children}</div></div>;
+const Confirm=({title,text,ok,onOk,onCancel})=><Modal onClose={onCancel}><h3>{title}</h3><p className="mut" style={{margin:"8px 0 20px"}}>{text}</p><div className="row" style={{justifyContent:"flex-end"}}><button className="btn" onClick={onCancel}>Cancel</button><button className="btn p" onClick={onOk}>{ok}</button></div></Modal>;
+const Skel=({n=3})=><div className="g">{Array.from({length:n},(_,i)=><div key={i} className="sk"/>)}</div>;
+
+/* Feedback panel: used in session AND results detail modal */
+function Feedback({ev}){const[open,setOpen]=useState(false);
+  return <div className="g fade">
+    <div className="card row" style={{gap:24}}><Ring v={ev.score} label="/ 100"/><div className="g" style={{flex:1,minWidth:220}}>{Object.entries(ev.cats).map(([k,v])=><Bar key={k} n={k} v={v}/>)}</div></div>
+    <div className="g g2"><div className="card"><h3 style={{marginBottom:12}}>Strengths</h3><ul className="l s">{ev.strengths.map(x=><li key={x}>{x}</li>)}</ul></div>
+    <div className="card"><h3 style={{marginBottom:12}}>Weaknesses</h3><ul className="l w">{ev.weaknesses.map(x=><li key={x}>{x}</li>)}</ul></div></div>
+    <div className="card" style={{background:"var(--soft2)"}}><h3>💡 Improvement suggestion</h3><p style={{marginTop:6}}>{ev.tip}</p></div>
+    <div className="card"><button className="btn" onClick={()=>setOpen(!open)}>{open?"Hide":"View"} an example of a stronger answer {open?"▴":"▾"}</button>
+      {open&&<div className="fade" style={{marginTop:14}}><span className="chip blue">Example — not your answer</span><p style={{marginTop:10,fontStyle:"italic"}}>{ev.ideal}</p></div>}</div></div>}
+
+/* ---------- LANDING ---------- */
+function ThemeBtn({dark,toggle}){return <button className="btn tg" onClick={toggle} title="Toggle dark mode" aria-label="Toggle dark mode">{dark?"☀️":"🌙"}</button>}
+function Landing({go,dark,toggle}){
+  const F=[["📄","CV-Aware Interview Questions","Questions generated from your own experience and target role."],["🧠","AI Answer Evaluation","Semantic scoring of every answer against strong responses."],["🎯","Personalized Feedback","Strengths, weaknesses and ideal-answer examples."],["📈","Performance Tracking","See your confidence and skills improve session by session."]];
+  const St=["Upload your CV","Choose a target role","Answer tailored questions","Get AI coaching"];
+  return <div><header className="top"><div className="in"><div className="logo"><i>AI</i>Interview Coach</div><div style={{flex:1}}/><ThemeBtn dark={dark} toggle={toggle}/><button className="btn" onClick={()=>go("dashboard")}>Sign in as Alex</button></div></header>
+  <div className="wrap fade"><div className="hero"><span className="chip">✨ Your personal AI interview coach</span><h1 style={{marginTop:18}}>Walk into every interview<br/><span className="grad">prepared and confident.</span></h1>
+  <p>Upload your CV, pick your dream role, and practice with questions built around your experience. Get objective scoring and actionable coaching in real time.</p>
+  <div className="row" style={{justifyContent:"center"}}><button className="btn p" onClick={()=>go("upload")}>Start Interview →</button><button className="btn" onClick={()=>document.getElementById("how").scrollIntoView({behavior:"smooth"})}>How It Works</button></div></div>
+  <div className="g g4">{F.map(f=><div key={f[1]} className="card h"><div className="ico">{f[0]}</div><h3>{f[1]}</h3><p className="mut" style={{marginTop:6}}>{f[2]}</p></div>)}</div>
+  <div id="how" style={{padding:"70px 0 0"}}><h2 style={{textAlign:"center",marginBottom:24}}>How it works</h2><div className="g g4">{St.map((s,i)=><div key={s} className="card"><div className="chip sel">{i+1}</div><h3 style={{marginTop:12}}>{s}</h3></div>)}</div>
+  <div style={{textAlign:"center",marginTop:32}}><button className="btn p" onClick={()=>go("upload")}>Get started</button></div></div></div></div>}
+
+/* ---------- DASHBOARD ---------- */
+function Dashboard({go,hist,user,open}){
+  if(!hist)return <div className="wrap"><Skel n={4}/></div>;
+  const St=[["Average confidence",avg(hist.map(h=>h.score))+"%","📊"],["Interviews completed",hist.length,"✅"],["Strongest area","Communication","💪"],["Needs improvement","Technical Depth","🎯"]];
+  return <div className="wrap fade"><div className="card row sp" style={{background:"linear-gradient(135deg,#4f46e5,#7c3aed)",color:"#fff",border:0,padding:30}}>
+    <div><h2>Welcome back, {user.name.split(" ")[0]} 👋</h2><p style={{opacity:.85,marginTop:6}}>Your average confidence score is {avg(hist.map(h=>h.score))}%. Ready for another round?</p></div>
+    <button className="btn" onClick={()=>go("upload")}>＋ Start New Interview</button></div>
+  <div className="g g4 stats" style={{margin:"18px 0"}}>{St.map(s=><div key={s[0]} className="card h"><div style={{fontSize:"1.4rem"}}>{s[2]}</div><div style={{fontSize:"1.35rem",fontWeight:800,margin:"6px 0 2px"}}>{s[1]}</div><div className="mut">{s[0]}</div></div>)}</div>
+  <div className="main2" style={{gridTemplateColumns:"1fr 340px"}}><div className="card"><div className="row sp"><h3>Recent sessions</h3><button className="btn" onClick={()=>go("history")}>View all</button></div>
+    <div style={{marginTop:8}}>{hist.slice(0,3).map(h=><div key={h.id} className="tr" style={{gridTemplateColumns:"1fr auto"}} onClick={()=>open(h)}><div><b>{h.role}</b><div className="mut">{h.date} · {h.type} · {h.n} questions</div></div><span className={"chip "+lab(h.score)[1]}>{h.score}%</span></div>)}</div></div>
+  <div className="card g"><h3>Skill snapshot</h3>{Object.entries(SKILLS).slice(0,4).map(([k,v])=><Bar key={k} n={k} v={v}/>)}<button className="btn" onClick={()=>go("performance")}>Full performance →</button></div></div></div>}
+
+/* ---------- CV UPLOAD ---------- */
+function Upload({file,setFile,go,say}){
+  const[prog,setProg]=useState(file?100:0),[err,setErr]=useState(""),[over,setOver]=useState(false);
+  const pick=async f=>{ if(!f)return; const ext=f.name.split(".").pop().toLowerCase();
+    if(!["pdf","docx"].includes(ext))return setErr("Unsupported format. Please upload a PDF or DOCX file.");
+    if(f.size>5*1024*1024)return setErr("File is too large. Maximum size is 5 MB.");
+    setErr("");setFile(null);setProg(1); try{const r=await api.uploadCV(f,setProg);setFile({name:f.name,ext:ext.toUpperCase(),size:(f.size/1024).toFixed(0)+" KB",id:r.id});say("CV uploaded successfully")}catch{setErr("Upload failed. Try again.");setProg(0)}};
+  const busy=prog>0&&prog<100, input=React.useRef();
+  return <div className="wrap fade" style={{maxWidth:760}}><h2>Upload your CV</h2><p className="mut" style={{margin:"6px 0 20px"}}>Your CV personalizes the interview — questions are built around your skills, projects and experience.</p>
+  <input ref={input} type="file" accept=".pdf,.docx" hidden onChange={e=>pick(e.target.files[0])}/>
+  {!file&&!busy&&<div className={"drop"+(over?" over":"")} onDragOver={e=>{e.preventDefault();setOver(true)}} onDragLeave={()=>setOver(false)} onDrop={e=>{e.preventDefault();setOver(false);pick(e.dataTransfer.files[0])}}>
+    <div style={{fontSize:"2.6rem"}}>☁️</div><h3 style={{margin:"8px 0"}}>Drag & drop your CV here</h3><p className="mut">Supported formats: PDF, DOCX · Max 5 MB</p><button className="btn p" style={{marginTop:16}} onClick={()=>input.current.click()}>Browse files</button></div>}
+  {err&&<div className="errbox" style={{marginTop:14}}>⚠️ {err}</div>}
+  {busy&&<div className="card"><b>Uploading & analyzing…</b><div className="bar" style={{margin:"12px 0 6px"}}><div style={{width:prog+"%",transition:"width .2s"}}/></div><span className="mut">{prog}%</span></div>}
+  {file&&<div className="card fade"><div className="row sp"><div className="row"><div className="ico" style={{margin:0}}>📄</div><div><b>{file.name}</b><div className="mut">{file.ext} · {file.size}</div></div></div><span className="chip ok">✓ Uploaded</span></div>
+    <div className="row" style={{marginTop:16}}><button className="btn" onClick={()=>input.current.click()}>Replace</button><button className="btn" onClick={()=>{setFile(null);setProg(0)}}>Remove</button></div></div>}
+  <div style={{marginTop:22,textAlign:"right"}}><button className="btn p" disabled={!file} onClick={()=>go("setup")}>Continue to Job Role →</button></div></div>}
+
+/* ---------- SETUP ---------- */
+function Setup({cfg,setCfg,file,go,start,starting}){
+  const[custom,setCustom]=useState(""),[err,setErr]=useState("");
+  const role=custom.trim()||cfg.role, set=(k,v)=>setCfg({...cfg,[k]:v});
+  const Seg=({k,opts})=><div className="row">{opts.map(o=><button key={o} className={"chip"+(cfg[k]===o?" sel":"")} style={{padding:"9px 18px",fontSize:".9rem"}} onClick={()=>set(k,o)}>{o}</button>)}</div>;
+  const go2=()=>{ if(!role){return setErr("Please select or enter a target job role.")} if(custom.trim().length>0&&custom.trim().length<3)return setErr("Custom role must be at least 3 characters."); setCfg({...cfg,role}); start({...cfg,role})};
+  return <div className="wrap fade"><h2>Set up your interview</h2><p className="mut" style={{margin:"6px 0 20px"}}>CV: <b>{file?.name}</b></p>
+  <div className="main2"><div className="card g" style={{gap:22}}>
+    <div><h3 style={{marginBottom:10}}>Target job role</h3><div className="row">{ROLES.map(r=><button key={r} className={"chip"+(!custom&&cfg.role===r?" sel":"")} onClick={()=>{setCustom("");set("role",r);setErr("")}}>{r}</button>)}</div>
+      <input type="text" style={{marginTop:12}} placeholder="Or type a custom role, e.g. NLP Researcher" value={custom} onChange={e=>{setCustom(e.target.value);setErr("")}}/>{err&&<div className="err">{err}</div>}</div>
+    <div><h3 style={{marginBottom:10}}>Interview type</h3><div className="row">{[["Technical","Skills & problem solving"],["Behavioral","Past experience & soft skills"],["Mixed","A balanced blend"]].map(([t,d])=><button key={t} className={"opt"+(cfg.type===t?" sel":"")} onClick={()=>set("type",t)}><b>{t} Interview</b><div className="mut">{d}</div></button>)}</div></div>
+    <div><h3 style={{marginBottom:10}}>Difficulty</h3><Seg k="diff" opts={["Beginner","Intermediate","Advanced"]}/></div>
+    <div><h3 style={{marginBottom:10}}>Number of questions</h3><div className="row">{[5,10,15].map(n=><button key={n} className={"chip"+(cfg.n===n?" sel":"")} style={{padding:"9px 22px"}} onClick={()=>set("n",n)}>{n}</button>)}</div></div></div>
+  <div className="card g" style={{position:"sticky",top:80}}><h3>Interview summary</h3>
+    {[["Role",role||"—"],["Type",cfg.type],["Difficulty",cfg.diff],["Questions",cfg.n],["Est. time","~"+cfg.n*3+" min"]].map(([a,b])=><div key={a} className="row sp"><span className="mut">{a}</span><b>{b}</b></div>)}
+    <button className="btn p" disabled={starting} onClick={go2}>{starting?"Generating questions…":"Start Interview"}</button>
+    <button className="btn" onClick={()=>go("upload")}>← Back</button></div></div></div>}
+
+/* ---------- INTERVIEW SESSION ---------- */
+function Session({s,cfg,onDone,onExit,say}){
+  const[i,setI]=useState(0),[ans,setAns]=useState(""),[phase,setPhase]=useState("answer"),[items,setItems]=useState([]),[ev,setEv]=useState(null),[err,setErr]=useState(""),[leave,setLeave]=useState(false);
+  const q=s.questions[i],n=s.questions.length;
+  const submit=async()=>{ if(ans.trim().length<30)return setErr("Please write at least 30 characters so the AI can evaluate your answer.");
+    setErr("");setPhase("loading"); try{await api.submitAnswer(s.id,i,ans);const e=await api.getEvaluation(s.id,q,ans);setEv(e);setItems(x=>[...x,{q,ev:e}]);setPhase("eval")}catch{setErr("Evaluation failed. Please try again.");setPhase("answer")}};
+  const next=()=>{ if(i+1>=n)return onDone(items); setI(i+1);setAns("");setEv(null);setPhase("answer")};
+  return <div className="wrap fade">
+    <div className="card" style={{marginBottom:18}}><div className="row sp"><b>Question {i+1} of {n}</b><div className="row"><span className="chip">{cfg.role}</span><span className="chip">{cfg.diff}</span><span className="chip">{cfg.type}</span><button className="btn" style={{padding:"6px 14px"}} onClick={()=>setLeave(true)}>Exit</button></div></div>
+      <div className="bar" style={{marginTop:12}}><div style={{width:((i+(phase==="eval"?1:0))/n*100)+"%"}}/></div></div>
+    <div className="main2"><div className="g">
+      <div className="card"><span className={"chip "+(q[1]==="Technical"?"blue":"ok")}>{q[1]} Question</span><p className="q" style={{marginTop:14}}>{q[0]}</p></div>
+      {phase==="answer"&&<div className="card fade"><textarea placeholder="Type your answer here…" value={ans} maxLength={1500} onChange={e=>{setAns(e.target.value);setErr("")}}/>
+        <div className="row sp" style={{marginTop:6}}><span className="mut">{ans.length} / 1500</span>{err&&<span className="err" style={{margin:0}}>{err}</span>}</div>
+        <div className="row sp" style={{marginTop:14}}><div className="row"><button className="btn" disabled={!ans} onClick={()=>setAns("")}>Clear</button></div>
+        <button className="btn p" onClick={submit}>Submit answer</button></div></div>}
+      {phase==="loading"&&<div className="card fade" style={{textAlign:"center",padding:48}}><div className="spin"/><p style={{marginTop:16,fontWeight:600}}>AI is analyzing your answer…</p><p className="mut">Scoring relevance, clarity and technical depth</p></div>}
+      {phase==="eval"&&<><Feedback ev={ev}/><div style={{textAlign:"right"}}><button className="btn p" onClick={next}>{i+1>=n?"Finish & view results →":"Next Question →"}</button></div></>}
+    </div>
+    <div className="card" style={{background:"var(--soft2)"}}><h3>🧭 Coach tip</h3><p className="mut" style={{margin:"8px 0"}}>Take your time. Focus on the problem, your approach, and the result.</p><ul className="l r"><li>Aim for 1–2 minutes</li><li>Use specific numbers</li><li>Mention your role</li></ul></div></div>
+    {leave&&<Confirm title="Exit interview?" text="Your progress in this session will be lost." ok="Exit" onOk={onExit} onCancel={()=>setLeave(false)}/>}</div>}
+
+/* ---------- RESULTS ---------- */
+function Results({res,go,again}){
+  const[sel,setSel]=useState(null);
+  if(!res)return <div className="wrap"><div className="spin" style={{margin:"80px auto"}}/><p className="mut" style={{textAlign:"center",marginTop:14}}>Loading results…</p></div>;
+  const{meta,items}=res, c=k=>avg(items.map(x=>x.ev.cats[k]));
+  const B={Confidence:c("Confidence"),Relevance:c("Relevance"),Clarity:c("Clarity"),"Technical Knowledge":c("Technical Depth")};B.Communication=avg([B.Clarity,B.Confidence]);
+  const ent=Object.entries(B).sort((a,b)=>b[1]-a[1]);
+  return <div className="wrap fade"><div className="row sp"><h2>Interview results</h2><div className="row"><button className="btn" onClick={()=>go("dashboard")}>Back to Dashboard</button><button className="btn p" onClick={again}>Practice Again</button></div></div>
+  <div className="g" style={{marginTop:18}}><div className="card row" style={{gap:28}}><Ring v={meta.score} size={160} label="Overall score"/><div style={{flex:1,minWidth:240}}><h3>{meta.score}% Overall Score — <span className="grad">{lab(meta.score)[0]}</span></h3>
+    <div className="g g2" style={{marginTop:14,gap:8}}>{[["Role",meta.role],["Type",meta.type],["Difficulty",meta.diff],["Questions",meta.n],["Completed",meta.date]].map(([a,b])=><div key={a}><span className="mut">{a}: </span><b>{b}</b></div>)}</div></div></div>
+  <div className="card g"><h3>Performance breakdown</h3><div className="g g2">{Object.entries(B).map(([k,v])=><Bar key={k} n={k} v={v}/>)}</div></div>
+  <div className="g g3"><div className="card"><h3 style={{marginBottom:12}}>Strengths</h3><ul className="l s">{ent.slice(0,2).map(([k,v])=><li key={k}>{k} ({v}%)</li>)}<li>Relevant, practical examples</li></ul></div>
+    <div className="card"><h3 style={{marginBottom:12}}>Areas for improvement</h3><ul className="l w">{ent.slice(-2).reverse().map(([k,v])=><li key={k}>{k} ({v}%)</li>)}<li>Quantifying impact</li></ul></div>
+    <div className="card"><h3 style={{marginBottom:12}}>AI recommendations</h3><ul className="l r"><li>Explain technical projects in under 2 minutes.</li><li>Give measurable results for past projects.</li><li>Structure behavioral answers using STAR.</li></ul></div></div>
+  <div className="card"><h3>Question-by-question</h3><p className="mut" style={{marginBottom:8}}>Select a question to see detailed feedback.</p>
+    <div className="qr" style={{cursor:"default",fontSize:".75rem",color:"var(--mut)",textTransform:"uppercase"}}><span>Question</span><span>Score</span><span>Status</span></div>
+    {items.map((x,i)=><div key={i} className="qr" onClick={()=>setSel(x)}><span><b>Q{i+1}.</b> {x.q[0]}</span><b>{x.ev.score}%</b><span><span className={"chip "+lab(x.ev.score)[1]}>{lab(x.ev.score)[0]}</span></span></div>)}</div></div>
+  {sel&&<Modal onClose={()=>setSel(null)}><div className="row sp" style={{marginBottom:14}}><h3 style={{flex:1}}>{sel.q[0]}</h3><button className="btn" onClick={()=>setSel(null)}>✕</button></div><Feedback ev={sel.ev}/></Modal>}</div>}
+
+/* ---------- HISTORY ---------- */
+function History({hist,open,go}){
+  const[f,setF]=useState("All");
+  if(!hist)return <div className="wrap"><Skel n={4}/></div>;
+  const list=hist.filter(h=>f==="All"||h.type===f);
+  return <div className="wrap fade"><div className="row sp"><h2>Interview history</h2><div className="row">{["All","Technical","Behavioral","Mixed"].map(t=><button key={t} className={"chip"+(f===t?" sel":"")} onClick={()=>setF(t)}>{t}</button>)}</div></div>
+  <div className="card" style={{marginTop:18}}><div className="tr hd"><span>Role</span><span>Date</span><span>Type</span><span>Score</span><span>Qs</span><span>Status</span><span/></div>
+    {list.length===0?<div style={{textAlign:"center",padding:40}}><div style={{fontSize:"2rem"}}>🗂️</div><p className="mut">No {f.toLowerCase()} interviews yet.</p><button className="btn p" style={{marginTop:12}} onClick={()=>go("upload")}>Start one now</button></div>
+    :list.map(h=><div key={h.id} className="tr" onClick={()=>open(h)}><b>{h.role}</b><span className="mut">{h.date}</span><span>{h.type}</span><span><span className={"chip "+lab(h.score)[1]}>{h.score}%</span></span><span>{h.n}</span><span className="chip ok" style={{justifySelf:"start"}}>{h.status}</span><span style={{color:"var(--pri)"}}>Review →</span></div>)}</div></div>}
+
+/* ---------- PERFORMANCE ---------- */
+function Performance({hist}){
+  if(!hist)return <div className="wrap"><Skel/></div>;
+  const t=[...hist].reverse();
+  return <div className="wrap fade"><h2>Performance</h2><div className="g g2" style={{marginTop:18}}>
+    <div className="card"><h3 style={{marginBottom:14}}>Score trend</h3><div className="tb">{t.map(h=><div key={h.id}><span style={{height:(h.score*1.3)+"px"}}/><b>{h.score}</b><div className="mut">{h.date.split(",")[0]}</div></div>)}</div></div>
+    <div className="card g"><h3>Skills across all sessions</h3>{Object.entries(SKILLS).map(([k,v])=><Bar key={k} n={k} v={v}/>)}</div></div>
+    <div className="card" style={{marginTop:16,background:"var(--soft2)"}}><h3>🧠 AI insight</h3><p style={{marginTop:6}}>Communication is your strongest area. Technical Depth is lagging — practice explaining model choices and trade-offs with concrete metrics.</p></div></div>}
+
+/* ---------- PROFILE ---------- */
+function Profile({user,setUser,say,reset}){
+  const[u,setU]=useState(user),[err,setErr]=useState(""),[c,setC]=useState(false);
+  const save=()=>{ if(u.name.trim().length<2)return setErr("Please enter your name."); if(!/^\S+@\S+\.\S+$/.test(u.email))return setErr("Please enter a valid email."); setErr("");setUser(u);say("Profile saved")};
+  return <div className="wrap fade" style={{maxWidth:640}}><h2>Profile & settings</h2><div className="card g" style={{marginTop:18}}>
+    <label>Full name<input type="text" value={u.name} onChange={e=>setU({...u,name:e.target.value})}/></label>
+    <label>Email<input type="email" value={u.email} onChange={e=>setU({...u,email:e.target.value})}/></label>
+    {err&&<div className="err">{err}</div>}<div className="row"><button className="btn p" onClick={save}>Save changes</button><button className="btn" onClick={()=>setC(true)}>Reset demo data</button></div></div>
+    {c&&<Confirm title="Reset demo data?" text="This removes your uploaded CV and any new sessions." ok="Reset" onOk={()=>{setC(false);reset()}} onCancel={()=>setC(false)}/>}</div>}
+
+/* ---------- APP ---------- */
+function App(){
+  const[view,setView]=useState("landing"),[file,setFile]=useState(null),[cfg,setCfg]=useState({role:"AI Engineer",type:"Technical",diff:"Intermediate",n:10}),
+    [hist,setHist]=useState(null),[res,setRes]=useState(null),[session,setSession]=useState(null),[starting,setStarting]=useState(false),[toast,setToast]=useState(""),
+    [user,setUser]=useState({name:"Alex Morgan",email:"alex.morgan@email.com"}),[menu,setMenu]=useState(false),[dark,setDark]=useState(()=>{try{const t=localStorage.getItem("aic-theme");if(t)return t==="dark"}catch(e){}return window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches});
+  useEffect(()=>{document.documentElement.dataset.theme=dark?"dark":"light";try{localStorage.setItem("aic-theme",dark?"dark":"light")}catch(e){}},[dark]);
+  const toggle=()=>setDark(d=>!d);
+  useEffect(()=>{api.getInterviewHistory().then(setHist)},[]);
+  const go=v=>{setView(v);setMenu(false);window.scrollTo(0,0)};
+  const say=m=>{setToast(m);setTimeout(()=>setToast(""),2600)};
+  const open=async s=>{setRes(null);go("results");setRes(await api.getInterviewResults(s))};
+  const start=async c=>{setStarting(true);const s=await api.startInterview(c);setStarting(false);setSession(s);go("session")};
+  const done=items=>{const meta={id:session.id,date:"Sep 30, 2026",role:cfg.role,type:cfg.type,diff:cfg.diff,n:items.length,score:avg(items.map(x=>x.ev.score)),status:"Completed"};
+    setHist(h=>[meta,...h]);setRes({meta,items});go("results")};
+  const reset=()=>{setFile(null);setHist(HISTORY);say("Demo data reset");go("dashboard")};
+  if(view==="landing")return <Landing go={go} dark={dark} toggle={toggle}/>;
+  const N=[["dashboard","Dashboard","◧"],["upload","New Interview","＋"],["history","History","☰"],["performance","Performance","↗"],["profile","Profile","⚙"]];
+  const focus=view==="session", cur=view==="setup"?"upload":view==="results"?"history":view;
+  return <div><header className="top"><div className="in"><div className="logo" onClick={()=>!focus&&go("landing")}><i>AI</i>Interview Coach</div>
+    {!focus&&<nav className="links">{N.map(n=><button key={n[0]} className={cur===n[0]?"on":""} onClick={()=>go(n[0])}>{n[1]}</button>)}</nav>}<div style={{flex:1}}/><ThemeBtn dark={dark} toggle={toggle}/>
+    {!focus&&<button className="av" onClick={()=>setMenu(!menu)}>{user.name.split(" ").map(x=>x[0]).join("")}</button>}</div>
+    {menu&&<div className="menu fade"><button onClick={()=>go("profile")}>👤 Profile & settings</button><button onClick={()=>go("landing")}>↩ Sign out</button></div>}</header>
+  {view==="dashboard"&&<Dashboard go={go} hist={hist} user={user} open={open}/>}
+  {view==="upload"&&<Upload file={file} setFile={setFile} go={go} say={say}/>}
+  {view==="setup"&&(file?<Setup cfg={cfg} setCfg={setCfg} file={file} go={go} start={start} starting={starting}/>:<div className="wrap"><div className="card">Please upload your CV first. <button className="btn p" onClick={()=>go("upload")}>Upload CV</button></div></div>)}
+  {view==="session"&&session&&<Session key={session.id} s={session} cfg={cfg} onDone={done} onExit={()=>go("dashboard")} say={say}/>}
+  {view==="results"&&<Results res={res} go={go} again={()=>go("upload")}/>}
+  {view==="history"&&<History hist={hist} open={open} go={go}/>}
+  {view==="performance"&&<Performance hist={hist}/>}
+  {view==="profile"&&<Profile user={user} setUser={setUser} say={say} reset={reset}/>}
+  {!focus&&<div className="tabs">{N.map(n=><button key={n[0]} className={cur===n[0]?"on":""} onClick={()=>go(n[0])}><b>{n[2]}</b>{n[1].replace("New Interview","New")}</button>)}</div>}
+  {toast&&<div className="toast">{toast}</div>}</div>}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
