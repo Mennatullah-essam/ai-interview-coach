@@ -1,73 +1,58 @@
-# AI Interview Coach — Frontend
+# AI Interview Coach
 
-A React + Vite web app for practising job interviews. Candidates upload a CV, pick a target role, answer tailored questions and receive scored, coach-style feedback.
+AI Interview Coach is an AI-powered interview preparation platform designed to help job seekers, students, and recent graduates practice interviews and receive personalized, actionable feedback.
 
-> **Status:** the frontend is complete and runs entirely on **mock/demo data**. The backend, database, authentication, ML models, GenAI integration and CV parsing are **not implemented yet**; the UI talks to a mock service layer that is ready to be swapped for real API calls.
+## Overview
 
-## Tech stack
+Traditional interview preparation often relies on generic question banks and limited feedback. AI Interview Coach aims to provide a more personalized experience by using the user's CV, target job role, and interview responses to generate relevant questions and evaluate performance.
 
-- [React 18](https://react.dev) + [Vite 5](https://vitejs.dev)
-- [React Router 6](https://reactrouter.com) for routing
-- [Framer Motion](https://www.framer.com/motion/) for animation (with `prefers-reduced-motion` support)
-- Plain CSS with design tokens (light/dark themes); no UI framework
+The platform combines Machine Learning, Natural Language Processing, and Generative AI to provide users with meaningful insights into their interview performance.
 
-## Getting started
+## Core Features
 
-Requires Node.js 18+.
+- **CV Upload**  
+  Upload a CV to personalize the interview experience.
 
-```bash
-npm install
-npm run dev       # http://localhost:5173
-npm run build     # production build in dist/
-npm run preview   # serve the production build
-```
+- **Target Role Selection**  
+  Specify the job role the user is preparing for.
 
-When deploying the build to static hosting, configure a fallback to `index.html` so deep links such as `/results` work.
+- **Personalized Interview Questions**  
+  Generate questions based on the user's CV and target role.
 
-## Routes
+- **Answer Evaluation**  
+  Analyze interview responses using AI and NLP techniques.
 
-| Path | Screen |
-| --- | --- |
-| `/` | Landing |
-| `/dashboard` | Dashboard |
-| `/cv-upload` | CV upload (PDF/DOCX, max 5 MB) |
-| `/interview/setup` | Role, type, difficulty, question count |
-| `/interview/session` | Answer a question |
-| `/interview/evaluation` | AI feedback for the answer |
-| `/results` | Interview results (after finishing, or opened from history) |
-| `/history` | Interview history with filters |
-| `/performance` | Score trend and skills |
-| `/profile` | Profile and demo reset |
+- **Performance Scoring**  
+  Provide confidence and answer-quality scores.
 
-Session, evaluation and results routes are guarded: opening them without the required state redirects to a sensible earlier step.
+- **Personalized Feedback**  
+  Identify strengths, weaknesses, and areas for improvement.
 
-## Project structure
+- **Ideal Answer Suggestions**  
+  Provide examples and recommendations to help improve responses.
 
-```
-src/
-├── animations/    Shared Framer Motion variants
-├── components/    Reusable UI (Button, Card, Modal, ProgressBar, ScoreCircle, Navbar, Feedback, ...)
-├── context/       Theme, toast, app (user/CV/config/history/results) and interview-session state
-├── data/          mockData.js (demo data) and constants.js (UI config and copy)
-├── hooks/         useApp, useInterview, useCVUpload, useCountUp, ...
-├── pages/         One component per route
-├── services/      api.js (service layer) and mockEngine.js (local fake AI)
-├── styles/        variables.css (tokens), globals.css, animations.css
-├── utils/         scoring, formatting and navigation helpers
-├── App.jsx        Providers and routes
-└── main.jsx       Entry point
-```
+- **Results Dashboard**  
+  Present an overview of interview performance and detailed evaluation results.
 
-State is kept in React context + hooks; no Redux.
+- **Interview History**  
+  Allow users to review and track previous interview sessions.
 
-## Connecting a backend later
+## System Architecture
 
-All data access goes through `src/services/api.js` (`api.uploadCV()`, `api.startInterview()`, `api.submitAnswer()`, `api.getEvaluation()`, `api.completeInterview()`, `api.getInterviewResults()`, `api.getInterviewHistory()`, `api.getSkills()`, `api.updateProfile()`).
+The planned system follows the architecture:
 
-Each function has a `TODO(backend)` comment where the real HTTP call belongs. Replace the body of a function and keep its return shape; the UI does not need to change. `mockEngine.js` and `data/mockData.js` can be deleted once nothing imports them. `.env.example` lists the planned `VITE_API_BASE_URL`.
-
-## Animation and accessibility notes
-
-- Page transitions, staggered reveals, animated score ring and progress bars, count-up statistics, shared-layout selection highlights, and modal/menu/toast transitions.
-- `MotionConfig reducedMotion="user"` plus a CSS media query tone motion down for users who prefer reduced motion.
-- Keyboard-operable rows and menus, labelled form controls, dialog focus trap and focus restore, skip link, visible focus states, `aria-live` status messages.
+```text
+React.js Frontend
+        │
+        ▼
+FastAPI Backend
+        │
+        ├── AI / ML Models
+        │
+        ├── Generative AI
+        │
+        ▼
+PostgreSQL / MySQL
+        │
+        ▼
+AWS Infrastructure
