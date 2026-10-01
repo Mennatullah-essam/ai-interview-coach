@@ -1,0 +1,58 @@
+/* Design tokens. Light is the default; dark is applied via <html data-theme="dark">. */
+:root {
+  color-scheme: light;
+  --ink: #0f172a;
+  --mut: #64748b;
+  --pri: #4f46e5;
+  --pri2: #7c3aed;
+  --bg: #f6f7fd;
+  --card: #fff;
+  --line: #e6e8f3;
+  --ok: #059669;
+  --warn: #d97706;
+  --bad: #dc2626;
+  --sh: 0 4px 24px rgba(30, 32, 90, 0.07);
+  --sh-hover: 0 10px 32px rgba(79, 70, 229, 0.14);
+  --soft: #eef0ff;
+  --soft2: #f4f5fe;
+  --hov: #f3f4fb;
+  --track: #e8eaf6;
+  --drop: #fafbff;
+  --hdr: rgba(246, 247, 253, 0.85);
+  --glow: #e7e8fd;
+  --okbg: #d1fae5;
+  --warnbg: #fef3c7;
+  --badbg: #fee2e2;
+  --focus-ring: rgba(79, 70, 229, 0.14);
+  --dash: #b9bff0;
+  --overlay: rgba(15, 23, 42, 0.5);
+  --grad: linear-gradient(135deg, var(--pri), var(--pri2));
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --ink: #f1f1f4;
+  --mut: #9a9aa5;
+  --pri: #818cf8;
+  --bg: #000;
+  --card: #0e0e10;
+  --line: #232327;
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --bad: #f87171;
+  --sh: 0 4px 24px rgba(0, 0, 0, 0.6);
+  --sh-hover: 0 10px 32px rgba(129, 140, 248, 0.18);
+  --soft: #1a1a24;
+  --soft2: #131318;
+  --hov: #151518;
+  --track: #26262b;
+  --drop: #0a0a0c;
+  --hdr: rgba(0, 0, 0, 0.85);
+  --glow: #17172b;
+  --okbg: #0a3325;
+  --warnbg: #3a2a06;
+  --badbg: #3b0f0f;
+  --focus-ring: rgba(129, 140, 248, 0.2);
+  --overlay: rgba(0, 0, 0, 0.65);
+}
