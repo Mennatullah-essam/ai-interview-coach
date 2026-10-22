@@ -2,24 +2,33 @@
 
 | | |
 | --- | --- |
-| **Document status** | Draft v0.1 — **design only** |
-| **Date** | October 8, 2026 |
-| **Team** | Capstone Team 147 |
-| **Sources of truth** | (1) `AI_Capstone_Project_Proposal_Team147.docx` for intended technical scope; (2) the React/Vite frontend (`ai-interview-coach` v0.1.0), in particular `src/services/api.js` and how the UI actually consumes it |
-| **Implementation status** | **Nothing in this document is implemented.** There is no FastAPI code, no database, no AI model integration and no AWS resource. The frontend still runs on the mock service layer. Everything below is a specification. |
+| **Document status** | Draft **v0.2** — design only. The team's working technical decisions are finalized (Section 1.6) |
+| **Date** | October 19, 2026 |
+| **Team** | Capstone Team 147 (DEPI) |
+| **Sources of truth** | (1) `AI_Capstone_Project_Proposal_Team147.docx` for intended technical scope; (2) the React/Vite frontend (`ai-interview-coach` v0.1.0), in particular `src/services/api.js` and how the UI actually consumes it; (3) the **finalized working decisions D1–D8** (Section 1.6), adopted because the team is inactive and progress must not wait |
+| **Implementation status** | **Nothing in this document is implemented.** There is no FastAPI code, no database, no downloaded model and no cloud resource; no Python package has been installed. The frontend still runs on its mock service layer. **The AI evaluation described here has not been built, tested or validated.** |
+
+### What changed from v0.1
+
+- Scope is now a **local-first MVP**: PostgreSQL on the developer's machine, no authentication yet (single-user demo), no paid or external AI service, no AWS.
+- Questions come from a **curated question bank with reference answers**; feedback comes from **transparent rule-based templates**; answers are scored by a **local Sentence Transformers model plus explicit criteria**.
+- The per-answer category **"Confidence" is replaced by "Structure"**, because the decisions forbid claiming to measure psychological confidence from text (Section 16, FC-13).
+- New sections: **25** (project structure, dependencies, environment variables, local setup) and **26** (beginner-friendly implementation sequence). Section 20 (AWS) is now a conditional later phase; Section 23 separates resolved from still-open questions.
+- New endpoint **E23** (demo-only reset) so the existing "Reset demo data" button keeps working; authentication endpoints E01–E04 are **deferred**.
 
 **How to read this document.** Statements are tagged by origin so the team can tell what is decided from what is proposed:
 
 - **[Proposal]** — stated in the capstone proposal.
-- **[Frontend]** — observed in the current React code.
-- **[Recommended]** — a design choice made in this document to fill a gap; reversible and not mandated by the proposal.
+- **[Decided]** — one of the eight finalized working decisions (D1–D8).
+- **[Recommended]** — a design choice made in this document to fill a gap; reversible.
+- **[Deferred]** — intentionally postponed; not part of the local MVP.
 - **[Open]** — genuinely unresolved; see [Section 23](#23-open-decisions--questions).
 
 ---
 
 ## Table of contents
 
-1. [System Overview](#1-system-overview)
+1. [System Overview](#1-system-overview) — incl. the [decision register](#16-finalized-working-decisions-d1d8)
 2. [Current Frontend Analysis](#2-current-frontend-analysis)
 3. [Frontend → Backend Mapping](#3-frontend--backend-mapping)
 4. [API Architecture](#4-api-architecture)
@@ -38,11 +47,13 @@
 17. [Request/Response Schemas](#17-requestresponse-schemas)
 18. [Error Handling](#18-error-handling)
 19. [Security Requirements](#19-security-requirements)
-20. [AWS Architecture](#20-aws-architecture)
+20. [AWS Architecture (later phase)](#20-aws-architecture-later-phase)
 21. [MVP Scope](#21-mvp-scope)
 22. [Future Enhancements](#22-future-enhancements)
 23. [Open Decisions / Questions](#23-open-decisions--questions)
 24. [Frontend Integration Plan](#24-frontend-integration-plan)
+25. [Local Development: Structure, Dependencies and Environment](#25-local-development-structure-dependencies-and-environment)
+26. [Implementation Sequence (beginner-friendly)](#26-implementation-sequence-beginner-friendly)
 - [Appendix A — Validation report](#appendix-a--validation-report)
 
 ---
@@ -51,32 +62,34 @@
 
 ### 1.1 What the product is
 
-AI Interview Coach helps job seekers and students prepare for interviews. A user uploads a CV, selects a target role, answers interview questions by text, and receives an AI-evaluated confidence score, strengths, weaknesses and improvement suggestions. With GenAI, the system can also produce personalized questions and ideal-answer suggestions. **[Proposal §2]**
+AI Interview Coach helps job seekers and students prepare for interviews. A user uploads a CV, selects a target role, answers interview questions by text, and receives an AI-evaluated confidence score, strengths, weaknesses and improvement suggestions. With GenAI, the system can also produce personalized questions and ideal-answer suggestions **[Proposal §2]** — GenAI is **deferred** in the local MVP (D4); a curated question bank with reference answers takes its place.
 
 ### 1.2 Intended end-to-end workflow
 
-**[Proposal §4]** describes four stages, which this specification maps to API calls:
+**[Proposal §4]** describes four stages, which this specification maps to API calls. The right-hand column states what the **local MVP** does at each stage.
 
-| # | Proposal stage | Realised by |
-| --- | --- | --- |
-| 1 | **Input** — user uploads CV, selects target role, answers questions via text in React | `POST /cvs`, `POST /interviews`, `PUT …/answer` |
-| 2 | **Processing / backend** — FastAPI receives requests; data stored in PostgreSQL/MySQL on AWS RDS | All endpoints; Section 15 |
-| 3 | **AI execution** — Sentence Transformers / BERT / DistilBERT compute a confidence score and strengths/weaknesses; the GenAI layer (OpenAI API / Amazon Bedrock) generates personalized questions and ideal-answer suggestions | `POST /interviews` (questions), `POST …/evaluation` (scoring); Section 16 |
-| 4 | **Output** — score, strengths, weaknesses and suggestions returned to React; CloudWatch monitors the system | `POST …/evaluation`, `GET …/results`; Section 20 |
+| # | Proposal stage | Realised by | In the local MVP |
+| --- | --- | --- | --- |
+| 1 | **Input** — user uploads CV, selects target role, answers questions via text in React | `POST /cvs`, `POST /interviews`, `PUT …/answer` | as proposed |
+| 2 | **Processing / backend** — FastAPI receives requests; data stored in PostgreSQL/MySQL | all endpoints; Section 15 | FastAPI + **local PostgreSQL** **[Decided D1, D2]** |
+| 3 | **AI execution** — Sentence Transformers / BERT / DistilBERT score answers; a GenAI layer generates personalized questions and ideal answers | `POST /interviews` (questions), `POST …/evaluation` (scoring); Section 16 | **local Sentence Transformers + rule-based criteria**; questions and reference answers from a **curated bank**; BERT/DistilBERT and GenAI **deferred** **[Decided D4, D5]** |
+| 4 | **Output** — score, strengths, weaknesses, suggestions returned to React; CloudWatch monitors the system | `POST …/evaluation`, `GET …/results` | rule-based templates; structured local logs instead of CloudWatch **[Decided D4, D8]** |
 
-### 1.3 Technology scope (from the proposal)
+### 1.3 Technology scope: proposal versus finalized MVP
 
-| Layer | Technology | Status |
-| --- | --- | --- |
-| Frontend | React.js (Vite, React Router, Framer Motion) | **[Proposal]** React.js; the rest is already built |
-| Backend | Python, FastAPI | **[Proposal]** |
-| Database | PostgreSQL **or** MySQL on AWS RDS | **[Proposal]** engine **[Open]** (OD-2) |
-| Answer evaluation | Sentence Transformers, BERT / DistilBERT | **[Proposal]** |
-| Speech-to-text | Whisper | **[Proposal]** (role and value-proposition text only; the written workflow is text-only) — **[Open]** (OD-6) |
-| GenAI | OpenAI API **or** Amazon Bedrock — described as *"GenAI, optional"* | **[Proposal]** provider **[Open]** (OD-3); optionality shapes the MVP (Section 21) |
-| RAG | Curated question banks and career resources "used for RAG"; track is "LLMs & RAG" | **[Proposal]** intent; mechanism **[Open]** (OD-5) |
-| Infrastructure | AWS EC2, S3, RDS, API Gateway, CloudWatch | **[Proposal]** (listed in the Cloud/DevOps role) |
-| Orchestration framework | "None specified yet" | **[Proposal]** — none assumed |
+| Layer | Proposal | Local MVP decision | Status |
+| --- | --- | --- | --- |
+| Frontend | React.js | keep the existing React/Vite app unchanged; adapt only inside `api.js` later | **[Decided D1]** |
+| Backend | Python, FastAPI | FastAPI + Python | **[Decided D1]** |
+| Database | PostgreSQL or MySQL on AWS RDS | **PostgreSQL, local**; portable so it can later move to RDS; SQLite only as a *documented temporary fallback* | **[Decided D2]** |
+| Authentication | not mentioned | deferred; single-user demo; architecture ready for it | **[Decided D3]** |
+| Answer evaluation | Sentence Transformers, BERT / DistilBERT | local Sentence Transformers (candidate `sentence-transformers/all-MiniLM-L6-v2`) combined with explicit rule-based criteria; BERT/DistilBERT deferred | **[Decided D5]** |
+| GenAI | OpenAI API or Amazon Bedrock, "optional" | **not used**; curated question bank with reference answers; rule-based feedback templates; GenAI is a possible later integration | **[Decided D4]** |
+| RAG | curated banks and resources "used for RAG" | bank retrieval and ranking only (no generation); RAG with generation deferred | **[Decided D4]**, details **[Open]** (OD-5) |
+| Speech | Whisper | deferred; text answers only | **[Decided D6]** |
+| CV parsing | CVs converted to text | free Python libraries; metadata and extracted data in PostgreSQL; file kept only in private local storage | **[Decided D7]** |
+| Infrastructure | AWS EC2, S3, RDS, API Gateway, CloudWatch | later phase; availability in AWS Academy unconfirmed; nothing created | **[Decided D8]** |
+| Orchestration framework | "None specified yet" | none | **[Proposal]** |
 
 ### 1.4 Team ownership (from the proposal's role table)
 
@@ -95,11 +108,51 @@ In scope: the HTTP contract, data models, AI pipeline responsibilities, error an
 
 Out of scope: any implementation, model training, prompt text, infrastructure code, or UI redesign. The existing React frontend is **not modified** by this task.
 
+### 1.6 Finalized working decisions (D1–D8)
+
+The team is inactive, so these eight decisions are the agreed working plan. They are **not** re-opened in this document; where they leave a gap, the gap is listed in Section 23.2.
+
+| ID | Decision | Consequence in this specification | Where |
+| --- | --- | --- | --- |
+| **D1** | **Development approach.** Develop and test locally before any AWS deployment. Preserve the existing React/Vite frontend and its functionality. Build the backend with FastAPI and Python. Do not overwrite or recreate the frontend. | The backend is a new, separate folder. The frontend is changed only through the small, listed adapter changes (FC-1…FC-14), never rebuilt. | 24, 25, 26 |
+| **D2** | **Database.** PostgreSQL locally as the primary development database; no paid database subscription; configuration portable to AWS RDS later. If local PostgreSQL proves a blocker, document SQLite as a *temporary* fallback — do not silently change the primary decision. | Portable SQLAlchemy types only; database URL from environment; SQLite fallback procedure and limits written down. | 15, 25 |
+| **D3** | **Authentication.** Defer full authentication in the first local MVP. Support a single-user demonstration without exposing private data. Keep the architecture ready for authentication. Authentication must exist before any public deployment exposes private data. | `AUTH_MODE=demo` resolves one seeded demo user; E01–E04 are deferred; start-up guards stop demo mode from running outside local development. | 5, 19 |
+| **D4** | **Generative AI.** No OpenAI, Bedrock or other paid API for the MVP. Curated question bank with reference answers. Rule-based, transparent feedback templates. GenAI remains an optional future integration. | `question_source` is always `bank`; `feedback_source` is always `rules`; no AI keys; no CV text leaves the machine. | 8, 16, 22 |
+| **D5** | **Answer evaluation.** Local Sentence Transformers for semantic similarity if the machine supports it; `all-MiniLM-L6-v2` as initial candidate; combine similarity with explicit criteria; document that similarity is not a complete measure of answer quality; **do not claim to measure psychological confidence from text**; scoring lives only on the backend and frontend-submitted scores are never trusted. | Category **Confidence → Structure**; overall figure called *score*; documented limitations and an unvalidated-status notice; complete-interview ignores client scores. | 10, 11, 16, 17, FC-13 |
+| **D6** | **Interview format.** Text only. Whisper deferred. Core workflow: CV upload, target role, interview creation, question presentation, answer submission, evaluation, feedback, results, history. | No audio endpoints in the MVP; `input_mode` is always `text`. | 21, 22 |
+| **D7** | **CV processing.** Free Python libraries for PDF/DOCX text extraction; validate type and size; CV metadata and extracted information in PostgreSQL; uploaded files never in a publicly accessible location; document safe local storage and the migration path to private S3. | `StorageBackend` abstraction: private local directory now, private S3 later; magic-byte validation; extracted data in PostgreSQL. | 6, 15, 19, 25 |
+| **D8** | **AWS.** AWS Academy is the available educational resource, but services and credits are unconfirmed. Do not assume unrestricted access; create no resources; incur no costs; deployment is a later phase. | Section 20 is conditional and non-committal; no requirement in the MVP depends on AWS. | 20 |
+
+### 1.7 Proposal traceability: what is kept, reduced or deferred
+
+| Proposal requirement | Status in the local MVP | Note |
+| --- | --- | --- |
+| CV upload (PDF/DOCX) converted to text | **Included** | D7 |
+| Select a target job role | **Included** | free text or preset (E11) |
+| Personalized interview questions from CV + role | **Included in reduced form** | questions are *selected and ranked* from a curated bank, with skill-based templates; they are not *generated* (D4). The landing-page wording must reflect this (FC-14) |
+| Text answers | **Included** | D6 |
+| FastAPI backend linking React and the AI modules | **Included** | D1 |
+| Data stored in PostgreSQL / MySQL on AWS RDS | **Included locally** (PostgreSQL) | RDS later, if permitted (D2, D8) |
+| Sentence Transformers semantic similarity against ideal responses | **Included** | local model (D5); unvalidated until tested |
+| BERT / DistilBERT scoring | **Deferred** | not part of D5; the scoring interface stays replaceable |
+| A "confidence score" | **Included in reduced form** | exposed as an overall *answer score*; psychological confidence is **not** measured (D5). This deliberately changes the proposal's wording |
+| Strengths and weaknesses | **Included** | derived from explicit criteria and templates |
+| Improvement suggestions | **Included** | template-based |
+| GenAI personalized questions and ideal-answer suggestions | **Deferred** | reference answers come from the bank (D4) |
+| GenAI personalized follow-up questions | **Deferred** | also unsupported by the current UI (F21) |
+| Whisper speech-to-text | **Deferred** | D6 |
+| Job descriptions as input data | **Not in the MVP; unresolved** | OD-7 |
+| RAG over curated banks and career resources | **Reduced form** | retrieval/ranking of bank entries only; generation-based RAG deferred |
+| Scraped job postings, synthetic Q&A data | **Unresolved** | offline data work; no runtime API; unclear whether the MVP needs it (OD-14) |
+| Performance tracking and stored history | **Included** | E19–E21 |
+| Validation: correlation of AI scores with human-rated benchmarks | **Retained as the acceptance test; not yet run** | plan in Section 16.9 |
+| AWS EC2, S3, RDS, API Gateway, CloudWatch | **Deferred** | D8; local equivalents defined |
+
 ---
 
 ## 2. Current Frontend Analysis
 
-Method: the full `src/` tree was inspected, and `api.js` call sites were located with a text search (results in 2.4). Findings that affect the backend are numbered **F1–F25** and referenced throughout.
+Method: the full `src/` tree was inspected, and `api.js` call sites were located with a text search (results in 2.4). Findings that affect the backend are numbered **F1–F27** and referenced throughout.
 
 ### 2.1 Routes and screens
 
@@ -214,23 +267,24 @@ There is **no** function for: removing a CV, fetching the current user, signing 
 | **F7** | `skills` is an object whose **key order matters** (`Object.entries(skills).slice(0,4)` on the dashboard). | API returns an ordered array, sorted by score descending; adapter rebuilds the object. |
 | **F8** | Category naming differs: eval category *Technical Depth* ↔ results breakdown *Technical Knowledge*; *Communication* exists only as a derived value. | API uses stable keys (`technical_depth`, `communication`); server computes `communication` with the same formula so Results and Performance agree. |
 | **F9** | Removing a CV only clears local state; no API call. CV state is lost on refresh. | Needs `DELETE /cvs/{id}` and `GET /cvs` (FC-3). |
-| **F10** | No login, no registration, no token handling; user is seeded from `DEMO_USER`; "Sign out" only navigates. | Authentication cannot be supported by the current UI. Needs screens + token handling (FC-4). Method itself is **[Open]** (OD-1). |
-| **F11** | Email is editable in Profile; "Reset demo data" clears CV/history. | With real accounts, email is an identity attribute; "reset demo data" has no direct production equivalent (OD-9). |
+| **F10** | No login, registration or token handling; the user is seeded from `DEMO_USER`; "Sign out" only navigates. | With the decided single-user demo mode (D3) **no UI change is required for the local MVP**: the backend resolves the demo user itself. Real authentication needs screens and token handling later (FC-4, Phase 2, before any public deployment). |
+| **F11** | Email is editable in Profile; "Reset demo data" clears the CV and history. | In demo mode both work: profile edits update the single demo user, and "Reset demo data" maps to a development-only endpoint (E23). **Behaviour differs from the mock:** the mock restored four sample interviews, whereas a real reset leaves an empty history (see F26). |
 | **F12** | "Exit interview" performs no API call; refreshing the page loses the session. | Optional `abandon` endpoint (E13) and `GET /interviews/{id}` (E12) to enable cleanup and future resume. |
 | **F13** | Error handling is generic (fixed strings per screen); no use of error codes, no 401 handling, no request timeout, no retry. | Spec defines machine-readable error codes (Section 18); frontend should map them (FC-6). |
 | **F14** | Upload progress is a callback `onProgress(0–100)`. Browser `fetch` does not expose upload progress. | Adapter must use `XMLHttpRequest` (or an HTTP library that wraps it). |
 | **F15** | Question counts of 5/10/15 are offered; the mock reuses its small pool with a "Follow-up" suffix for extras. | Real generation must produce *n* distinct questions. |
-| **F16** | "Confidence" means two things: the dashboard label "Average confidence" (mean overall score) and a per-answer category. | Terminology to settle (OD-8); API keeps `overall_score` and `confidence` as separate fields. |
+| **F16** | "Confidence" is used for two things — the dashboard label "Average confidence" (the mean overall score) and a per-answer category — and the landing page promises to track "confidence". Decision D5 forbids claiming to measure psychological confidence from text answers. | The per-answer category becomes **`structure`** and the overall figure is called a *score*. UI labels and `buildBreakdown` must change (FC-13). |
 | **F17** | The user's own answer text is never displayed back (Results shows question + feedback only). | Answer text is stored and may be returned, but the UI does not need it for MVP. |
 | **F18** | Custom role has a minimum length (3) but no maximum. | Server enforces a maximum (100 characters). |
 | **F19** | File type is validated by extension only. | Server must validate content (magic bytes), not just name. |
 | **F20** | No pagination anywhere. | See F6. |
 | **F21** | The number of questions is fixed at creation. The proposal's "personalized follow-up questions" would add questions dynamically. | Dynamic follow-ups are **not supported** by the current UI; deferred (Section 22). |
-| **F22** | Answers are text only. | Whisper/speech input is not supported by the UI; deferred (OD-6). |
-| **F23** | No field for a job description, although the proposal lists job descriptions among input data. | Not in MVP (OD-7). |
+| **F22** | Answers are text only. | Matches D6; Whisper/speech input is deferred (OD-6 resolved). |
+| **F23** | No field for a job description, although the proposal lists job descriptions among input data. | Not in the MVP; remains unresolved (OD-7). |
 | **F24** | History `status` is always `"Completed"`. | History endpoint returns completed interviews only by default. |
 | **F25** | Enum values are display strings (`"Intermediate"`). | API uses lowercase enums (`intermediate`); adapter maps both ways. |
 | **F26** | **Empty state is unsupported.** `rankSkills({})` throws a `TypeError` (`sorted[0][0]` on an empty list), so the Dashboard and Performance page break for a user with no completed interviews. The mock always has data, so this never showed. | Real new users have no history; E20/E21 return empty values. Frontend must handle it (FC-7). |
+| **F27** | Some UI wording over-claims relative to the decided MVP: "Questions generated from your own experience" (questions are selected from a bank), "AI recommendations" / "AI insight" (rule-based templates), "Average confidence". | Copy should describe what the system actually does — FC-14 (recommended) and FC-13 (required for "confidence"). |
 
 ---
 
@@ -242,11 +296,11 @@ Endpoint IDs (`E01`…`E22`) refer to the catalog in [Section 4.4](#44-endpoint-
 
 | Frontend feature | Service function | Method & endpoint | Request | Response (fields the UI uses) | Database | AI / ML | Possible errors |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Upload CV | `uploadCV(file, onProgress)` | `POST /api/v1/cvs` **E07** | `multipart/form-data`, field `file` (PDF/DOCX, ≤ 5 MB) | `cv.id` (UI also shows name/ext/size, which come from the local file today); plus `extracted.skills` for later personalization | insert `cvs`, `cv_profiles`, `cv_skills`; file to S3 | text extraction (deterministic); structured extraction (method open, OD-4) | `UNSUPPORTED_FILE_TYPE`, `FILE_TOO_LARGE`, `CV_UNREADABLE`, `UNAUTHORIZED`, `DATABASE_UNAVAILABLE`, `STORAGE_UNAVAILABLE` |
-| Start interview (generate questions) | `startInterview(config)` | `POST /api/v1/interviews` **E11** | JSON `{cv_id, target_role, interview_type, difficulty, question_count}` | `id`, `questions[{id, position, text, type}]`, echoed `config` | insert `interviews`, `interview_questions` | question retrieval / generation; ideal-answer generation (stored, hidden) | `CV_REQUIRED`, `CV_NOT_FOUND`, `INVALID_INTERVIEW_CONFIG`, `AI_SERVICE_UNAVAILABLE`, `AI_SERVICE_TIMEOUT` |
+| Upload CV | `uploadCV(file, onProgress)` | `POST /api/v1/cvs` **E07** | `multipart/form-data`, field `file` (PDF/DOCX, ≤ 5 MB) | `cv.id` (UI also shows name/ext/size, which come from the local file today); plus `extracted.skills` for later personalization | insert `cvs`, `cv_profiles`, `cv_skills`; file saved to **private local storage** (S3 later) | text extraction with free Python libraries (deterministic); rule-based skill extraction (taxonomy, OD-15) | `UNSUPPORTED_FILE_TYPE`, `FILE_TOO_LARGE`, `CV_UNREADABLE`, `DATABASE_UNAVAILABLE`, `STORAGE_UNAVAILABLE` |
+| Start interview (select questions) | `startInterview(config)` | `POST /api/v1/interviews` **E11** | JSON `{cv_id, target_role, interview_type, difficulty, question_count}` | `id`, `questions[{id, position, text, type}]`, echoed `config` | insert `interviews`, `interview_questions` (reference answer and key points copied from the bank, hidden) | none — **deterministic selection/ranking** from the curated `question_bank` (skill templates filled from the CV); optional local embeddings for ranking | `CV_REQUIRED`, `CV_NOT_FOUND`, `INVALID_INTERVIEW_CONFIG`, `QUESTION_BANK_INSUFFICIENT` |
 | Submit answer | `submitAnswer(sessionId, questionIndex, answer)` | `PUT /api/v1/interviews/{id}/questions/{qid}/answer` **E15** | JSON `{answer_text}` | `{id, question_id, submitted_at}` (UI ignores the body) | upsert `answers` | none | `ANSWER_EMPTY`, `ANSWER_TOO_SHORT`, `ANSWER_TOO_LONG`, `INTERVIEW_NOT_FOUND`, `QUESTION_NOT_FOUND`, `INTERVIEW_NOT_ACTIVE`, `ANSWER_ALREADY_EVALUATED` |
-| Evaluate answer | `getEvaluation(sessionId, question, answer)` | `POST /api/v1/interviews/{id}/questions/{qid}/evaluation` **E16** | no body (answer already stored) | `overall_score`, `category_scores`, `strengths`, `weaknesses`, `improvement_tip`, `ideal_answer` | insert `evaluations` (idempotent) | semantic similarity + scoring (ML); feedback wording (rules and/or GenAI) | `ANSWER_NOT_FOUND`, `AI_SERVICE_UNAVAILABLE`, `AI_SERVICE_TIMEOUT`, `INTERVIEW_NOT_ACTIVE` |
-| Finish interview | `completeInterview({session, config, items})` | `POST /api/v1/interviews/{id}/complete` **E14** | no body (client `items` are ignored, F4) | full results payload (same as E18) | insert `interview_results`; update `interviews`, `user_performance` | recommendations (rules and/or GenAI) | `INTERVIEW_INCOMPLETE`, `INTERVIEW_NOT_FOUND`, `INTERVIEW_NOT_ACTIVE`, `DATABASE_UNAVAILABLE` (a GenAI wording failure never fails this call; it falls back to rules) |
+| Evaluate answer | `getEvaluation(sessionId, question, answer)` | `POST /api/v1/interviews/{id}/questions/{qid}/evaluation` **E16** | no body (answer already stored) | `overall_score`, `category_scores`, `strengths`, `weaknesses`, `improvement_tip`, `ideal_answer` | insert `evaluations` (idempotent) | **local Sentence Transformers similarity + explicit rule-based criteria** (ML + deterministic); template feedback | `ANSWER_NOT_FOUND`, `AI_SERVICE_UNAVAILABLE` (local model not loaded), `INTERVIEW_NOT_ACTIVE` |
+| Finish interview | `completeInterview({session, config, items})` | `POST /api/v1/interviews/{id}/complete` **E14** | no body (client `items` and scores are ignored, F4) | full results payload (same as E18) | insert `interview_results`; update `interviews`, `user_performance` | none — deterministic aggregation; rule-based recommendations | `INTERVIEW_INCOMPLETE`, `INTERVIEW_NOT_FOUND`, `INTERVIEW_NOT_ACTIVE`, `DATABASE_UNAVAILABLE` |
 | Open past results | `getInterviewResults(meta)` | `GET /api/v1/interviews/{id}/results` **E18** | path `id = meta.id` | results payload | read `interview_results` + evaluations | none | `INTERVIEW_NOT_FOUND`, `RESULTS_NOT_AVAILABLE` |
 | History list (+ dashboard recents) | `getInterviewHistory()` | `GET /api/v1/interviews?status=completed` **E19** | query: `status`, `type`, `limit`, `offset` | `items[{id, completed_at, target_role, interview_type, difficulty, question_count, overall_score, status}]` | read `interviews` | none | `UNAUTHORIZED` |
 | Skills (dashboard snapshot + Performance) | `getSkills()` | `GET /api/v1/performance/skills` **E20** | — | ordered `skills[{key, label, score}]` | read `user_performance` | none | `UNAUTHORIZED` |
@@ -261,16 +315,16 @@ These exist in the UI (or are required by the proposal's workflow) but cannot re
 | Remove / replace CV | `DELETE /cvs/{id}` **E10** | "Remove" only clears state (F9) |
 | Restore CV after page refresh | `GET /cvs` **E08**, `GET /cvs/{id}` **E09** | CV lives in memory only (F9) |
 | Load the signed-in user | `GET /users/me` **E05** | user seeded from `DEMO_USER` (F10) |
-| Register / sign in / refresh / sign out | **E01–E04** | no auth UI (F10); method undecided (OD-1) |
+| Register / sign in / refresh / sign out | **E01–E04** (**deferred**, D3) | no auth UI (F10); not needed for the local demo, required before any public deployment |
 | Abandon an interview on "Exit" | `POST /interviews/{id}/abandon` **E13** | Exit is navigation only (F12) |
 | Resume / reload an interview | `GET /interviews/{id}` **E12**, `GET …/evaluation` **E17** | session lost on refresh (F12) |
 | Dashboard stats without loading all history | `GET /performance/summary` **E21** | stats computed client-side (F6) |
 | Liveness / readiness checks | `GET /health` **E22** | operational need, not UI |
-| "Reset demo data" | none (see OD-9) | demo-only concept |
+| "Reset demo data" | `POST /demo/reset` **E23** (development-only) | maps the existing button onto a demo-mode endpoint (F11) |
 
 ### 3.3 End-to-end contract flows
 
-Each flow shows the exact hand-off: **React → HTTP → FastAPI → processing → HTTP → React**. Full field tables are in the endpoint sections.
+Each flow shows the exact hand-off: **React → HTTP → FastAPI → processing → HTTP → React**. In the local MVP the browser talks directly to FastAPI on `http://127.0.0.1:8000` (no gateway) and no `Authorization` header is needed (demo mode, D3). Full field tables are in the endpoint sections.
 
 #### Flow A — CV upload (`multipart/form-data`)
 
@@ -279,13 +333,13 @@ React (useCVUpload → api.uploadCV)
   │  validates ext ∈ {pdf, docx}, size ≤ 5 MB            (UX only; server re-validates)
   │  POST /api/v1/cvs
   │  Content-Type: multipart/form-data; boundary=…
-  │  Authorization: Bearer <token>
   │  part "file": binary, filename="cv.pdf", Content-Type: application/pdf
   ▼
 FastAPI
-  │  1. authenticate                      4. extract text (deterministic)
-  │  2. enforce size limit while reading  5. structured extraction → skills (OD-4)
-  │  3. verify magic bytes + extension    6. store file in S3; insert cvs/cv_profiles/cv_skills
+  │  1. resolve current user (demo user)      4. extract text (free Python libraries)
+  │  2. enforce size limit while reading      5. rule-based skill extraction
+  │  3. verify magic bytes + extension        6. save file in PRIVATE local storage (random name);
+  │                                              insert cvs / cv_profiles / cv_skills in PostgreSQL
   ▼
 HTTP 201 Created
   │  { "cv": { "id": "9d4e6a52-…", "original_filename": "cv.pdf", "extension": "pdf",
@@ -307,8 +361,10 @@ React (InterviewSetup → InterviewContext.start → api.startInterview)
   │    "interview_type": "technical", "difficulty": "intermediate", "question_count": 10 }
   ▼
 FastAPI
-  │  validate body → load CV (owned by caller) → pick/generate N questions + ideal answers
-  │  insert interviews + interview_questions (ideal answers stored, never returned here)
+  │  validate body → load CV (cv_id is required, F1)
+  │  select N questions from question_bank (role, type, difficulty; skill templates filled from the CV)
+  │  copy each question's reference answer + key points into interview_questions (hidden)
+  │  insert interviews + interview_questions in one transaction
   ▼
 HTTP 201 Created
   │  { "id": "b8f1c0de-…", "status": "in_progress", "config": { … },
@@ -322,11 +378,13 @@ React: adapter → session { id, questions:[{id, text, type}], config } ; naviga
 ```
 React (InterviewSession.submit → InterviewContext.submitAnswer)
   │  1) PUT  /api/v1/interviews/{iid}/questions/{qid}/answer     { "answer_text": "…" }
-  │       FastAPI: validate length 30–1500 (after trim) → upsert answers → 200 { id, … }
+  │       FastAPI: validate length 30–1500 (after trim) → upsert answers → 200/201 { id, … }
   │  2) POST /api/v1/interviews/{iid}/questions/{qid}/evaluation (no body)
-  │       FastAPI: load answer + stored ideal answer
-  │                → ML: embed + cosine similarity → category scores → overall score
-  │                → strengths / weaknesses / tip (rules and/or GenAI)
+  │       FastAPI: load answer + stored reference answer + key points
+  │                → local embedding model: similarity to the reference (long answers are chunked)
+  │                → explicit criteria (key-point coverage, structure cues, clarity cues)
+  │                → category scores + overall score  (computed ONLY here, never taken from React)
+  │                → strengths / weaknesses / tip from rule-based templates
   │                → insert evaluations → 201 { evaluation }
   ▼
 React: adapter → { score, cats, strengths, weaknesses, tip, ideal } ; navigate /interview/evaluation
@@ -337,12 +395,12 @@ Retry rule: if step 2 fails, React keeps the typed answer and retries; both call
 
 ```
 React (Evaluation "Finish & view results" → InterviewContext.finish → api.completeInterview)
-  │  POST /api/v1/interviews/{iid}/complete   (no body)
+  │  POST /api/v1/interviews/{iid}/complete   (no body — the old client payload is ignored)
   ▼
 FastAPI
   │  verify every question has an evaluation (else 409 INTERVIEW_INCOMPLETE)
   │  overall = round-half-up(mean(answer scores)); breakdown per category
-  │  recommendations + two extra highlight strings (rules and/or GenAI, with rules fallback)
+  │  recommendations + two highlight strings chosen by rules from the weakest/strongest categories
   │  one transaction: insert interview_results, set interviews.status=completed, update user_performance
   ▼
 HTTP 200 OK  → results payload (identical to GET /interviews/{iid}/results)
@@ -356,7 +414,7 @@ React: adapter → { meta, items:[{q, ev}], extraStrength, extraImprovement, rec
 ```
 App start (AppContext)
   ├─ GET /api/v1/interviews?status=completed&limit=100   → history rows (dashboard, history, trend)
-  └─ GET /api/v1/performance/skills                       → ordered skills
+  └─ GET /api/v1/performance/skills                       → ordered skills (EMPTY for a new user — F26)
 Row click (History / Dashboard)
   └─ GET /api/v1/interviews/{id}/results                  → results payload → /results
 ```
@@ -378,11 +436,12 @@ Row click (History / Dashboard)
 | Rounding | **round half up** everywhere averages are taken, to match the frontend's `Math.round` (Python's default `round()` is banker's rounding and would produce different values) |
 | Success bodies | the resource itself — no `{success:true}` wrapper (the HTTP status already conveys success) |
 | Error bodies | uniform `error` envelope (Section 18) |
-| Authentication | `Authorization: Bearer <access_token>` on every endpoint except register, login, refresh and health (**[Open]** OD-1) |
+| Authentication | **MVP:** none on the wire — the backend resolves one seeded demo user (`AUTH_MODE=demo`, D3). **Later:** `Authorization: Bearer <access_token>` on every endpoint except register, login, refresh and health (Section 5) |
 | Idempotency | achieved naturally: `PUT answer` is an upsert, `POST evaluation` / `POST complete` return the stored result if repeated |
 | Pagination | `limit` (default 50, max 100) and `offset` on list endpoints |
 | Unknown / foreign resources | return `404` (not `403`) so IDs cannot be probed |
-| Docs | FastAPI's generated OpenAPI document should be kept in sync with this specification |
+| Local base URL | `http://127.0.0.1:8000/api/v1` (FastAPI) with the Vite dev server on `http://localhost:5173` |
+| Docs | FastAPI's generated OpenAPI document (served locally at `/docs`) should be kept in sync with this specification |
 
 **Why no `success` wrapper.** The example envelope in the brief is reasonable but redundant here: the frontend already branches on HTTP status and only needs a stable error code and message. Keeping success bodies unwrapped matches FastAPI's natural output and lets adapter code stay small.
 
@@ -390,45 +449,48 @@ Row click (History / Dashboard)
 
 ```
                         ┌────────────────────────────────────────────┐
-React (Vite SPA)  ───►  │ API layer     routers, auth dependency,     │
- api.js adapter         │               validation (request/response) │
+React (Vite SPA)  ───►  │ API layer     routers, current-user         │
+ api.js adapter         │               dependency, validation        │
                         ├────────────────────────────────────────────┤
                         │ Service layer deterministic business rules  │
-                        │   interview lifecycle · aggregation ·       │
-                        │   scoring contract · authorization          │
+                        │   interview lifecycle · question selection ·│
+                        │   scoring rules · aggregation · ownership   │
                         ├───────────────┬──────────────┬─────────────┤
-                        │ ML adapter    │ GenAI adapter│ File/CV      │
-                        │ embeddings,   │ provider-    │ parsing,     │
-                        │ scorer        │ agnostic     │ S3 storage   │
+                        │ Similarity    │ CV parsing   │ Storage      │
+                        │ engine        │ (pypdf,      │ backend      │
+                        │ (local model  │  python-docx)│ local private│
+                        │  or lexical)  │              │ → S3 later   │
                         ├───────────────┴──────────────┴─────────────┤
-                        │ Repository layer  (RDS: PostgreSQL | MySQL) │
+                        │ Repository layer  (PostgreSQL via SQLAlchemy)│
                         └────────────────────────────────────────────┘
+                          (a GenAI adapter is NOT part of the MVP — Section 22)
 ```
 
-The ML and GenAI adapters sit behind interfaces so that the provider decision (OD-3), the question source (OD-5) and the scoring method (OD-8) can change without changing endpoints.
+The similarity engine, the storage backend and the current-user dependency sit behind small interfaces so that the later changes — S3 storage, real authentication, a different scoring model or an optional GenAI adapter — replace one component instead of rewriting endpoints.
 
 ### 4.3 Request lifecycle
 
-1. API Gateway receives the request and forwards it to the FastAPI service on EC2 (Section 20).
-2. FastAPI assigns a `request_id`, authenticates, validates, and checks ownership of every referenced resource.
-3. The service layer runs deterministic logic; ML / GenAI adapters are called only where Section 16 says so.
+1. The browser sends the request to FastAPI (locally, directly; in a later AWS phase through API Gateway).
+2. FastAPI assigns a `request_id`, resolves the current user through one dependency (the demo user today, a token-derived user later), validates input, and checks ownership of every referenced resource.
+3. The service layer runs deterministic logic; the similarity engine is called only for answer evaluation (Section 16).
 4. Database writes for one operation happen in one transaction.
-5. The response (or the error envelope) is returned with `X-Request-ID`; structured logs go to CloudWatch.
+5. The response (or the error envelope) is returned with `X-Request-ID`; structured logs go to the console/log file locally.
 
 ### 4.4 Endpoint catalog
 
 **Priority classes**
 
 - **Core** — maps directly to one of the nine existing `api.js` functions. Required for the current UI to work.
-- **Supporting** — required for a multi-user MVP, but the current UI has no function for it; needs a small frontend change.
-- **Recommended** — improves robustness (refresh recovery, cleanup, aggregation); not required for the first demo.
+- **Supporting** — needed by the local MVP, but the current UI has no function for it (current user, delete CV, health, demo reset); needs a small frontend change or is operational.
+- **Deferred** — authentication endpoints (D3). Not part of the local MVP; **required before any public deployment**.
+- **Recommended** — improves robustness (refresh recovery, cleanup, aggregation); a second iteration of the local MVP.
 
 | ID | Method | Path | Group | Purpose | Class |
 | --- | --- | --- | --- | --- | --- |
-| E01 | POST | `/auth/register` | Auth | Create account | Supporting (OD-1) |
-| E02 | POST | `/auth/login` | Auth | Obtain tokens | Supporting (OD-1) |
-| E03 | POST | `/auth/refresh` | Auth | Renew access token | Supporting (OD-1) |
-| E04 | POST | `/auth/logout` | Auth | Revoke refresh token | Supporting (OD-1) |
+| E01 | POST | `/auth/register` | Auth | Create account | Deferred (D3) |
+| E02 | POST | `/auth/login` | Auth | Obtain tokens | Deferred (D3) |
+| E03 | POST | `/auth/refresh` | Auth | Renew access token | Deferred (D3) |
+| E04 | POST | `/auth/logout` | Auth | Revoke refresh token | Deferred (D3) |
 | E05 | GET | `/users/me` | Profile | Current user | Supporting |
 | E06 | PATCH | `/users/me` | Profile | Update name / email — `updateProfile()` | **Core** |
 | E07 | POST | `/cvs` | CV | Upload + parse CV — `uploadCV()` | **Core** |
@@ -447,15 +509,16 @@ The ML and GenAI adapters sit behind interfaces so that the provider decision (O
 | E20 | GET | `/performance/skills` | Performance | Skill scores — `getSkills()` | **Core** |
 | E21 | GET | `/performance/summary` | Performance | Dashboard stats + trend | Recommended |
 | E22 | GET | `/health` | Operations | Liveness/readiness | Supporting |
+| E23 | POST | `/demo/reset` | Operations | Delete all demo-user data (development only) — the "Reset demo data" button | Supporting |
 
-**Totals: 22 endpoints = 9 Core + 7 Supporting + 6 Recommended.** All paths are relative to `/api/v1`. The Questions group (Section 8) has no standalone endpoint: questions are created by E11 and read through E11/E12.
+**Totals: 23 endpoints = 9 Core + 4 Supporting (E05, E10, E22, E23) + 4 Deferred authentication (E01–E04) + 6 Recommended.** The **first local MVP is 13 endpoints** (9 Core + 4 Supporting); the 6 Recommended endpoints are the second iteration; authentication is Phase 2. All paths are relative to `/api/v1`. The Questions group (Section 8) has no standalone endpoint: questions are created by E11 and read through E11/E12.
 
-### 4.5 Operational endpoint
+### 4.5 Operational endpoints
 
 ### E22 — `GET /api/v1/health`
 
-- **Purpose:** liveness/readiness probe for API Gateway, CloudWatch checks and deployment scripts. Not used by the frontend.
-- **Auth:** none. Exposes no secrets, versions of dependencies, hostnames or user data.
+- **Purpose:** liveness/readiness probe for local checks (and, later, deployment monitors). Not used by the frontend.
+- **Auth:** none. Exposes no secrets, hostnames, file paths or user data.
 - **Response `200 OK`** when the service can serve traffic:
 
 | Field | Type | Notes |
@@ -463,38 +526,79 @@ The ML and GenAI adapters sit behind interfaces so that the provider decision (O
 | `status` | `"ok"` | |
 | `version` | string | application version |
 | `checks.database` | `"ok"` | `SELECT 1` succeeded |
-| `checks.models` | `"ok"` | embedding/scoring models loaded (Section 16.6) |
-| `checks.storage` | `"ok"` | S3 bucket reachable |
-| `checks.genai` | `"ok"` \| `"disabled"` \| `"degraded"` | informational only: GenAI is optional, so it never makes the service unready |
+| `checks.models` | `"ok"` | the similarity model finished loading (Section 16.6), or `"lexical"` when `SIMILARITY_BACKEND=lexical` was chosen deliberately |
+| `checks.storage` | `"ok"` | the private CV directory exists and is writable |
+| `checks.question_bank` | `"ok"` | the bank contains questions (a count, not content, may be logged) |
 
 ```json
 { "status": "ok", "version": "0.1.0",
-  "checks": { "database": "ok", "models": "ok", "storage": "ok", "genai": "disabled" } }
+  "checks": { "database": "ok", "models": "ok", "storage": "ok", "question_bank": "ok" } }
 ```
 
-- **Not ready: `503 Service Unavailable`** with the same shape, `"status": "unavailable"` and the failing check set to `"unavailable"`. This probe is the one deliberate exception to the error envelope, because monitors read the body directly.
-- **Database:** a trivial connectivity query. **AI/ML:** reports whether models are loaded; runs no inference.
+- **Not ready: `503 Service Unavailable`** with the same shape, `"status": "unavailable"` and each failing check set to `"unavailable"`. This probe is the one deliberate exception to the error envelope, because monitors read the body directly.
+- **Database:** a trivial connectivity query. **AI/ML:** reports whether the model is loaded; runs no inference.
+
+### E23 — `POST /api/v1/demo/reset`  (frontend: "Reset demo data")
+
+- **Purpose:** delete everything the single demo user has created so the app returns to a clean state. It exists so the **existing "Reset demo data" button keeps working** (F11).
+- **Availability:** registered **only** when `AUTH_MODE=demo` **and** `APP_ENV=development`. In any other configuration the route does not exist and returns `404 NOT_FOUND`, so it can never wipe real users' data.
+- **Auth:** none (demo mode). **Request:** no body.
+- **Response `200 OK`:** `{ "reset": true, "deleted": { "cvs": 1, "interviews": 4 } }`
+
+```json
+{ "reset": true, "deleted": { "cvs": 1, "interviews": 4 } }
+```
+
+- **Effects:** removes the demo user's `cvs` (and their stored files), `interviews` and everything below them (`interview_questions`, `answers`, `evaluations`, `interview_results`) and `user_performance`. The `users` row for the demo user and the shared `question_bank` are kept. **It does not re-create the four sample interviews the mock used to restore**, so the UI shows its empty state afterwards (F26).
+- **Errors:** `NOT_FOUND` (404 when disabled), `STORAGE_UNAVAILABLE`, `DATABASE_UNAVAILABLE` (503).
+- **Database:** deletes in one transaction; files are removed after the transaction commits.
 
 ---
 
 ## 5. Authentication
 
-### 5.1 Status
+### 5.1 Decision **[Decided D3]**
 
-**[Open] OD-1.** The proposal does not mention authentication, and the frontend has no login, registration or token handling (F10). A method must be chosen before the user-scoped endpoints can be finalised. This section specifies a **[Recommended]** baseline so the rest of the API can be designed consistently; if OD-1 resolves differently, only E01–E04 and the token mechanics change — every other endpoint only assumes "an authenticated user is available".
+Full authentication is **deferred** for the first local MVP. The backend supports a **single-user demonstration** and must not expose private data while doing so. The architecture is kept ready for authentication, and **authentication must be implemented before any public deployment exposes private data.**
 
-| Option | Effect on this specification |
+Is deferral allowed by the project's requirements? The proposal never mentions authentication, so deferring does not conflict with it. The DEPI programme's own submission requirements were not available when this document was written and could not be checked — recorded as OD-16.
+
+### 5.2 Demo mode (`AUTH_MODE=demo`)
+
+| Aspect | Behaviour |
 | --- | --- |
-| **A. Email + password, JWT access token + refresh token** (baseline used below) | E01–E04 as written; `users.password_hash`, `refresh_tokens` table |
-| B. Managed identity provider (for example Amazon Cognito) | E01–E04 replaced by the provider's flows; backend only validates tokens. Cognito is an AWS service **not named in the proposal** |
-| C. No login for the capstone demo (single seeded user) | E01–E04 dropped; all data scoped to one demo user; **not suitable for real users' CVs** |
+| Current user | one **seeded demo user** (name `Alex Morgan`, email `alex.morgan@email.com` — the same values as the frontend's `DEMO_USER`), created by the first database migration/seed step |
+| Resolution | every protected route obtains its user from **one dependency**, `get_current_user`. In demo mode it returns the demo user; in a later mode it will read a token. Endpoints never read identity any other way |
+| `Authorization` header | ignored if present (never an error) |
+| E01–E04 | **not registered** in demo mode (they return `404 NOT_FOUND`) |
+| E05, E06 | work on the demo user (so the Profile page works unchanged) |
+| E23 | available (development only) |
+| Frontend | **no change required** for the local MVP: "Sign in as Alex" simply navigates, as it does today (F10) |
 
-### 5.2 Baseline token model (Option A)
+**Safeguards so demo mode cannot leak private data (S-31, S-32):**
 
-| Item | Value |
+1. Bind the server to the loopback address only (`127.0.0.1`), never `0.0.0.0`.
+2. **Refuse to start** if `AUTH_MODE=demo` and either `APP_ENV` is not `development` or the configured host is not a loopback address. This turns "authentication must exist before a public deployment" from a promise into a start-up check.
+3. CORS allows only the local frontend origins; the `Host` header is checked against an allow-list.
+4. Do not expose the dev server through a public tunnel while in demo mode.
+5. Queries are **always filtered by `user_id`** even though only one user exists, so turning authentication on later changes the dependency, not the queries.
+
+### 5.3 What "ready for authentication" means (design requirements)
+
+- `users.password_hash` is nullable; `refresh_tokens` is specified but not created yet.
+- Every table that holds user data carries `user_id` (directly or through its parent) and repositories take `user_id` as a parameter.
+- Foreign or unknown ids already return `404` (S-02), so no code relies on "there is only one user".
+- Error codes for authentication already exist in the catalog (`UNAUTHORIZED`, `TOKEN_EXPIRED`, …).
+- Switching on authentication = set `AUTH_MODE=jwt`, supply `JWT_SECRET`, register E01–E04, unregister E23, implement FC-4 in the frontend. No endpoint contract in Sections 6–14 changes.
+
+### 5.4 Phase 2 specification (deferred; required before public deployment)
+
+The designs below are the **target** for Phase 2. They are **not** part of the local MVP and nothing here is decided beyond "email + password with short-lived access tokens". Still open for Phase 2: whether the refresh token travels in a cookie or the response body, and whether changing email needs verification (OD-1 residual). A managed identity provider (for example Cognito) was considered in v0.1 and is **not** assumed, because AWS availability is unconfirmed (D8).
+
+| Item | Target value |
 | --- | --- |
 | Access token | signed JWT, short-lived (**[Recommended]** 15 minutes), sent as `Authorization: Bearer …`, kept in memory by the SPA |
-| Refresh token | opaque random value, rotated on each use, stored **hashed** server-side; delivery by `HttpOnly; Secure` cookie scoped to `/api/v1/auth` (**[Open]** cookie vs response body — cookie avoids exposing it to scripts but needs CORS credentials and a CSRF review) |
+| Refresh token | opaque random value, rotated on each use, stored **hashed** server-side; delivery cookie vs body **[Open]** |
 | Password storage | salted slow hash (argon2id or bcrypt); never logged or returned |
 | Password policy | **[Recommended]** minimum 8 characters |
 | Expiry handling | access-token expiry returns `401 TOKEN_EXPIRED`; the frontend refreshes once and retries (FC-4, FC-6) |
@@ -569,7 +673,7 @@ CVs contain personal data (Section 19). All endpoints are scoped to the authenti
 ### E07 — `POST /api/v1/cvs`  (frontend: `uploadCV`)
 
 - **Purpose:** upload a CV, validate it, store the file, extract text and structured information.
-- **Auth:** Bearer required.
+- **Auth:** current user — the seeded demo user in the MVP, a Bearer token once authentication is enabled (Section 5).
 - **Content-Type:** `multipart/form-data`
 
 | Part | Type | Required | Rules |
@@ -582,7 +686,7 @@ No other parts are accepted.
 
 ```
 POST /api/v1/cvs HTTP/1.1
-Authorization: Bearer <token>
+Authorization: Bearer <token>        (not sent in demo mode)
 Content-Type: multipart/form-data; boundary=----aic
 
 ------aic
@@ -604,7 +708,7 @@ Content-Type: application/pdf
 | `cv.parse_status` | `"parsed"` | always `parsed` in MVP (failed parses are rejected, not stored); reserved for asynchronous parsing later |
 | `cv.created_at` | timestamp | |
 | `extracted.skills` | string[] | used to personalise questions; may be empty |
-| `extracted.experience` / `.education` / `.projects` | string[] | **provisional** free-text lines; shape depends on OD-4; may be empty |
+| `extracted.experience` / `.education` / `.projects` | string[] | **provisional** best-effort text lines found by simple rules; may be empty; shape depends on OD-15 |
 
 ```json
 {
@@ -627,28 +731,29 @@ Content-Type: application/pdf
 
 - **Status codes:** 201 · 401 · 413 · 415 · 422 · 429 · 503
 - **Errors:** `UNSUPPORTED_FILE_TYPE` (415), `FILE_TOO_LARGE` (413), `CV_UNREADABLE` (422 — corrupt, encrypted, image-only/scanned with no text, or below the minimum text length), `VALIDATION_ERROR` (422 — missing/extra parts), `STORAGE_UNAVAILABLE` / `DATABASE_UNAVAILABLE` (503), `RATE_LIMITED` (429)
-- **Database:** insert `cvs` (+ S3 object key), `cv_profiles`, `cv_skills` in one transaction; if the transaction fails the S3 object is removed.
-- **AI/ML:** text extraction (deterministic); structured extraction (method **[Open]** OD-4). No external GenAI call is required for upload.
+- **Database:** insert `cvs` (with the relative `storage_key`), `cv_profiles`, `cv_skills` in PostgreSQL in one transaction; if the transaction fails the stored file is removed.
+- **Storage (D7):** the original file is written to the **private CV directory** under a random name (Section 25.5), never inside the frontend, a static-files mount or any web-served path, and its path is never returned. Moving to private S3 later only changes the storage backend.
+- **Processing:** text extraction with free Python libraries (`pypdf` for PDF, `python-docx` for DOCX — Section 25.2); skills found by a **rule-based match against a curated skills list** (OD-15). No model download and no external service is involved in upload, so CV text never leaves the machine.
 - **Notes:** the UI shows "Uploading & analyzing…" while this request runs, so parsing is **synchronous**. Progress percentages come from the browser's upload events, not from the server (F14). A user may hold several CVs; the UI uses the newest.
 
 ### E08 — `GET /api/v1/cvs`
 
-- **Purpose:** list the user's CVs, newest first — lets the UI restore the CV after a refresh (F9). **Auth:** Bearer.
+- **Purpose:** list the user's CVs, newest first — lets the UI restore the CV after a refresh (F9). **Auth:** current user (Section 5).
 - **Query:** `limit` (int, default 50, max 100), `offset` (int, default 0).
 - **Response `200 OK`:** `{ "items": [ CV ], "total": integer, "limit": integer, "offset": integer }` where `CV` is the `cv` object from E07.
 - **Status codes:** 200 · 401 · 503. **Database:** read `cvs` where `deleted_at IS NULL`.
 
 ### E09 — `GET /api/v1/cvs/{cv_id}`
 
-- **Purpose:** one CV with its extracted data. **Auth:** Bearer.
+- **Purpose:** one CV with its extracted data. **Auth:** current user (Section 5).
 - **Response `200 OK`:** same body as the E07 response.
 - **Errors:** `CV_NOT_FOUND` (404). **Database:** read `cvs`, `cv_profiles`, `cv_skills`.
 
 ### E10 — `DELETE /api/v1/cvs/{cv_id}`
 
-- **Purpose:** remove a CV and its stored data (backs the UI's "Remove" button, which today only clears local state). **Auth:** Bearer.
+- **Purpose:** remove a CV and its stored data (backs the UI's "Remove" button, which today only clears local state). **Auth:** current user (Section 5).
 - **Response `204 No Content`.**
-- **Effects:** deletes the S3 object, `extracted_text`, `cv_profiles`, `cv_skills`. Interviews that used this CV are **kept**; their `cv_id` becomes `NULL` so history and results remain valid.
+- **Effects:** deletes the stored file, `extracted_text`, `cv_profiles`, `cv_skills`. Interviews that used this CV are **kept**; their `cv_id` becomes `NULL` so history and results remain valid.
 - **Errors:** `CV_NOT_FOUND` (404; also returned on a repeated delete). **Database:** delete/anonymise as above in one transaction.
 
 ---
@@ -659,8 +764,8 @@ An *interview* is one practice session: a CV, a target role, a type, a difficult
 
 ### E11 — `POST /api/v1/interviews`  (frontend: `startInterview`)
 
-- **Purpose:** create an interview and generate all of its questions in one call (the UI needs `questions` immediately to render "Question 1 of n" and the progress bar).
-- **Auth:** Bearer required.
+- **Purpose:** create an interview and **select all of its questions** from the curated question bank in one call (the UI needs `questions` immediately to render "Question 1 of n" and the progress bar).
+- **Auth:** current user — the seeded demo user in the MVP, a Bearer token once authentication is enabled (Section 5).
 - **Request body (JSON)**
 
 | Field | Type | Required | Rules / frontend source |
@@ -724,14 +829,25 @@ The response **never contains ideal answers** (Section 8).
 }
 ```
 
-- **Status codes:** 201 · 401 · 404 · 422 · 429 · 503 · 504
-- **Errors:** `CV_REQUIRED` (422 — `cv_id` absent/null; the UI shows "upload your CV first"), `CV_NOT_FOUND` (404), `INVALID_INTERVIEW_CONFIG` (422, with per-field `details`), `AI_SERVICE_UNAVAILABLE` (503), `AI_SERVICE_TIMEOUT` (504), `RATE_LIMITED` (429), `DATABASE_UNAVAILABLE` (503)
-- **Database:** insert `interviews`, then *n* rows in `interview_questions` (including the hidden `ideal_answer`), written **only after generation succeeds** so a failed call leaves nothing behind and the client can safely retry.
-- **AI/ML:** question selection/generation and ideal-answer generation (Section 16, steps C–D). The call is synchronous because the UI shows "Generating questions…". The latency budget must stay below the API Gateway timeout (Section 20); generating all questions (and ideal answers) in batched rather than per-question model calls is **[Recommended]**.
+- **Status codes:** 201 · 401 · 404 · 422 · 503
+- **Errors:** `CV_REQUIRED` (422 — `cv_id` absent/null; the UI shows "upload your CV first"), `CV_NOT_FOUND` (404), `INVALID_INTERVIEW_CONFIG` (422, with per-field `details`), `QUESTION_BANK_INSUFFICIENT` (422 — the bank cannot supply `question_count` questions for this combination; the message suggests fewer questions or another type), `DATABASE_UNAVAILABLE` (503)
+- **Database:** insert `interviews`, then *n* rows in `interview_questions` (each carries a **snapshot** of the bank entry's hidden reference answer and key points), written in one transaction **only after selection succeeds**, so a failed call leaves nothing behind and the client can safely retry.
+- **AI/ML:** none required. Selection is deterministic backend logic over the curated bank (rules below); local embeddings may optionally rank candidates (Section 16.3). No GenAI is used (D4). The call is fast enough to stay synchronous; the UI's "Generating questions…" spinner remains valid.
+
+**Selection rules (MVP) [Recommended]** — thresholds and exact weights are tuned by the team and not claimed to be validated:
+
+1. **Pool by type.** `technical` and `behavioral` draw only that type; `mixed` draws both in a configurable ratio (default about 60 % / 40 %).
+2. **Role matching.** A preset role maps directly to bank `role_tags`. A custom role (free text, F18) is matched to the closest tags by keyword overlap — or, if the embedding model is loaded, by embedding similarity above a configurable threshold. With no match, only role-agnostic ("general") entries are used.
+3. **Difficulty.** Exact difficulty first, then the adjacent level, then any level, until `question_count` is reached.
+4. **CV awareness.** Bank entries of kind `skill_template` (for example "Your CV mentions {skill}. How have you used it in a project?") are instantiated with a skill found in the candidate's CV; entries whose `skill_tags` overlap the CV skills rank higher. At most one instantiation per skill.
+5. **Uniqueness and order.** No repeated question text; the order is stable for a given interview (seeded by the interview id).
+6. **No partial interviews.** If fewer than `question_count` questions qualify, fail with `QUESTION_BANK_INSUFFICIENT` rather than padding the list.
+
+This is "CV-aware" only in the sense of tailoring selection and templates; it does not *generate* new questions (see FC-14 for the wording consequence).
 
 ### E12 — `GET /api/v1/interviews/{interview_id}`
 
-- **Purpose:** current state of one interview, so the UI can recover after a refresh (F12). **Auth:** Bearer.
+- **Purpose:** current state of one interview, so the UI can recover after a refresh (F12). **Auth:** current user (Section 5).
 - **Response `200 OK`**
 
 | Field | Type | Notes |
@@ -767,7 +883,7 @@ The response **never contains ideal answers** (Section 8).
 
 ### E13 — `POST /api/v1/interviews/{interview_id}/abandon`
 
-- **Purpose:** mark an interview as abandoned when the user confirms "Exit". **Auth:** Bearer.
+- **Purpose:** mark an interview as abandoned when the user confirms "Exit". **Auth:** current user (Section 5).
 - **Request:** no body. **Response `200 OK`:** `{ "id": uuid, "status": "abandoned" }`. Repeating the call returns the same `200`.
 - **Errors:** `INTERVIEW_NOT_FOUND` (404), `INTERVIEW_NOT_ACTIVE` (409 — already completed).
 - **Database:** update `interviews.status`. Abandoned interviews are excluded from history, results and performance.
@@ -775,13 +891,13 @@ The response **never contains ideal answers** (Section 8).
 ### E14 — `POST /api/v1/interviews/{interview_id}/complete`  (frontend: `completeInterview`)
 
 - **Purpose:** finish the interview, aggregate all stored evaluations, persist the results and update the user's performance.
-- **Auth:** Bearer. **Request:** no body. The frontend currently sends `{session, config, items}`; those values are **ignored** (F4).
+- **Auth:** current user (Section 5). **Request:** no body. The frontend currently sends `{session, config, items}`; those values are **ignored** (F4).
 - **Preconditions:** every question has an evaluation.
 - **Response `200 OK`:** the full **results payload**, identical to E18 (see Section 11 for fields and example). If the interview is already completed, the stored payload is returned unchanged (idempotent).
 - **Status codes:** 200 · 401 · 404 · 409 · 503
-- **Errors:** `INTERVIEW_INCOMPLETE` (409; `details` lists unevaluated positions), `INTERVIEW_NOT_FOUND` (404), `INTERVIEW_NOT_ACTIVE` (409 — abandoned), `DATABASE_UNAVAILABLE` (503). A failure of the optional GenAI wording step does **not** fail the call; it falls back to rule-based text (Section 16).
+- **Errors:** `INTERVIEW_INCOMPLETE` (409; `details` lists unevaluated positions), `INTERVIEW_NOT_FOUND` (404), `INTERVIEW_NOT_ACTIVE` (409 — abandoned), `DATABASE_UNAVAILABLE` (503).
 - **Database (single transaction):** insert `interview_results`; set `interviews.status = completed`, `completed_at`, `overall_score`; upsert `user_performance` rows.
-- **AI/ML:** deterministic aggregation; recommendation wording by rules and/or GenAI.
+- **AI/ML:** none — deterministic aggregation; recommendation text chosen by rules from the weakest and strongest categories (Section 16.4).
 
 ---
 
@@ -793,21 +909,35 @@ Questions have no endpoint of their own. They are **created** by E11 and **read*
 
 | Field | Type | Visible to client | Notes |
 | --- | --- | --- | --- |
-| `id` | uuid | yes | |
+| `id` | uuid | yes | stable for the life of the interview (F2) |
 | `interview_id` | uuid | implied by path | |
 | `position` | integer | yes | 1-based, unique within the interview. The frontend's `index` equals `position − 1` |
-| `text` | string | yes | |
+| `text` | string | yes | a bank question, or a skill template with the CV skill filled in |
 | `type` | `technical` \| `behavioral` | yes | drives the "Technical Question" / "Behavioral Question" chip |
-| `ideal_answer` | string | **no — only after the question has an evaluation** (returned inside the evaluation as `ideal_answer`) | stored at creation; used as the reference for scoring (Section 16, step E) |
-| `source` | `bank` \| `genai` | no | provenance, for analytics |
+| `ideal_answer` | string | **no — only after the question has an evaluation** (returned inside the evaluation as `ideal_answer`) | snapshot of the bank's curated **reference answer**; the reference for scoring (Section 16) |
+| `key_points` | string[] | **no** | snapshot of the bank's expected key points; used by the scoring criteria, never sent to the client |
+| `source` | `bank` | no | always `bank` in the MVP; `genai` is reserved for a possible later integration |
 
 ### 8.2 Rules
 
-1. **Count.** Exactly `question_count` questions, with distinct texts inside one interview (F15).
-2. **Type mix.** `technical` → all technical; `behavioral` → all behavioral; `mixed` → a blend. The exact ratio is an implementation detail; **[Recommended]** a configurable default of roughly 60 % technical / 40 % behavioral.
-3. **Difficulty and role** influence selection or the generation prompt; **CV skills** influence personalization (Section 16, step C).
-4. **Ideal answers are secret until evaluated.** Revealing them before the user answers would defeat the exercise and leak the scoring reference. They never appear in E11 or E12.
-5. **Immutable.** Questions are not edited after creation. Dynamic follow-up questions are a future capability (F21, Section 22).
+1. **Count.** Exactly `question_count` questions, with distinct texts inside one interview (F15). If the bank cannot supply them, the call fails with `QUESTION_BANK_INSUFFICIENT` — it never returns fewer.
+2. **Type mix.** `technical` → all technical; `behavioral` → all behavioral; `mixed` → a blend (**[Recommended]** configurable default of roughly 60 % technical / 40 % behavioral).
+3. **Role, difficulty and CV skills** influence *selection and template filling* (E11 selection rules). They do not generate new questions.
+4. **Reference answers and key points are secret until evaluated.** Revealing them before the user answers would defeat the exercise and leak the scoring reference. They never appear in E11 or E12.
+5. **Immutable.** Questions are not edited after creation, and editing the bank later does not change existing interviews because each question stores a snapshot. Dynamic follow-up questions are a future capability (F21, Section 22).
+
+### 8.3 Question-bank content requirements (derived from the UI)
+
+The bank is **reference data owned by the team** (a table, Section 15, seeded from a file such as `question_bank.json`). Its size is dictated by what the frontend offers:
+
+| Constraint | Why |
+| --- | --- |
+| The UI offers 5, 10 or 15 questions per interview | a (type, difficulty) combination needs **at least 15** eligible entries to serve `question_count = 15` without relaxing difficulty or failing |
+| Three types (technical, behavioral, mixed) × three difficulties | 6 (type × difficulty) cells for single-type interviews; `mixed` draws from two of them |
+| Seven preset roles plus free-text roles | role-specific entries for each preset role, plus a **general** (role-agnostic) set as the fallback for custom roles |
+| Reference answers are scored with a model that **truncates at 256 word pieces** (Section 16.6) | write each reference answer to fit well under that limit (**[Recommended]** at most about 150 words) and give each entry 3–6 short `key_points` |
+
+Who writes the content, how large the bank must be, and its licensing are **unresolved** (OD-14); until it exists E11 cannot work, which makes the bank the first blocking content task (Section 26).
 
 ---
 
@@ -816,7 +946,7 @@ Questions have no endpoint of their own. They are **created** by E11 and **read*
 ### E15 — `PUT /api/v1/interviews/{interview_id}/questions/{question_id}/answer`  (frontend: `submitAnswer`)
 
 - **Purpose:** store (or replace) the candidate's text answer for one question. `PUT` makes retries safe: the UI keeps the typed text after a failure and may resubmit.
-- **Auth:** Bearer required.
+- **Auth:** current user — the seeded demo user in the MVP, a Bearer token once authentication is enabled (Section 5).
 - **Request body (JSON)**
 
 | Field | Type | Required | Rules |
@@ -835,7 +965,7 @@ Questions have no endpoint of their own. They are **created** by E11 and **read*
 | `interview_id`, `question_id` | uuid | |
 | `answer_text` | string | trimmed |
 | `char_count` | integer | |
-| `input_mode` | `"text"` | `"speech"` reserved for the future (OD-6) |
+| `input_mode` | `"text"` | `"speech"` reserved for the future (Whisper is deferred, D6) |
 | `submitted_at`, `updated_at` | timestamp | |
 
 ```json
@@ -864,7 +994,7 @@ Questions have no endpoint of their own. They are **created** by E11 and **read*
 ### E16 — `POST /api/v1/interviews/{interview_id}/questions/{question_id}/evaluation`  (frontend: `getEvaluation`)
 
 - **Purpose:** score the stored answer against the stored ideal answer and generate feedback. The UI shows a "thinking" indicator while this runs.
-- **Auth:** Bearer required. **Request:** no body (the answer was stored by E15; the frontend's extra `question`/`answer` arguments are not needed).
+- **Auth:** current user — the seeded demo user in the MVP, a Bearer token once authentication is enabled (Section 5). **Request:** no body (the answer was stored by E15; the frontend's extra `question`/`answer` arguments are not needed).
 - **Idempotency:** if an evaluation already exists it is returned with `200`; otherwise it is created with `201`. Concurrent duplicate requests resolve to a single stored row.
 - **Response fields**
 
@@ -876,12 +1006,12 @@ Questions have no endpoint of their own. They are **created** by E11 and **read*
 | `category_scores.relevance` | integer 0–100 | UI label "Relevance" |
 | `category_scores.clarity` | integer 0–100 | "Clarity" |
 | `category_scores.technical_depth` | integer 0–100 | "Technical Depth" |
-| `category_scores.confidence` | integer 0–100 | "Confidence" |
+| `category_scores.structure` | integer 0–100 | "Structure" — replaces the former "Confidence" (D5, FC-13) |
 | `strengths` | string[] | **1–3** items (the UI renders every item; an empty array would show an empty card) |
 | `weaknesses` | string[] | **1–3** items |
 | `improvement_tip` | string | one suggestion (`ev.tip`) |
 | `ideal_answer` | string | example of a stronger answer, revealed only now (`ev.ideal`); the UI labels it "Example — not your answer" |
-| `feedback_source` | `"rules"` \| `"genai"` | how the wording was produced (UI ignores it) |
+| `feedback_source` | `"rules"` | always `rules` in the MVP (D4); `"genai"` is reserved for a possible later integration; the UI ignores it |
 | `scoring_version` | string | identifies the scoring configuration used, for reproducibility |
 | `created_at` | timestamp | |
 
@@ -890,7 +1020,7 @@ Questions have no endpoint of their own. They are **created** by E11 and **read*
   "id": "e2d7f4a9-6c18-4b05-8d93-0a5b1c7e3f26",
   "question_id": "0a7c5e31-2d94-4c1b-b6f8-3e9a1d5c7b02",
   "overall_score": 82,
-  "category_scores": { "relevance": 86, "clarity": 79, "technical_depth": 77, "confidence": 81 },
+  "category_scores": { "relevance": 86, "clarity": 79, "technical_depth": 77, "structure": 81 },
   "strengths": [
     "Clearly explained the technical approach.",
     "Demonstrated practical experience.",
@@ -912,13 +1042,14 @@ Questions have no endpoint of their own. They are **created** by E11 and **read*
 - **Status codes:** 200 · 201 · 401 · 404 · 409 · 503 · 504
 - **Errors:** `ANSWER_NOT_FOUND` (404 — no answer stored yet), `QUESTION_NOT_FOUND` / `INTERVIEW_NOT_FOUND` (404), `INTERVIEW_NOT_ACTIVE` (409), `AI_SERVICE_UNAVAILABLE` (503, `retryable: true`), `AI_SERVICE_TIMEOUT` (504, `retryable: true`), `DATABASE_UNAVAILABLE` (503)
 - **Database:** read `answers`, `interview_questions` (ideal answer); insert `evaluations` with diagnostics (raw similarity, model versions, latency).
-- **AI/ML:** semantic similarity and category scoring (ML), feedback wording (rules and/or GenAI) — Section 16, steps E–H.
-- **Degradation policy:** if the **ML scoring** step fails the call fails (`AI_SERVICE_UNAVAILABLE`) because a score cannot be fabricated. If only the optional **GenAI wording** step fails or times out, the server falls back to rule-based strengths/weaknesses/tip and sets `feedback_source: "rules"`.
-- **Latency:** a target and hard cap must be set by the ML/GenAI owners (**[Open]** OD-13). Any synchronous call must finish within the API Gateway limit (Section 20).
+- **AI/ML:** a **local** sentence-embedding model measures semantic similarity to the reference answer, and **explicit criteria** (key-point coverage, structure cues, clarity cues) are computed by deterministic rules; feedback text comes from templates — Section 16.4. No external service is called.
+- **Important limits (D5):** the scores are *automated estimates* from a method that has **not been validated** (Section 16.8–16.9). Semantic similarity is **not a complete measure of answer quality**, and none of the categories measures psychological confidence. All scoring happens here on the backend; the frontend never supplies a score.
+- **Degradation policy:** if the similarity model is not loaded (and `SIMILARITY_BACKEND=sbert`), E22 reports `unavailable` and this call returns `AI_SERVICE_UNAVAILABLE` (503, `retryable: true`). The service **never silently switches** to a different scoring method; the lexical backend is a separate, deliberately chosen configuration with its own `scoring_version` (Section 16.6).
+- **Latency:** the model is loaded at start-up, so a request never triggers a model download or load. The actual latency on the team's machines is **not yet measured** (OD-13); there is no gateway timeout in the local setup.
 
 ### E17 — `GET /api/v1/interviews/{interview_id}/questions/{question_id}/evaluation`
 
-- **Purpose:** fetch a stored evaluation (recovery after refresh or a lost response). **Auth:** Bearer.
+- **Purpose:** fetch a stored evaluation (recovery after refresh or a lost response). **Auth:** current user (Section 5).
 - **Response `200 OK`:** same body as E16. **Errors:** `EVALUATION_NOT_FOUND` (404), `QUESTION_NOT_FOUND` (404), `INTERVIEW_NOT_FOUND` (404).
 - **Database:** read `evaluations`.
 
@@ -931,17 +1062,17 @@ Questions have no endpoint of their own. They are **created** by E11 and **read*
 E14 returns exactly this payload when an interview is completed.
 
 - **Purpose:** the complete results for one completed interview.
-- **Auth:** Bearer required.
+- **Auth:** current user — the seeded demo user in the MVP, a Bearer token once authentication is enabled (Section 5).
 - **Response fields**
 
 | Field | Type | UI use |
 | --- | --- | --- |
 | `interview` | InterviewSummary | header card (`meta`): `id, completed_at, target_role, interview_type, difficulty, question_count, overall_score, status` |
-| `breakdown.confidence` / `.relevance` / `.clarity` / `.technical_depth` / `.communication` | integer 0–100 | "Performance breakdown" bars; `technical_depth` is shown as *Technical Knowledge* here (F8) |
+| `breakdown.structure` / `.relevance` / `.clarity` / `.technical_depth` / `.communication` | integer 0–100 | "Performance breakdown" bars; `technical_depth` is shown as *Technical Knowledge* here (F8); `structure` is shown as *Structure* (it replaces *Confidence*, FC-13) |
 | `additional_strength` | string | third item under "Strengths" (`extraStrength`) |
 | `additional_improvement` | string | third item under "Areas for improvement" (`extraImprovement`) |
 | `recommendations` | string[3] | "AI recommendations" |
-| `generated_by` | `"rules"` \| `"genai"` | provenance of the three strings above |
+| `generated_by` | `"rules"` | provenance of the three strings above; always `rules` in the MVP (`"genai"` reserved) |
 | `items[]` | array | question-by-question list, ordered by `position` |
 | `items[].position` | integer | |
 | `items[].question` | `{id, text, type}` | `q` |
@@ -954,7 +1085,7 @@ E14 returns exactly this payload when an interview is completed.
 | --- | --- |
 | `interview.overall_score` | round-half-up of the mean of the answers' `overall_score` |
 | `breakdown.<category>` | round-half-up of the mean of that category over all answers |
-| `breakdown.communication` | round-half-up of `(breakdown.clarity + breakdown.confidence) / 2`, using the **already rounded** values (as the frontend does) |
+| `breakdown.communication` | round-half-up of `(breakdown.clarity + breakdown.structure) / 2`, using the **already rounded** values (as the frontend does) |
 | Strengths / improvements list | chosen client-side from the top 2 / bottom 2 breakdown values, plus the two `additional_*` strings (see Section 2.6) |
 | Label (Excellent / Strong / Needs Improvement) | client-side thresholds 88 / 78 — scoring must be calibrated so the distribution suits them (OD-8) |
 
@@ -970,7 +1101,7 @@ E14 returns exactly this payload when an interview is completed.
     "overall_score": 84,
     "status": "completed"
   },
-  "breakdown": { "confidence": 83, "relevance": 88, "clarity": 81, "technical_depth": 79, "communication": 82 },
+  "breakdown": { "structure": 83, "relevance": 88, "clarity": 81, "technical_depth": 79, "communication": 82 },
   "additional_strength": "Relevant, practical examples",
   "additional_improvement": "Quantifying impact",
   "recommendations": [
@@ -989,7 +1120,7 @@ E14 returns exactly this payload when an interview is completed.
         "id": "e2d7f4a9-6c18-4b05-8d93-0a5b1c7e3f26",
         "question_id": "0a7c5e31-2d94-4c1b-b6f8-3e9a1d5c7b02",
         "overall_score": 88,
-        "category_scores": { "relevance": 92, "clarity": 85, "technical_depth": 83, "confidence": 87 },
+        "category_scores": { "relevance": 92, "clarity": 85, "technical_depth": 83, "structure": 87 },
         "strengths": ["Clearly explained the technical approach."],
         "weaknesses": ["Could quantify the project impact more clearly."],
         "improvement_tip": "Use the STAR method (Situation, Task, Action, Result) and close with a measurable outcome.",
@@ -1017,7 +1148,7 @@ E14 returns exactly this payload when an interview is completed.
 ### E19 — `GET /api/v1/interviews`  (frontend: `getInterviewHistory`)
 
 - **Purpose:** the user's completed interviews, newest first.
-- **Auth:** Bearer required.
+- **Auth:** current user — the seeded demo user in the MVP, a Bearer token once authentication is enabled (Section 5).
 - **Query parameters**
 
 | Param | Type | Default | Notes |
@@ -1071,15 +1202,15 @@ Sort order is fixed: `completed_at` descending (the Dashboard's `history.slice(0
 ### E20 — `GET /api/v1/performance/skills`  (frontend: `getSkills`)
 
 - **Purpose:** the user's skill scores across all completed interviews.
-- **Auth:** Bearer required.
-- **Definition:** each skill is the round-half-up mean, over the user's completed interviews, of that interview's `breakdown` value (every interview weighs equally). Skills: `communication`, `relevance`, `confidence`, `clarity`, `technical_depth`.
+- **Auth:** current user — the seeded demo user in the MVP, a Bearer token once authentication is enabled (Section 5).
+- **Definition:** each skill is the round-half-up mean, over the user's completed interviews, of that interview's `breakdown` value (every interview weighs equally). Skills: `communication`, `relevance`, `structure`, `clarity`, `technical_depth`.
 - **Ordering:** by `score` descending; ties broken in the fixed order listed above (the Dashboard shows the first four, F7).
 - **Response `200 OK`**
 
 | Field | Type | Notes |
 | --- | --- | --- |
 | `skills[]` | array | `{ key, label, score }` |
-| `skills[].label` | string | `Communication`, `Relevance`, `Confidence`, `Clarity`, `Technical Depth` |
+| `skills[].label` | string | `Communication`, `Relevance`, `Structure`, `Clarity`, `Technical Depth` |
 | `interviews_counted` | integer | |
 
 ```json
@@ -1087,7 +1218,7 @@ Sort order is fixed: `completed_at` descending (the Dashboard's `history.slice(0
   "skills": [
     { "key": "communication", "label": "Communication", "score": 88 },
     { "key": "relevance", "label": "Relevance", "score": 86 },
-    { "key": "confidence", "label": "Confidence", "score": 82 },
+    { "key": "structure", "label": "Structure", "score": 82 },
     { "key": "clarity", "label": "Clarity", "score": 81 },
     { "key": "technical_depth", "label": "Technical Depth", "score": 76 }
   ],
@@ -1100,14 +1231,14 @@ Sort order is fixed: `completed_at` descending (the Dashboard's `history.slice(0
 
 ### E21 — `GET /api/v1/performance/summary`
 
-- **Purpose:** the figures the Dashboard and Performance page currently compute client-side (F6), without loading the whole history. **Auth:** Bearer.
+- **Purpose:** the figures the Dashboard and Performance page currently compute client-side (F6), without loading the whole history. **Auth:** current user (Section 5).
 - **Query:** `trend_limit` (integer, default 12, max 50).
 - **Response `200 OK`**
 
 | Field | Type | Notes |
 | --- | --- | --- |
 | `interviews_completed` | integer | "Interviews completed" |
-| `average_score` | integer \| null | round-half-up mean of overall scores; this is the Dashboard's "Average confidence" (F16); `null` if none |
+| `average_score` | integer \| null | round-half-up mean of overall scores; this is the Dashboard's "Average confidence" figure, to be relabelled "Average score" (F16, FC-13); `null` if none |
 | `strongest_skill` / `weakest_skill` | `{key,label,score}` \| null | "Strongest area" / "Needs improvement" |
 | `trend[]` | array | `{ interview_id, completed_at, overall_score }`, **oldest → newest**, last `trend_limit` interviews |
 
@@ -1134,7 +1265,7 @@ Sort order is fixed: `completed_at` descending (the Dashboard's `history.slice(0
 
 ### E05 — `GET /api/v1/users/me`
 
-- **Purpose:** the signed-in user (replaces the hard-coded `DEMO_USER`; drives the welcome message, avatar initials and the "Sign in as {name}" button). **Auth:** Bearer.
+- **Purpose:** the signed-in user (replaces the hard-coded `DEMO_USER`; in demo mode it returns the seeded demo user, so the welcome message, avatar initials and the "Sign in as {name}" button keep working). **Auth:** current user (Section 5).
 - **Response `200 OK`:** `{ "id": uuid, "name": string, "email": string, "created_at": timestamp }`
 
 ```json
@@ -1146,13 +1277,13 @@ Sort order is fixed: `completed_at` descending (the Dashboard's `history.slice(0
 
 ### E06 — `PATCH /api/v1/users/me`  (frontend: `updateProfile`)
 
-- **Purpose:** save the Profile form. **Auth:** Bearer.
+- **Purpose:** save the Profile form. **Auth:** current user (Section 5).
 - **Request body (JSON)** — at least one field:
 
 | Field | Type | Required | Rules |
 | --- | --- | --- | --- |
 | `name` | string | no | trimmed, 2–100 chars (UI minimum 2) |
-| `email` | string | no | valid email, unique. Whether a change requires re-verification is **[Open]** (OD-1, OD-9) |
+| `email` | string | no | valid email, unique. In demo mode no verification is needed; whether a real account must re-verify a changed email is a Phase 2 question (OD-1 residual) |
 
 ```json
 { "name": "Alex Morgan", "email": "alex.m@email.com" }
@@ -1162,20 +1293,24 @@ Sort order is fixed: `completed_at` descending (the Dashboard's `history.slice(0
 - **Status codes:** 200 · 401 · 409 · 422 · 503
 - **Errors:** `VALIDATION_ERROR` (422), `EMAIL_ALREADY_IN_USE` (409), `UNAUTHORIZED` (401)
 - **Database:** update `users.name`, `users.email`, `updated_at`.
-- **Not covered:** "Reset demo data" has no endpoint (OD-9). Account and data deletion is listed as a future endpoint (Section 22).
+- **Related:** the "Reset demo data" button maps to E23 (development-only). Real account and data deletion is a future endpoint (Section 22).
 
 ---
 
 ## 15. Database Models
 
-The database engine is **[Open]** (OD-2: PostgreSQL or MySQL on AWS RDS, per the proposal). Types below are written generically; the mapping is:
+**[Decided D2]** The primary database is **PostgreSQL running locally** on the developer's machine (no paid subscription). The configuration is **portable**: the connection comes from a single `DATABASE_URL`, so the same code can later point at AWS RDS **if** the AWS Academy environment permits (D8). Types below are written generically.
 
-| Generic | PostgreSQL | MySQL |
+| Generic | PostgreSQL (primary) | SQLite (temporary fallback only) |
 | --- | --- | --- |
-| `UUID` | `uuid` | `CHAR(36)` or `BINARY(16)` |
-| `TIMESTAMPTZ` | `timestamptz` | `DATETIME(6)` stored as UTC |
-| `JSONB` | `jsonb` | `JSON` |
-| `SMALLINT` / `INTEGER` / `BOOLEAN` / `TEXT` / `VARCHAR(n)` | same | same (`BOOLEAN` = `TINYINT(1)`) |
+| `UUID` | `uuid` | `CHAR(36)` text |
+| `TIMESTAMPTZ` | `timestamptz` | text/`DATETIME`, stored as UTC |
+| `JSONB` | `jsonb` | `JSON` (text) |
+| `SMALLINT` / `INTEGER` / `BOOLEAN` / `TEXT` / `VARCHAR(n)` | same | same (`BOOLEAN` is stored as 0/1) |
+
+**Portability rules [Recommended]** so the fallback stays possible without a rewrite: use SQLAlchemy's generic `Uuid`, `JSON` and `DateTime(timezone=True)` types; avoid PostgreSQL-only features (`ARRAY`, JSONB operators, extensions such as vector types); keep `CHECK` constraints and foreign keys; manage schema only through migrations.
+
+**SQLite fallback policy.** SQLite is a *documented temporary development fallback*, to be used **only** if local PostgreSQL cannot be installed or run and the blocker is recorded. Using it does **not** change the primary decision. Known limits when using it: foreign keys must be switched on per connection, `ALTER TABLE` support is partial (migrations need batch mode), there is no real concurrency, and behaviour of `CHECK`/date handling can differ from PostgreSQL — so anything that passes only on SQLite is not considered verified.
 
 Nothing here has been created; this is a design for the Database Engineer (Ahmed Hamdy Ahmed) to review.
 
@@ -1184,7 +1319,7 @@ Nothing here has been created; this is a design for the Database Engineer (Ahmed
 ```
 User (users)
   │
-  ├── RefreshToken (refresh_tokens)          1 : N   [only if OD-1 = option A]
+  ├── RefreshToken (refresh_tokens)          1 : N   [Phase 2 only — not created in the MVP]
   │
   ├── UserPerformance (user_performance)     1 : N   one row per skill (5 skills)
   │
@@ -1203,7 +1338,7 @@ User (users)
               (interview_results)
 
 QuestionBank (question_bank)  ── reference data, not owned by a user; optionally referenced by
-                                 interview_questions.bank_question_id   [depends on OD-5]
+                                 interview_questions.bank_question_id   [required for the MVP, D4]
 ```
 
 ### 15.2 Tables
@@ -1217,11 +1352,11 @@ Legend: **PK** primary key · **FK** foreign key · *Req* = NOT NULL.
 | `id` | UUID | yes | PK | |
 | `name` | VARCHAR(100) | yes | | |
 | `email` | VARCHAR(254) | yes | unique | stored lower-case |
-| `password_hash` | VARCHAR(255) | no | | `NULL` unless OD-1 = option A |
+| `password_hash` | VARCHAR(255) | no | | `NULL` in demo mode (D3); used from Phase 2 |
 | `is_active` | BOOLEAN | yes | | default `true` |
 | `created_at` / `updated_at` | TIMESTAMPTZ | yes | | |
 
-#### `refresh_tokens`  *(conditional on OD-1 = option A)*
+#### `refresh_tokens`  *(Phase 2 — not created in the MVP)*
 
 | Field | Type | Req | Key | Notes |
 | --- | --- | --- | --- | --- |
@@ -1243,13 +1378,14 @@ Legend: **PK** primary key · **FK** foreign key · *Req* = NOT NULL.
 | `content_type` | VARCHAR(100) | yes | | detected, not client-supplied |
 | `size_bytes` | INTEGER | yes | | CHECK ≤ 5 242 880 |
 | `sha256` | CHAR(64) | yes | | integrity / optional de-duplication |
-| `storage_key` | VARCHAR(512) | yes | | S3 object key (random, not derived from filename) |
+| `storage_backend` | VARCHAR(8) | yes | | `local` (MVP) or `s3` (later) — says how to interpret `storage_key` |
+| `storage_key` | VARCHAR(512) | yes | | **relative** key (random, not derived from the filename): a path under the private CV directory for `local`, an object key for `s3` |
 | `extracted_text` | TEXT | no | | full text; cleared on delete |
 | `parse_status` | VARCHAR(16) | yes | | `parsed` (MVP); reserved: `processing`, `failed` |
 | `created_at` | TIMESTAMPTZ | yes | | |
-| `deleted_at` | TIMESTAMPTZ | no | | soft-delete marker while the purge job removes the S3 object |
+| `deleted_at` | TIMESTAMPTZ | no | | soft-delete marker while the stored file is being removed |
 
-#### `cv_profiles`  *(structured extraction; shape provisional, OD-4)*
+#### `cv_profiles`  *(rule-based extraction; shape provisional, OD-15)*
 
 | Field | Type | Req | Key | Notes |
 | --- | --- | --- | --- | --- |
@@ -1267,7 +1403,7 @@ Legend: **PK** primary key · **FK** foreign key · *Req* = NOT NULL.
 | `id` | UUID | yes | PK | |
 | `cv_id` | UUID | yes | FK → `cvs.id` ON DELETE CASCADE | |
 | `name` | VARCHAR(100) | yes | | unique per (`cv_id`, lower(`name`)) |
-| `source` | VARCHAR(16) | yes | | e.g. `rules`, `genai` (OD-4) |
+| `source` | VARCHAR(16) | yes | | `rules` in the MVP (`genai` reserved) |
 
 #### `interviews`
 
@@ -1281,7 +1417,7 @@ Legend: **PK** primary key · **FK** foreign key · *Req* = NOT NULL.
 | `difficulty` | VARCHAR(12) | yes | | CHECK in (`beginner`,`intermediate`,`advanced`) |
 | `question_count` | SMALLINT | yes | | CHECK in (5, 10, 15) |
 | `status` | VARCHAR(12) | yes | | CHECK in (`in_progress`,`completed`,`abandoned`) |
-| `question_source` | VARCHAR(8) | yes | | `bank` or `genai` (OD-5) |
+| `question_source` | VARCHAR(8) | yes | | `bank` in the MVP (`genai` reserved) |
 | `overall_score` | SMALLINT | no | | 0–100, set on completion |
 | `created_at` | TIMESTAMPTZ | yes | | |
 | `completed_at` | TIMESTAMPTZ | no | | |
@@ -1296,8 +1432,9 @@ Legend: **PK** primary key · **FK** foreign key · *Req* = NOT NULL.
 | `position` | SMALLINT | yes | | ≥ 1; **unique with `interview_id`** |
 | `text` | TEXT | yes | | |
 | `question_type` | VARCHAR(10) | yes | | CHECK in (`technical`,`behavioral`) |
-| `ideal_answer` | TEXT | yes | | never returned before evaluation |
-| `source` | VARCHAR(8) | yes | | `bank` / `genai` |
+| `ideal_answer` | TEXT | yes | | snapshot of the bank's reference answer; never returned before evaluation |
+| `key_points` | JSONB | yes | | snapshot of the bank entry's expected key points (array of short strings); used by the scoring criteria; never returned |
+| `source` | VARCHAR(8) | yes | | `bank` in the MVP (`genai` reserved) |
 | `bank_question_id` | UUID | no | FK → `question_bank.id` ON DELETE SET NULL | only when drawn from the bank |
 | `created_at` | TIMESTAMPTZ | yes | | |
 
@@ -1309,7 +1446,7 @@ Legend: **PK** primary key · **FK** foreign key · *Req* = NOT NULL.
 | `question_id` | UUID | yes | FK → `interview_questions.id` ON DELETE CASCADE, **unique** | one answer per question |
 | `answer_text` | TEXT | yes | | 30–1500 chars at write time |
 | `char_count` | INTEGER | yes | | |
-| `input_mode` | VARCHAR(8) | yes | | `text` (default); `speech` reserved (OD-6) |
+| `input_mode` | VARCHAR(8) | yes | | `text`; `speech` reserved (Whisper deferred, D6) |
 | `submitted_at` / `updated_at` | TIMESTAMPTZ | yes | | |
 
 #### `evaluations`
@@ -1322,15 +1459,15 @@ Legend: **PK** primary key · **FK** foreign key · *Req* = NOT NULL.
 | `relevance_score` | SMALLINT | yes | | CHECK 0–100 |
 | `clarity_score` | SMALLINT | yes | | CHECK 0–100 |
 | `technical_depth_score` | SMALLINT | yes | | CHECK 0–100 |
-| `confidence_score` | SMALLINT | yes | | CHECK 0–100 |
+| `structure_score` | SMALLINT | yes | | CHECK 0–100 (replaces the former confidence score, D5) |
 | `semantic_similarity` | NUMERIC(5,4) | no | | raw model output, kept for calibration against human ratings; **not** exposed by the API |
 | `strengths` | JSONB | yes | | array of 1–3 strings |
 | `weaknesses` | JSONB | yes | | array of 1–3 strings |
 | `improvement_tip` | TEXT | yes | | |
-| `feedback_source` | VARCHAR(8) | yes | | `rules` / `genai` |
+| `feedback_source` | VARCHAR(8) | yes | | `rules` in the MVP |
 | `scoring_version` | VARCHAR(30) | yes | | |
-| `model_info` | JSONB | yes | | model names/versions used (embedding, scorer, GenAI) |
-| `latency_ms` | INTEGER | no | | for CloudWatch/analysis |
+| `model_info` | JSONB | yes | | model name/version and criteria configuration used (for example the embedding model id and `SIMILARITY_BACKEND`) |
+| `latency_ms` | INTEGER | no | | for local logging/analysis |
 | `created_at` | TIMESTAMPTZ | yes | | |
 
 #### `interview_results`
@@ -1339,11 +1476,11 @@ Legend: **PK** primary key · **FK** foreign key · *Req* = NOT NULL.
 | --- | --- | --- | --- | --- |
 | `interview_id` | UUID | yes | PK, FK → `interviews.id` ON DELETE CASCADE | 1 : 1 |
 | `overall_score` | SMALLINT | yes | | duplicate of `interviews.overall_score` written in the same transaction |
-| `confidence_score`, `relevance_score`, `clarity_score`, `technical_depth_score`, `communication_score` | SMALLINT | yes | | the five `breakdown` values |
+| `structure_score`, `relevance_score`, `clarity_score`, `technical_depth_score`, `communication_score` | SMALLINT | yes | | the five `breakdown` values |
 | `additional_strength` | TEXT | yes | | |
 | `additional_improvement` | TEXT | yes | | |
 | `recommendations` | JSONB | yes | | array of 3 strings |
-| `generated_by` | VARCHAR(8) | yes | | `rules` / `genai` |
+| `generated_by` | VARCHAR(8) | yes | | `rules` in the MVP |
 | `created_at` | TIMESTAMPTZ | yes | | |
 
 #### `user_performance`
@@ -1352,25 +1489,31 @@ Legend: **PK** primary key · **FK** foreign key · *Req* = NOT NULL.
 | --- | --- | --- | --- | --- |
 | `id` | UUID | yes | PK | |
 | `user_id` | UUID | yes | FK → `users.id` ON DELETE CASCADE | |
-| `skill_key` | VARCHAR(20) | yes | | CHECK in (`communication`,`relevance`,`confidence`,`clarity`,`technical_depth`); **unique with `user_id`** |
+| `skill_key` | VARCHAR(20) | yes | | CHECK in (`communication`,`relevance`,`structure`,`clarity`,`technical_depth`); **unique with `user_id`** |
 | `score` | SMALLINT | yes | | 0–100 |
 | `interviews_counted` | INTEGER | yes | | |
 | `updated_at` | TIMESTAMPTZ | yes | | |
 
 Maintained inside the E14 transaction by **recomputing from the user's `interview_results`** rather than incrementing, so values cannot drift. For the capstone data volume this table could equally be a view; a table was chosen so the read path of E20 is trivial.
 
-#### `question_bank`  *(reference data; depends on OD-5)*
+#### `question_bank`  *(reference data — required for the MVP, D4)*
+
+The curated source of questions and reference answers. It is **not user data**: it is seeded by the team from a version-controlled file and shared by all interviews.
 
 | Field | Type | Req | Key | Notes |
 | --- | --- | --- | --- | --- |
 | `id` | UUID | yes | PK | |
-| `text` | TEXT | yes | | |
+| `kind` | VARCHAR(14) | yes | | `generic` (a fixed question) or `skill_template` (contains a `{skill}` placeholder filled from the CV) |
+| `text` | TEXT | yes | | question text, or the template |
 | `question_type` | VARCHAR(10) | yes | | `technical` / `behavioral` |
-| `difficulty` | VARCHAR(12) | yes | | |
-| `role_tags` | JSONB | yes | | e.g. `["AI Engineer","Data Scientist"]` |
-| `ideal_answer` | TEXT | no | | curated reference answer when available |
-| `embedding` | vector / BLOB / JSON | no | | storage mechanism **[Open]** (OD-5) |
-| `source_note` | VARCHAR(255) | no | | attribution / licence of the source |
+| `difficulty` | VARCHAR(12) | yes | | `beginner` / `intermediate` / `advanced` |
+| `role_tags` | JSONB | yes | | e.g. `["AI Engineer","Data Scientist"]`; the value `"general"` marks role-agnostic entries |
+| `skill_tags` | JSONB | yes | | skills this question is about; used to rank against the CV's skills |
+| `reference_answer` | TEXT | yes | | curated answer, written to stay well under the model's 256-word-piece limit (Section 8.3) |
+| `key_points` | JSONB | yes | | 3–6 short phrases a good answer should cover; used by the criteria scoring |
+| `reference_embedding` | JSON | no | | precomputed embedding of `reference_answer` (a list of numbers) so it need not be recomputed per request; **no vector extension or vector database is required** |
+| `embedding_model` | VARCHAR(100) | no | | model id that produced `reference_embedding`; if the configured model differs the embedding is recomputed |
+| `source_note` | VARCHAR(255) | no | | who wrote it / licence / attribution (OD-14) |
 | `is_active` | BOOLEAN | yes | | |
 | `created_at` | TIMESTAMPTZ | yes | | |
 
@@ -1390,126 +1533,188 @@ Maintained inside the E14 transaction by **recomputing from the user's `intervie
 
 | Event | Effect |
 | --- | --- |
-| Delete CV (E10) | `cvs` row, S3 object, `cv_profiles`, `cv_skills` removed; `interviews.cv_id` → `NULL`; interviews, answers, evaluations and results remain |
+| Delete CV (E10) | `cvs` row, the stored file, `cv_profiles`, `cv_skills` removed; `interviews.cv_id` → `NULL`; interviews, answers, evaluations and results remain |
 | Abandon interview (E13) | status → `abandoned`; rows kept; excluded from history/results/performance |
 | Delete user (future) | cascades to everything above |
-| Retention period for CVs and answers | **[Open]** (OD-10) |
+| Retention period for CVs and answers | local development: data stays until deleted (E10, E23) and never leaves the machine; a retention policy for any public deployment is **[Open]** (OD-10) |
 
 ---
 
 ## 16. AI/ML Pipeline
 
-This section assigns every intelligent or computed step to exactly one of four classes so that responsibilities, failure handling and owners are unambiguous. Nothing here is implemented, and no model has been selected or trained.
+**Status: design only. Nothing in this section has been implemented, run or validated.** It assigns every intelligent or computed step to exactly one of four classes so responsibilities and failure handling are unambiguous. The MVP uses **no paid or external AI service** (D4) and **one local model** (D5).
 
 | Class | Meaning | Typical failure handling |
 | --- | --- | --- |
 | **[D] Deterministic** | ordinary backend logic with a fixed, testable outcome | bug → `500`; never "retried into a different answer" |
-| **[ML] Model** | local model inference (Sentence Transformers, BERT / DistilBERT, later Whisper) | model unavailable → `AI_SERVICE_UNAVAILABLE` (a score must not be invented) |
-| **[GenAI] Generative** | external LLM through OpenAI API or Amazon Bedrock | **optional** by the proposal → timeout/invalid output falls back to rules where a fallback exists |
-| **[DB] Database** | reads/writes on RDS | `DATABASE_UNAVAILABLE` (503) |
+| **[ML] Local model** | local inference with Sentence Transformers (candidate `all-MiniLM-L6-v2`) | model not loaded → `AI_SERVICE_UNAVAILABLE`; never silently replaced |
+| **[DB] Database** | reads/writes in PostgreSQL | `DATABASE_UNAVAILABLE` (503) |
+| *GenAI* | external LLM (OpenAI API / Amazon Bedrock) | **not part of the MVP** (D4); see 16.5 |
 
 ### 16.1 Pipeline steps
 
-"Basis" says where the step comes from: **[Proposal]** explicit in the proposal; **[Recommended]** introduced here; **[Open]** undecided.
+"Basis": **[Proposal]** explicit in the proposal; **[Decided]** from D1–D8; **[Recommended]** introduced here; **[Open]** unresolved.
 
 | Step | Task | Class | Input → Output | Basis |
 | --- | --- | --- | --- | --- |
-| **A** | CV file → plain text | [D] | validated PDF/DOCX → `extracted_text` | **[Proposal]** "CVs … converted to text for processing". Library choice is an implementation detail |
-| **B** | CV text → structured information (skills, experience, education, projects) | [D] and/or [ML] and/or [GenAI] | `extracted_text` → `cv_skills`, `cv_profiles` | **[Open]** OD-4 — the proposal does not say how structure is extracted |
-| **C** | CV + target role + type + difficulty → *n* questions | [ML] retrieval and/or [GenAI] | structured CV, role, config → question texts and types | **[Proposal]** GenAI generates personalized questions; curated banks "used for RAG". Mechanism **[Open]** OD-5 |
-| **D** | each question → ideal answer | [GenAI] and/or curated bank | question (+ role, difficulty) → `ideal_answer` (stored, hidden) | **[Proposal]** "ideal-answer suggestions" via GenAI |
-| **E** | candidate answer vs ideal answer → semantic similarity | [ML] Sentence Transformers | two texts → embeddings → cosine similarity → `relevance` | **[Proposal]** "semantic similarity scoring of user answers against ideal responses" |
-| **F** | answer → `clarity`, `technical_depth`, `confidence` and `overall_score` | [ML] and/or [D] heuristics | answer, question, similarity → four integers 0–100 | **[Proposal]** BERT / DistilBERT are listed for scoring; **method for these three categories is [Open]** OD-8 |
-| **G** | scores/features → strengths and weaknesses | [D] rules over [ML] outputs | category scores → 1–3 strengths, 1–3 weaknesses | **[Proposal]** models "identify strengths/weaknesses"; sentence wording **[Recommended]** from a curated template library |
-| **H** | answer + scores → improvement tip (and optionally personalized wording of G) | [D] templates; optionally [GenAI] | → `improvement_tip` | **[Recommended]** — the proposal assigns GenAI to questions and ideal answers, *not* explicitly to feedback text |
-| **I** | all evaluations → overall score and breakdown | [D] | evaluations → `interview_results` numbers | **[Recommended]** formulas in Section 11 (they mirror the existing frontend) |
-| **J** | breakdown → 3 recommendations and 2 highlight strings | [D] rules; optionally [GenAI] | breakdown → text | **[Recommended]** rules by default, GenAI optional |
+| **A** | CV file → plain text | [D] | validated PDF/DOCX → `extracted_text` | **[Proposal]** "converted to text"; free libraries **[Decided D7]** |
+| **B** | CV text → skills (and best-effort experience/education/project lines) | [D] | `extracted_text` → `cv_skills`, `cv_profiles` | **[Decided D4/D7]** no GenAI → rule-based match against a curated skills list; list source **[Open]** OD-15 |
+| **C** | CV + role + type + difficulty → *n* questions | [D] (optional [ML] ranking) | CV skills, config → question list | **[Decided D4]** selection from the curated bank (E11 rules); reduced form of the proposal's "personalized questions" |
+| **D** | each selected question → reference answer and key points | [D] | `question_bank` entry → snapshot in `interview_questions` | **[Decided D4]** curated reference answers replace GenAI "ideal answers" |
+| **E** | candidate answer vs reference answer → semantic similarity | [ML] | answer chunks + reference embedding → similarity values | **[Proposal]** "semantic similarity against ideal responses"; local model **[Decided D5]** |
+| **F** | answer → explicit criteria signals (key-point coverage, structure cues, clarity cues, specificity) | [D] | answer, key points → numbers 0–1 | **[Decided D5]** "combine similarity with explicit criteria"; the criteria themselves **[Recommended]** |
+| **G** | signals → category scores and overall score | [D] | signals + config constants → integers 0–100 | **[Recommended]**; constants and weights **[Open]** (OD-8) |
+| **H** | scores → strengths, weaknesses, improvement tip | [D] templates | scores, missing key points → text | **[Decided D4]** transparent rule-based templates |
+| **I** | all evaluations → overall score and breakdown | [D] | evaluations → `interview_results` numbers | **[Recommended]** formulas in Section 11 (mirror the frontend) |
+| **J** | breakdown → 3 recommendations and 2 highlight strings | [D] templates | breakdown → text | **[Decided D4]** rule-based |
 | **K** | interview results → user skill scores | [D] + [DB] | `interview_results` → `user_performance` | **[Recommended]** |
-| **L** | speech → text (Whisper) | [ML] | audio → transcript → `answer_text` | **[Proposal]** listed in roles; **not in the written workflow** — **[Open]** OD-6, future |
-| **M** | answer → personalized follow-up question | [GenAI] | answer + context → new question | **[Proposal]** mentioned in the workflow; **not supported by the current UI** (F21), future |
+
+**Deferred (not in the MVP):** speech-to-text with Whisper (D6) · BERT/DistilBERT scoring heads · GenAI question, ideal-answer and feedback generation (D4) · GenAI follow-up questions (F21).
 
 ### 16.2 Where each step runs
 
 ```
-E07  CV upload ───────────────►  A [D]  ─►  B [D/ML/GenAI?]  ─►  [DB] cvs, cv_profiles, cv_skills
+E07  CV upload ───────────────►  A [D]  ─►  B [D rules]  ─►  [DB] cvs, cv_profiles, cv_skills
+                                                              + private file storage
 
-E11  Create interview ────────►  [DB] load CV
-                                 C [ML retrieval and/or GenAI]  ─►  n questions
-                                 D [GenAI and/or curated bank]  ─►  n ideal answers
-                                 [DB] interviews, interview_questions (ideal_answer hidden)
+E11  Create interview ────────►  [DB] load CV skills, question_bank
+                                 C [D selection (+ optional ML ranking)]  ─►  n questions
+                                 D [D] copy reference answer + key points (snapshot)
+                                 [DB] interviews, interview_questions
 
-E15  Submit answer ───────────►  [D] validate  ─►  [DB] answers
+E15  Submit answer ───────────►  [D] validate length  ─►  [DB] answers
 
-E16  Evaluate answer ─────────►  [DB] read answer + ideal answer
-                                 E [ML] similarity  ─►  F [ML/D] scores
-                                 G [D] strengths/weaknesses  ─►  H [D, optional GenAI] tip
+E16  Evaluate answer ─────────►  [DB] read answer + reference + key points
+                                 E [ML] chunk answer, embed, similarity
+                                 F [D] criteria signals
+                                 G [D] category + overall scores   ← computed ONLY here
+                                 H [D] strengths / weaknesses / tip (templates)
                                  [DB] evaluations
 
 E14  Complete interview ──────►  [DB] read evaluations
-                                 I [D] aggregate  ─►  J [D, optional GenAI] recommendations
+                                 I [D] aggregate  ─►  J [D] recommendation templates
                                  [DB] interview_results, interviews, user_performance (one transaction)
 ```
 
-### 16.3 Question source: the GenAI-optional consequence
+### 16.3 Question source (MVP): curated bank, no generation **[Decided D4]**
 
-The proposal calls the GenAI layer **optional** and also lists curated question banks "used for RAG". Together they imply two valid ways to produce questions. The backend should hide the choice behind one interface and a configuration value (`QUESTION_SOURCE`), recorded per interview in `interviews.question_source`:
+| Aspect | MVP behaviour |
+| --- | --- |
+| Source | `question_bank` rows seeded from a version-controlled file, each with a reference answer and key points (Section 15, Section 8.3) |
+| Selection | deterministic rules in E11 (type, role tags, difficulty, CV skills, uniqueness, no partial interviews) |
+| "CV-aware" | `skill_template` entries are instantiated with a skill found in the CV; skill-overlapping entries rank higher. This **tailors selection**; it does not generate new questions |
+| Optional ranking | if the embedding model is loaded, similarity between the CV's skills and `skill_tags` / question text may break ties; it must never be required |
+| RAG | only the retrieval half (finding relevant bank entries). RAG *with generation* is deferred |
+| Open items | bank authorship, size, licensing and role coverage (OD-14); skills-list source (OD-15) |
 
-| Mode | How questions and ideal answers are produced | Needs GenAI? |
+### 16.4 Evaluation design (MVP) **[Decided D5; details Recommended and unvalidated]**
+
+**Principle.** The score is a *transparent combination of one semantic-similarity signal and several explicit, inspectable criteria*. Every number can be traced to a rule. It is an estimate for practice, not an assessment of the person, and **it does not measure psychological confidence** (nor personality, delivery, honesty or hiring suitability).
+
+**Pre-processing.** Trim; normalise whitespace; split into sentences with simple rules; form **chunks** of up to about three consecutive sentences (overlapping by one sentence) so every chunk is far below the model's 256-word-piece limit (16.6). Answers are at most 1500 characters, so a handful of chunks at most.
+
+**Signals** (each is a number between 0 and 1):
+
+| Signal | How it is computed | Class |
 | --- | --- | --- |
-| `bank` | rank curated `question_bank` entries by role, type, difficulty and similarity to the CV's skills (embeddings, ML); use the bank's curated ideal answers | no |
-| `genai` | prompt the LLM with a minimised CV summary, role, type, difficulty (optionally grounded in retrieved bank entries — RAG) | yes |
+| `sim_ref` | cosine similarity between each answer chunk and the reference answer's embedding; aggregated by the maximum, or the mean of the top two (choice fixed by experiment) | [ML] |
+| `sim_question` | cosine similarity between the chunks and the question text — an *off-topic guard* | [ML] |
+| `keypoint_coverage` | fraction of the entry's `key_points` that the answer covers: a key point counts as covered if its words appear (after simple normalisation) **or** a chunk is semantically close to it above a threshold | [D] + [ML] |
+| `structure_cues` | presence of cue groups: context/problem, action/approach, result/outcome (numbers and outcome words count), and an ordered flow (first/then/finally style connectors); for behavioural questions the groups follow STAR | [D] |
+| `clarity_cues` | answer length inside a target band for its question type; average sentence length inside a band; low repetition of the same phrases | [D] |
+| `specificity` | counts of concrete details: numbers/percentages, named tools or technologies (matched against the entry's `skill_tags` and the CV's skills) | [D] |
 
-Which mode ships first, and whether a RAG layer is required, is **[Open]** (OD-3, OD-5). The API contract is identical in both modes.
+**Category scores** (integers 0–100, higher is better; labels as shown in the UI):
 
-### 16.4 Scoring contract (what the model layer must return)
+| Category (API key) | UI label | Built from |
+| --- | --- | --- |
+| `relevance` | Relevance | `sim_ref`, capped when `sim_question` is below the off-topic threshold |
+| `technical_depth` | Technical Depth | mainly `keypoint_coverage`, plus `specificity`. For behavioural questions it means *depth and specificity of the example* — the UI label is unchanged |
+| `structure` | Structure *(replaces "Confidence")* | `structure_cues` |
+| `clarity` | Clarity | `clarity_cues` |
 
-The API and frontend depend only on this contract, not on how the numbers are produced:
+`overall_score` = the weighted mean of the four categories. **Every constant** — similarity-to-score mapping bounds, thresholds, band limits, weights (initially equal, a placeholder) — lives in one versioned configuration and is identified by `scoring_version`. The similarity mapping is a configurable clamped linear map `clamp((x − low) / (high − low)) × 100`; `low` and `high` are **to be chosen by experiment** (16.9) and no values are claimed here. Changing any constant means a new `scoring_version`; stored evaluations are never recomputed, so old and new versions are never mixed silently.
 
-- `relevance`, `clarity`, `technical_depth`, `confidence`, `overall_score` are integers in 0–100, higher is better.
-- `strengths` and `weaknesses` each contain 1–3 short sentences; `improvement_tip` is one sentence.
-- Output is deterministic for a given `scoring_version` and input (re-evaluating must not change a stored result).
+**Feedback templates (step H).** A fixed library maps *(criterion, level)* to a sentence, so every sentence shown can be explained by a rule.
 
-**Interim baseline [Recommended — to be replaced or calibrated].**
+- *Strengths*: up to 3, from the highest-scoring criteria at or above a "strong" threshold.
+- *Weaknesses*: up to 3, from the lowest-scoring criteria below a "weak" threshold; they may name **up to two missing key points** from the bank ("You did not mention: …").
+- *Guarantee*: 1–3 of each (the UI renders every item). If nothing reaches "strong", the best criterion's mild-praise template is used; if nothing is "weak", the lowest criterion's "minor improvement" template is used.
+- *Tip*: one template chosen by the weakest criterion (for example low structure → a STAR reminder).
+- Templates never state that an answer is *correct* or *incorrect*; they describe coverage, structure and clarity.
 
-| Item | Interim approach |
+**Interview-level text (steps I–J).** Breakdown values and `communication = round-half-up((clarity + structure) / 2)` are computed as in Section 11. The three `recommendations` come from templates for the three weakest categories (one each); `additional_strength` and `additional_improvement` come from the strongest and weakest categories. All of this is static text selected by rules; none of it is generated.
+
+### 16.5 Generative AI: deferred, optional future integration **[Decided D4]**
+
+No OpenAI, Bedrock or other API is required for the MVP, so there are **no AI API keys, no per-call cost and no CV text sent anywhere**. If GenAI is added later it is purely additive: `question_source` / `feedback_source` / `generated_by` would gain the value `genai` (already reserved in the schema), behind one provider-agnostic adapter, with rule-based text as the fallback. A later integration would need its own review of: provider and model choice, prompt-injection handling (CV text and answers are untrusted input), data minimisation (strip contact details), provider retention terms, cost limits, and structured-output validation. None of that is designed in detail here because it is out of scope.
+
+### 16.6 Local model, serving and machine compatibility **[Decided D5]**
+
+**Candidate model: `sentence-transformers/all-MiniLM-L6-v2`** (the decision's initial candidate). Facts checked against its published model information:
+
+| Fact | Consequence |
 | --- | --- |
-| `relevance` | cosine similarity between answer and ideal-answer embeddings, mapped to 0–100 by a calibration curve; a low similarity to the *question* is an off-topic guard |
-| `clarity`, `technical_depth`, `confidence` | transparent feature heuristics (length relative to a target, structure markers, concrete figures, named technologies overlapping with CV and question, hedging language) until labelled data justifies a fine-tuned DistilBERT/BERT model |
-| `overall_score` | weighted mean of the four categories with weights held in configuration (initially equal); **the real formula is [Open]** (OD-8) |
-| Calibration | the proposal's metric — correlation between the AI score and human-rated benchmarks — is the acceptance test; collect human ratings for a benchmark set, compute the correlation (for example Spearman), tune the mapping, bump `scoring_version` |
-| Distribution | the UI's labels (≥ 88 Excellent, ≥ 78 Strong) assume scores spread across the range; raw cosine similarities usually cluster, so calibration must stretch them |
+| produces 384-dimensional embeddings; about 22.7 million parameters | small and fast enough for CPU use |
+| **input longer than 256 word pieces is truncated** | answers (up to 1500 characters) can exceed it → the **chunking** in 16.4 is mandatory, and reference answers must be short (Section 8.3) |
+| presented by its authors as a sentence and short-paragraph encoder | suited to short answers; long essays are out of scope |
+| general-purpose; reported to be weaker on specialised domains | technical interview vocabulary may be handled less well — to be **tested, not assumed** (16.9) |
+| intended for English text | interviews are English-only in the MVP; other languages are unsupported and unvalidated |
 
-### 16.5 GenAI usage rules (OpenAI API or Amazon Bedrock — OD-3)
+The model is **a candidate, not a validated choice**. If testing shows it is inadequate, it is replaceable behind the similarity-engine interface.
 
-| Rule | Detail |
-| --- | --- |
-| Provider-agnostic adapter | one internal interface (`generate_questions`, `write_feedback`, `write_recommendations`); provider and model are configuration, not code paths in endpoints |
-| Structured output | request JSON and validate it against a schema; one retry on invalid output; then fallback or `AI_SERVICE_UNAVAILABLE` |
-| Timeouts | per-call timeout shorter than the endpoint budget; total synchronous work must fit the gateway limit (Section 20) |
-| Fallback | step H, J: rule-based text. Step C/D: if mode is `genai` and the call fails, fall back to `bank` when it is populated, else error |
-| Prompt injection | CV text and answers are **untrusted**: delimit them, instruct the model to ignore instructions inside them, never let output trigger actions, validate output shape and length |
-| Data minimisation | send the minimum: strip name, email, phone and address from CV text before an external call (**[Recommended]**); never send tokens, keys or other users' data |
-| Cost control | cap tokens per call; answers are already limited to 1500 characters; per-user rate limits (Section 19); cache bank-derived ideal answers |
-| Provider data terms | review the chosen provider's retention and training-use terms before sending CV content (OD-10) |
-| Logging | log latency, model name and token counts; never log prompts containing CV text or answers |
+**Serving.**
 
-### 16.6 Model serving
+- Loaded **once at start-up** in the FastAPI process; E22 reports it as ready only after loading. A request never triggers a download or load.
+- The first run needs internet access once to download the model files into the local cache; afterwards it works offline. For a fully offline machine the model folder can be copied and referenced with `EMBEDDING_MODEL_PATH`.
+- Embeddings of bank reference answers are computed once (seed step or first start) and stored in `question_bank.reference_embedding` together with `embedding_model`; if the configured model changes they are recomputed.
+- `evaluations.model_info` records the model id and `SIMILARITY_BACKEND`; `scoring_version` records the constants.
 
-- **[Recommended]** Load embedding and scoring models once at FastAPI start-up inside the same process; expose readiness through `/health` (E22) so the service is not marked ready before models load.
-- Record model identifiers and versions in `evaluations.model_info` and the configuration version in `scoring_version`.
-- Model choice (for example a small Sentence Transformers model, DistilBERT vs BERT) belongs to the ML owner; **none is decided here**.
-- Whisper (step L) is much heavier than the text models and may need a separate instance size — a reason to keep it out of the MVP (Section 22).
+**Compatibility with the development machine ("if compatible").** Requirements: 64-bit OS; **Python 3.12 recommended** (all planned packages support it; Section 25.2); enough free disk for PyTorch and its dependencies — a **large download** (the default Linux build can bundle GPU libraries, CPU-only builds are smaller; check before installing); no GPU needed. A **one-line compatibility check** is the first AI task (Section 26, step 8): encode two sentences and print their cosine similarity. If it fails, record the blocker rather than guessing.
+
+**Explicit fallback — `SIMILARITY_BACKEND=lexical`.** If the machine cannot run the model, a deliberately selected, dependency-free lexical backend (term-overlap similarity against the reference and key points, standard library only) can run the same pipeline. It is clearly lower quality, produces its own `scoring_version`, shows as `"lexical"` in E22, and its results are **not comparable** with `sbert` results. It is never chosen automatically: with `SIMILARITY_BACKEND=sbert`, a load failure keeps the service *not ready* (consistent with D2's rule against silently changing a primary decision).
+
+**Deferred model work:** BERT/DistilBERT scoring heads, fine-tuning, and any cross-encoder — none is part of D5.
 
 ### 16.7 Responsibility matrix per operation
 
-| Operation | Deterministic | ML model | GenAI | Database |
-| --- | --- | --- | --- | --- |
-| E07 upload CV | validation, text extraction | (maybe) skill extraction | (maybe, OD-4) | `cvs`, `cv_profiles`, `cv_skills`, S3 |
-| E11 create interview | validation, type mix, uniqueness | question retrieval (bank mode) | questions, ideal answers (genai mode) | `interviews`, `interview_questions` |
-| E15 submit answer | length rules | — | — | `answers` |
-| E16 evaluate | feedback selection, rounding | similarity, scoring | optional wording | `evaluations` |
-| E14 complete | aggregation, formulas | — | optional recommendation wording | `interview_results`, `user_performance`, `interviews` |
-| E18–E21 reads | ordering, formatting | — | — | reads only |
+| Operation | Deterministic | Local model | Database |
+| --- | --- | --- | --- |
+| E07 upload CV | validation, text extraction, skill rules | — | `cvs`, `cv_profiles`, `cv_skills`, private file |
+| E11 create interview | validation, selection, template filling | optional ranking | `interviews`, `interview_questions` (reads `question_bank`) |
+| E15 submit answer | length rules | — | `answers` |
+| E16 evaluate | chunking, criteria, scoring, templates | similarity | `evaluations` |
+| E14 complete | aggregation, formulas, recommendation templates | — | `interview_results`, `user_performance`, `interviews` |
+| E18–E21 reads | ordering, formatting | — | reads only |
+
+### 16.8 What the scores mean — and do not mean
+
+**Status: not validated.** Until the plan in 16.9 has been run and its results written down, the application and its documentation must describe scores as *automated estimates for practice*, not as accurate assessments.
+
+1. Semantic similarity measures how close an answer's **meaning and topic** are to a reference answer. It does **not** verify factual correctness: a fluent, wrong answer on the right topic can score well.
+2. The reference is **one example**, not the only right answer. A correct answer with a different approach or vocabulary can score low.
+3. Verbose answers that mention many related terms can score well without substance; short, precise answers can score low. Chunking and the criteria reduce, but do not remove, this.
+4. The model truncates beyond 256 word pieces; chunking avoids silent loss but changes the numbers and must be tested.
+5. Interviews are English only; other languages are unsupported.
+6. A general-purpose model may handle specialised technical vocabulary poorly.
+7. The rule-based criteria are **proxies** (cue words, lengths, counts). They can misfire on unusual phrasing and can be gamed.
+8. Key-point coverage is only as good as the curated key points.
+9. **Nothing here measures psychological confidence, personality, spoken delivery or suitability for a job.** Scores must not be used for hiring or grading decisions.
+10. Scores from different `scoring_version`s (or from the `lexical` backend) are not comparable.
+
+### 16.9 Validation plan (to be executed; nothing has been run)
+
+The proposal's own metric — correlation between the AI score and human-rated benchmarks — is kept as the acceptance test.
+
+| Step | What to do | Output |
+| --- | --- | --- |
+| V1 | **Smoke tests:** a reference answer scores high on relevance and coverage; an unrelated paragraph scores low (off-topic guard); an empty or too-short answer is rejected before scoring; the same input gives the identical result twice; a 1500-character answer produces several chunks without error | pass/fail list |
+| V2 | **Property checks:** adding a missing key point never lowers coverage; repeating the same sentence does not raise the score beyond a stated bound | pass/fail list |
+| V3 | **Human-rated set:** collect a small set of sample answers (the team chooses the size, for example a few dozen), have at least two teammates rate each independently on a fixed scale, compute inter-rater agreement and the correlation (for example Spearman) between `overall_score` and the mean human rating | numbers, including weak ones |
+| V4 | **Calibrate on one subset, report on another** to avoid reporting an overfitted result; adjust `low`/`high` and weights only on the calibration subset | new `scoring_version` |
+| V5 | **Write the result down** (model id, `scoring_version`, data description, correlation, failure examples) and limit every claim in the README and UI to what the report supports | `evaluation_report` document |
+
+The team must fix the acceptance threshold *before* running V3; this specification deliberately does not pick one (OD-8 residual).
 
 ---
 
@@ -1525,8 +1730,8 @@ The API and frontend depend only on this contract, not on how the numbers are pr
 | `interview_status` | `in_progress`, `completed`, `abandoned` | history shows `Completed` only |
 | `question_state` | `pending`, `answered`, `evaluated` | — |
 | `question_count` | `5`, `10`, `15` | same |
-| `feedback_source` / `generated_by` | `rules`, `genai` | not displayed |
-| `skill_key` | `communication`, `relevance`, `confidence`, `clarity`, `technical_depth` | `Communication`, `Relevance`, `Confidence`, `Clarity`, `Technical Depth` |
+| `feedback_source` / `generated_by` / `question_source` | `rules` (feedback, results text) · `bank` (questions) — `genai` is reserved for a possible later integration | not displayed |
+| `skill_key` | `communication`, `relevance`, `structure`, `clarity`, `technical_depth` | `Communication`, `Relevance`, `Structure`, `Clarity`, `Technical Depth` |
 
 ### 17.2 Shared objects
 
@@ -1538,10 +1743,10 @@ The API and frontend depend only on this contract, not on how the numbers are pr
 | **InterviewConfig** | `cv_id` uuid · `target_role` string · `interview_type` enum · `difficulty` enum · `question_count` int |
 | **Question** | `id` uuid · `position` int · `text` string · `type` enum (+ `state` in E12) |
 | **Answer** | `id` uuid · `interview_id` uuid · `question_id` uuid · `answer_text` string · `char_count` int · `input_mode` string · `submitted_at` / `updated_at` timestamp |
-| **CategoryScores** | `relevance` · `clarity` · `technical_depth` · `confidence` — integers 0–100 |
+| **CategoryScores** | `relevance` · `clarity` · `technical_depth` · `structure` — integers 0–100 |
 | **Evaluation** | `id` · `question_id` · `overall_score` int · `category_scores` CategoryScores · `strengths` string[1..3] · `weaknesses` string[1..3] · `improvement_tip` string · `ideal_answer` string · `feedback_source` enum · `scoring_version` string · `created_at` timestamp |
 | **InterviewSummary** (`interview` in results) | `id` · `completed_at` · `target_role` · `interview_type` · `difficulty` · `question_count` · `overall_score` · `status` |
-| **Breakdown** | `confidence` · `relevance` · `clarity` · `technical_depth` · `communication` — integers 0–100 |
+| **Breakdown** | `structure` · `relevance` · `clarity` · `technical_depth` · `communication` — integers 0–100 |
 | **Results** | `interview` InterviewSummary · `breakdown` Breakdown · `additional_strength` string · `additional_improvement` string · `recommendations` string[3] · `generated_by` enum · `items[]` {`position`, `question` {id,text,type}, `answer_text`, `evaluation` Evaluation} |
 | **HistoryItem** | `id` · `completed_at` · `target_role` · `interview_type` · `difficulty` · `question_count` · `overall_score` · `status` |
 | **SkillScore** | `key` skill_key · `label` string · `score` int |
@@ -1560,7 +1765,7 @@ The adapter inside `api.js` (Section 24) performs these conversions so that **no
 | `meta.status` | `status` | `completed` → `Completed` |
 | `question {id?, text, type}` | `Question` | `type` capitalised; **keep `id`** (new, F2) |
 | `ev.score` | `overall_score` | |
-| `ev.cats` | `category_scores` | keys in this order: `Relevance`, `Clarity`, `Technical Depth`, `Confidence` |
+| `ev.cats` | `category_scores` | keys in this order: `Relevance`, `Clarity`, `Technical Depth`, `Structure`. **The adapter must not relabel `structure` as "Confidence"** — that would reintroduce the claim D5 forbids; the UI code that reads the key `Confidence` changes instead (FC-13) |
 | `ev.strengths` / `ev.weaknesses` / `ev.tip` / `ev.ideal` | `strengths` / `weaknesses` / `improvement_tip` / `ideal_answer` | |
 | `results.items[i]` = `{q, ev}` | `items[i]` | `q` ← `question`, `ev` ← `evaluation` |
 | `results.extraStrength` / `.extraImprovement` | `additional_strength` / `additional_improvement` | |
@@ -1574,7 +1779,7 @@ Example — the adapter output for one evaluation is exactly the object the UI a
 ```json
 {
   "score": 82,
-  "cats": { "Relevance": 86, "Clarity": 79, "Technical Depth": 77, "Confidence": 81 },
+  "cats": { "Relevance": 86, "Clarity": 79, "Technical Depth": 77, "Structure": 81 },
   "strengths": ["Clearly explained the technical approach.", "Demonstrated practical experience.", "Provided relevant examples."],
   "weaknesses": ["The answer was brief; add more depth and detail.", "Could quantify the project impact more clearly.", "The answer could be more structured."],
   "tip": "Use the STAR method (Situation, Task, Action, Result) and close with a measurable outcome.",
@@ -1620,7 +1825,7 @@ Success responses are plain resources. **All** failures use one envelope:
 | `message` | string | safe to show to the user; never contains stack traces, SQL, paths or provider error text |
 | `details` | array | optional field-level info: `{ "field": "answer_text", "issue": "min_length", "limit": 30 }` |
 | `retryable` | boolean | `true` when the same request may succeed later (AI/DB/transient failures) |
-| `request_id` | string | also sent as `X-Request-ID`; correlates with CloudWatch logs |
+| `request_id` | string | also sent as `X-Request-ID`; correlates with the server logs |
 
 A `success: false` flag is omitted on purpose: the HTTP status already says so and an extra boolean could contradict it.
 
@@ -1629,7 +1834,7 @@ A `success: false` flag is omitted on purpose: the HTTP status already says so a
 | Code | HTTP | When | Endpoints |
 | --- | --- | --- | --- |
 | `VALIDATION_ERROR` | 422 | malformed body/query/path (generic) | all |
-| `UNAUTHORIZED` | 401 | missing or invalid credentials/token | all protected |
+| `UNAUTHORIZED` | 401 | missing or invalid credentials/token — **only once authentication is enabled (Phase 2); in demo mode no endpoint returns 401** | all protected |
 | `TOKEN_EXPIRED` | 401 | access token expired — client should refresh | all protected, E03 |
 | `TOKEN_INVALID` | 401 | refresh token revoked/invalid | E03 |
 | `INVALID_CREDENTIALS` | 401 | wrong email or password | E02 |
@@ -1654,9 +1859,11 @@ A `success: false` flag is omitted on purpose: the HTTP status already says so a
 | `INTERVIEW_INCOMPLETE` | 409 | completing before every question is evaluated | E14 |
 | `RESULTS_NOT_AVAILABLE` | 409 | results requested for a non-completed interview | E18 |
 | `RATE_LIMITED` | 429 | too many requests (`Retry-After` header) | all, especially E07, E11, E16 |
-| `AI_SERVICE_UNAVAILABLE` | 503 | ML model or GenAI provider failed with no fallback | E11, E16 |
-| `AI_SERVICE_TIMEOUT` | 504 | AI step exceeded its budget with no fallback | E11, E16 |
-| `STORAGE_UNAVAILABLE` | 503 | S3 failure | E07, E10 |
+| `AI_SERVICE_UNAVAILABLE` | 503 | the local similarity model is not loaded or failed (there is no GenAI provider in the MVP) | E16 |
+| `AI_SERVICE_TIMEOUT` | 504 | evaluation exceeded its configured time budget (`EVALUATION_TIMEOUT_SECONDS`) | E16 |
+| `STORAGE_UNAVAILABLE` | 503 | private file storage failed (disk full or permissions locally; S3 later) | E07, E10, E23 |
+| `QUESTION_BANK_INSUFFICIENT` | 422 | the curated bank cannot supply the requested number of questions for this combination | E11 |
+| `NOT_FOUND` | 404 | the route does not exist — including E01–E04 in demo mode and E23 outside development | any |
 | `DATABASE_UNAVAILABLE` | 503 | database connection/transaction failure (no details exposed) | all |
 | `INTERNAL_ERROR` | 500 | unexpected server error | all |
 
@@ -1689,8 +1896,8 @@ A `success: false` flag is omitted on purpose: the HTTP status already says so a
 | Situation | Today (F13) | Target behaviour |
 | --- | --- | --- |
 | Any failure | fixed generic string per screen | show `error.message` (the server messages are written for users), fall back to the generic string if the body is not an error envelope |
-| `TOKEN_EXPIRED` | not handled | call E03 once, retry the original request once |
-| `UNAUTHORIZED`, `TOKEN_INVALID` | not handled | clear session, go to sign-in |
+| `TOKEN_EXPIRED` *(Phase 2)* | not handled | call E03 once, retry the original request once |
+| `UNAUTHORIZED`, `TOKEN_INVALID` *(Phase 2)* | not handled | clear session, go to sign-in |
 | `retryable: true` | no retry hint | show the existing "try again" state; answer text is already preserved by the UI |
 | `RATE_LIMITED` | not handled | respect `Retry-After` |
 | Network error / timeout | none | add a client-side timeout so a stalled call becomes a normal error |
@@ -1699,17 +1906,28 @@ A `success: false` flag is omitted on purpose: the HTTP status already says so a
 
 ## 19. Security Requirements
 
-Requirements only — none is implemented. IDs allow tracing in reviews.
+Requirements only — none is implemented. IDs allow tracing in reviews. Because the MVP is **local and single-user** (D1, D3) and uses **no external AI service** (D4), some requirements apply only later; section 19.0 says which.
+
+### 19.0 When each requirement applies
+
+| Phase | Requirements |
+| --- | --- |
+| **Local MVP — must hold from the first line of code** | S-02, S-03, S-06 – S-10, S-12, S-13, S-15, S-16, S-18, S-20, S-22, S-24, S-27, S-31 – S-34 |
+| **Before any public deployment exposes private data** (D3, D8) | S-01, S-04, S-05, S-19, S-21, S-23, S-26, S-28 – S-30 and the whole of Phase 2 authentication (Section 5.4) |
+| **Only if GenAI is added later** | S-14, S-17, S-25 (and review of provider terms, OD-10) |
+| **Recommended hardening, not required for the MVP** | S-11 |
+
+A key privacy property of the MVP: **CV text and answers never leave the developer's machine** — no external API is called.
 
 ### 19.1 Authentication and authorization
 
 | ID | Requirement |
 | --- | --- |
-| S-01 | Every endpoint except register, login, refresh and health requires a valid access token (final mechanism: OD-1). |
-| S-02 | **Object-level authorization:** every query on CVs, interviews, questions, answers, evaluations and results is filtered by the authenticated `user_id`. Foreign or unknown IDs return `404`, never `403`, so IDs cannot be probed. |
-| S-03 | Never trust client-supplied scores or aggregates. E14 ignores the `items` the frontend currently sends (F4); scores are produced only server-side. |
-| S-04 | If passwords are used: argon2id or bcrypt, per-user salt, never logged or returned; login responses must not reveal whether an email exists. |
-| S-05 | Rate limiting per user and per IP, strictest on login, E07 (parsing cost), E11 and E16 (AI cost). |
+| S-01 | *(Phase 2)* Every endpoint except register, login, refresh and health requires a valid access token. In the local MVP the single demo user is resolved by `get_current_user` instead (Section 5.2). |
+| S-02 | **Object-level authorization:** every query on CVs, interviews, questions, answers, evaluations and results is filtered by the current `user_id`, even in demo mode. Foreign or unknown IDs return `404`, never `403`, so IDs cannot be probed. |
+| S-03 | **Never trust client-supplied scores or aggregates.** E14 ignores the `items` the frontend currently sends (F4); every score is computed on the backend (D5). No endpoint accepts a score as input. |
+| S-04 | *(Phase 2)* If passwords are used: argon2id or bcrypt, per-user salt, never logged or returned; login responses must not reveal whether an email exists. |
+| S-05 | *(Public deployment)* Rate limiting per user and per IP, strictest on login, E07 (parsing cost) and E16 (compute cost). |
 
 ### 19.2 CV file handling
 
@@ -1717,273 +1935,274 @@ Requirements only — none is implemented. IDs allow tracing in reviews.
 | --- | --- |
 | S-06 | Allowed types: PDF and DOCX only. Reject `.doc`, `.docm`, `.dotm` and anything else. |
 | S-07 | Validate the **content signature** (PDF header; DOCX is a ZIP containing `[Content_Types].xml` and `word/document.xml`), not just the extension or the client's `Content-Type`. |
-| S-08 | Maximum size 5 MB, enforced while streaming (abort early) and again at the gateway tier; the API Gateway ceiling is 10 MB (Section 20). |
-| S-09 | Defend against decompression bombs and malicious structure: cap uncompressed DOCX size and entry count; reject encrypted PDFs; apply a parse timeout; parse in a constrained context. |
-| S-10 | Sanitise the filename; store under a random S3 key; never build paths from user input; never execute or serve uploaded files back to browsers. |
-| S-11 | Antivirus scanning of uploads is a **recommended hardening** (future if not in MVP). |
+| S-08 | Maximum size 5 MB (5 × 1024 × 1024 bytes), enforced while reading the upload (abort early). If a gateway is added later it must not allow more than its own ceiling (Section 20). |
+| S-09 | Defend against decompression bombs and malformed files: cap uncompressed DOCX size and entry count; reject encrypted PDFs; apply a parse timeout; never evaluate macros or embedded content. |
+| S-10 | Sanitise the filename; store under a **random name**; never build paths from user input; never execute uploaded files and never serve them back to browsers. |
+| S-11 | Antivirus scanning of uploads is a **recommended hardening** (future). |
 
 ### 19.3 Input validation and untrusted text
 
 | ID | Requirement |
 | --- | --- |
 | S-12 | Validate every request with strict typed schemas (enums, lengths, formats) and reject unknown fields where feasible. Limit JSON body size. |
-| S-13 | All SQL through parameterised queries / an ORM. |
-| S-14 | CV text and answers are **untrusted input to language models** (prompt injection). Delimit them in prompts, validate model output against schemas, and never let model output drive actions (Section 16.5). |
+| S-13 | All SQL through an ORM / parameterised queries. |
+| S-14 | *(Only if GenAI is added)* CV text and answers are **untrusted input to language models** (prompt injection): delimit them in prompts, validate model output against schemas, never let model output drive actions (Section 16.5). |
 | S-15 | Responses are JSON only; stored free text is returned as data, never as markup. The frontend renders it as text (React escapes by default). |
 
 ### 19.4 Secrets and configuration
 
 | ID | Requirement |
 | --- | --- |
-| S-16 | Secrets (database credentials, JWT signing key, OpenAI/Bedrock credentials) come from environment variables or an AWS secret store and are never committed. The frontend repository already ignores `.env`. |
-| S-17 | AI provider keys exist **only on the backend**; the frontend must never receive or embed them. |
-| S-18 | Separate configuration and credentials per environment (development / production); rotate keys on exposure. |
+| S-16 | Configuration comes from **environment variables** (a local `.env` file that is **git-ignored**, with a committed `.env.example` that contains no real values). The database password and, later, the JWT signing key are never committed. |
+| S-17 | *(Only if GenAI is added)* AI provider keys exist **only on the backend**; the frontend never receives or embeds them. There are none in the MVP. |
+| S-18 | Separate configuration per environment (`APP_ENV`); rotate any credential that has been exposed. |
 
 ### 19.5 Transport, CORS and headers
 
 | ID | Requirement |
 | --- | --- |
-| S-19 | HTTPS only; TLS terminates at API Gateway (or the chosen edge). |
-| S-20 | CORS allow-list limited to the deployed frontend origin(s) plus `http://localhost:5173` in development; no wildcard with credentials; allow only the methods and headers in this spec. |
-| S-21 | If the refresh token is a cookie: `HttpOnly; Secure`, narrow `Path`, appropriate `SameSite`, and a CSRF review (OD-1). |
-| S-22 | Add `X-Content-Type-Options: nosniff` and a request-size limit on all responses/requests. |
+| S-19 | *(Public deployment)* HTTPS only; TLS terminates at the chosen edge. Local development uses plain HTTP on the loopback interface only. |
+| S-20 | CORS allow-list limited to the local frontend origins (`http://localhost:5173`, `http://127.0.0.1:5173`) in development, and to the deployed origin(s) later; **no wildcard**; allow only the methods and headers in this specification. |
+| S-21 | *(Phase 2)* If the refresh token is a cookie: `HttpOnly; Secure`, narrow `Path`, appropriate `SameSite`, and a CSRF review. |
+| S-22 | Send `X-Content-Type-Options: nosniff`; enforce a request-size limit. |
 
 ### 19.6 Data protection and privacy
 
 | ID | Requirement |
 | --- | --- |
-| S-23 | CVs and answers are personal data. S3 buckets are private with server-side encryption and public access blocked; RDS is encrypted at rest and reachable only from the application's security group. |
-| S-24 | Never log CV text, answers, tokens, passwords or full prompts; log IDs, sizes, durations and error codes. |
-| S-25 | Minimise what is sent to an external LLM (strip contact details, send only needed text) and review provider retention/training terms (OD-10). |
-| S-26 | Users can delete a CV (E10). A full account/data deletion path and retention periods are required before real users are onboarded (OD-10, Section 22). |
-| S-27 | Error responses never expose internals (stack traces, SQL, file paths, provider messages). |
+| S-23 | *(Public deployment)* CVs and answers are personal data. Cloud storage buckets are private with server-side encryption and public access blocked; the database is encrypted at rest and reachable only from the application. |
+| S-24 | Never log CV text, answers, tokens or passwords; log IDs, sizes, durations and error codes. |
+| S-25 | *(Only if GenAI is added)* Minimise what is sent to an external LLM (strip contact details, send only needed text) and review the provider's retention and training terms (OD-10). |
+| S-26 | *(Public deployment)* Users can delete a CV (E10) already in the MVP; a full account/data deletion path and retention periods are required before real users are onboarded (OD-10, Section 22). |
+| S-27 | Error responses never expose internals (stack traces, SQL, file paths, library messages). |
 
-### 19.7 Operational security
+### 19.7 Operational security (later phase)
 
 | ID | Requirement |
 | --- | --- |
-| S-28 | Structured logging with `request_id` to CloudWatch; alarms on error rate, latency and AI failure rate. |
-| S-29 | RDS in a private subnet; EC2 security group exposes only what the gateway needs; SSH restricted. |
-| S-30 | If API Gateway forwards to a public EC2 address, the backend must verify a shared origin secret header so that the API cannot be reached by bypassing the gateway (Section 20). |
+| S-28 | *(Deployment)* Structured logging with `request_id` to the platform's log service; alarms on error rate and latency. |
+| S-29 | *(Deployment)* The database sits in a private network position reachable only from the application; administrative access is restricted. |
+| S-30 | *(Deployment)* If a gateway forwards to a publicly reachable application address, the backend must verify a shared origin-secret header so the API cannot be reached by bypassing the gateway (Section 20). |
+
+### 19.8 Local, single-user demonstration safeguards **[Decided D3, D7]**
+
+| ID | Requirement |
+| --- | --- |
+| S-31 | **Demo-mode start-up guard.** The application **refuses to start** if `AUTH_MODE=demo` and either `APP_ENV` is not `development` or the configured host is not a loopback address. This enforces "authentication before public deployment" mechanically. |
+| S-32 | Bind to `127.0.0.1` only; validate the `Host` header against an allow-list; keep the CORS allow-list from S-20. Do not expose the dev server through a public tunnel while in demo mode. Because multipart uploads are "simple" cross-site requests, **[Recommended]** also require a custom request header (for example `X-AIC-Client`) on state-changing routes, which forces a CORS pre-flight that other websites cannot pass. |
+| S-33 | **Private local file storage.** Uploaded CVs live in a dedicated directory that is **never inside the frontend's `public/` or `src/` folders, any static-files mount or any web-served path** (preferably outside the repository altogether, Section 25.5); it is git-ignored; files get random names; the application's own account is the only one with access (restrictive directory permissions on systems that support them); no endpoint serves them. Full-disk encryption on the developer machine is advisable. |
+| S-34 | **No private data in version control.** Neither the CV directory, nor `.env`, nor database dumps containing CVs or answers are committed; test fixtures use synthetic CVs only. |
 
 ---
 
-## 20. AWS Architecture
+## 20. AWS Architecture (later phase)
 
-The proposal names five AWS services (EC2, S3, RDS, API Gateway, CloudWatch) in the Cloud/DevOps role and the workflow. This section places each one and **does not add other AWS services to the baseline**. Nothing is deployed.
+### 20.1 Status **[Decided D8]**
 
-### 20.1 Service placement
+AWS deployment is a **later phase**. The team's available educational resource is **AWS Academy**, but *which services and credits it provides has not been confirmed*. Therefore:
 
-| Service | Role in this system | Basis |
-| --- | --- | --- |
-| **EC2** | runs the FastAPI application (and, in the MVP, the in-process ML models) | **[Proposal]** (Cloud/DevOps role) |
-| **RDS** | PostgreSQL or MySQL holding users, CV metadata, interviews, questions, answers, evaluations, results, performance | **[Proposal]** (§3 Tech Stack); engine **[Open]** OD-2 |
-| **S3** | private bucket for uploaded CV files (database keeps only the object key); optionally model artifacts | **[Proposal]** (listed in roles); usage for CV files **[Recommended]** |
-| **API Gateway** | public HTTPS entry point in front of FastAPI: TLS, throttling, request-size ceiling | **[Proposal]**; type **[Open]** OD-12 |
-| **CloudWatch** | logs, metrics, alarms and dashboards for system performance | **[Proposal]** §4 step 4 |
+- **Nothing in the MVP depends on AWS.** The local MVP (Sections 21, 25, 26) is complete without it.
+- **No access is assumed** to EC2, RDS, S3 or API Gateway.
+- **No resource is created and no cost is incurred** by this document or by the MVP.
+- Deployment is attempted only after the local MVP works **and** authentication (Phase 2) is implemented (20.6).
 
-### 20.2 Baseline topology
+The proposal names EC2, S3, RDS, API Gateway and CloudWatch **[Proposal]**; this section shows where each *would* fit if available, and what to do if it is not.
 
-```
- Browser ── React build (hosting: OD-11)
-    │
-    │  HTTPS  /api/v1/*
-    ▼
- ┌──────────────────┐   throttling · TLS · 10 MB payload ceiling
- │   API Gateway    │───────────────────────────────┐
- └────────┬─────────┘                               │ access logs, metrics
-          │ HTTP proxy integration                  ▼
-          ▼                                   ┌────────────┐
- ┌──────────────────────────────┐             │ CloudWatch │◄── app logs (JSON, request_id)
- │ EC2 — FastAPI (Uvicorn)       │────────────►│ logs · metrics · alarms
- │  routers · services           │             └────────────┘
- │  ML models (in-process)       │
- │  GenAI adapter ───────────────┼──► OpenAI API / Amazon Bedrock   (OD-3)
- └───────┬───────────────┬──────┘
-         │               │
-         ▼               ▼
-   ┌───────────┐   ┌───────────┐
-   │ RDS (SQL) │   │ S3 bucket │   private, encrypted, CV files only
-   │ private   │   └───────────┘
-   │ subnet    │
-   └───────────┘
-```
+### 20.2 Questions to confirm first (unresolved — OD-17)
 
-### 20.3 API Gateway constraints that shape the design
+None of these can be answered from the project files. They are listed so the first person with access can check them quickly:
 
-Verified against the AWS API Gateway quota documentation (October 2026; re-check before deployment):
+1. Which AWS Academy environment is provided, and is it available to every team member?
+2. Which services may actually be created: EC2, RDS, S3, API Gateway, CloudWatch?
+3. Are there region restrictions, a spending/credit limit, or limits on instance types and storage?
+4. How long does a session last, do running resources stop or get deleted when it ends, and does data persist between sessions?
+5. Can a resource be reached from the public internet, and can an IAM role be created for the application?
+6. Is it acceptable to place real CVs (personal data) in that environment at all?
+
+### 20.3 Local component → AWS counterpart (only if the services are available)
+
+| Local MVP component | AWS counterpart | Migration step | If the service is unavailable |
+| --- | --- | --- | --- |
+| FastAPI process on the developer's machine | EC2 instance | install the same application; supply environment variables | demo locally; record the limitation |
+| Local PostgreSQL | RDS for PostgreSQL | change `DATABASE_URL`; run the same migrations | run PostgreSQL on the same instance, or stay local |
+| Private local CV directory | **private** S3 bucket | implement `S3StorageBackend`; set `CV_STORAGE_BACKEND=s3`; copy existing files keeping their keys (Section 25.5) | keep private local storage on the instance |
+| Console / file logs | CloudWatch Logs | ship logs and add alarms | keep local logs |
+| Browser → FastAPI directly | API Gateway in front of FastAPI | **optional**; not required because the application can serve HTTPS requests behind any reverse proxy | skip it |
+| Vite dev server | a static host for the built frontend | build with `npm run build`; hosting choice open (OD-11) | demo locally |
+| Demo user, `AUTH_MODE=demo` | **real authentication (mandatory)** | Phase 2 | **do not deploy publicly** |
+
+### 20.4 If API Gateway is used: constraints that shape the design
+
+Verified against the AWS API Gateway quota documentation (October 2026; re-check before use):
 
 | Limit | REST API | HTTP API |
 | --- | --- | --- |
-| Integration timeout | 29 seconds by default; can be raised above 29 s, but this may require lowering the account's regional throttle quota | 30 seconds maximum (not adjustable) |
+| Integration timeout | 29 seconds by default; can be raised, but this may require lowering the account's regional throttle quota | 30 seconds maximum (not adjustable) |
 | Payload size | 10 MB (not adjustable) | 10 MB (not adjustable) |
 
-Consequences:
+The 5 MB CV limit fits under the 10 MB ceiling. Answer evaluation runs locally and is expected to be well under the timeout, but this is **not yet measured** (OD-13). Type choice (HTTP vs REST) stays open (OD-12).
 
-- **Uploads:** the 5 MB CV limit sits safely under the 10 MB ceiling, so CVs can be sent through the gateway as multipart (no presigned-URL flow is needed for the MVP).
-- **Synchronous AI calls:** E11 (question + ideal-answer generation) and E16 (evaluation) run inside one HTTP request. Each must complete well under ~25 seconds including network, model and database time. If measurements show otherwise (large GenAI calls, slow CPU inference), the fallback is an asynchronous job pattern (`202 Accepted` + status endpoint) — **not in the MVP**, listed in Section 22. The frontend's current spinner-based screens would need a polling step for that (OD-13).
-- **Type choice (OD-12):** HTTP API is simpler and cheaper; REST API offers usage plans, request validation and AWS WAF integration. The proposal says only "API Gateway".
+### 20.5 Possible topologies (options, not decisions)
 
-### 20.4 Reaching EC2 from API Gateway
+| Option | Services | Notes |
+| --- | --- | --- |
+| **Stay local** | none | the committed deliverable if AWS turns out to be unavailable: a reproducible local setup and a README |
+| **Single instance** | EC2 only | FastAPI + PostgreSQL + the built frontend on one instance; fewest services and cost; needs real authentication and HTTPS before it is exposed |
+| **Managed pieces** | EC2 + RDS + S3 (+ optionally API Gateway, CloudWatch) | closest to the proposal; each piece depends on 20.2 |
 
-| Approach | Notes |
-| --- | --- |
-| **Baseline:** HTTP proxy integration to the EC2 instance's address | simplest. The instance is then internet-reachable, so it must verify a shared **origin-secret header** that API Gateway adds (S-30) and restrict everything else |
-| Hardened (optional): private integration | API Gateway reaches EC2 inside the VPC through a VPC link and an internal load balancer. This introduces a load balancer, which is **not in the proposal's list** — mark as optional hardening, not baseline |
+Services such as Cognito, CloudFront, Secrets Manager, load balancers, Lambda, queues and any hosted GenAI service are **not assumed** and not needed by this design.
 
-### 20.5 Component notes
+### 20.6 Gate: before any public deployment
 
-**EC2.** One instance is sufficient for a capstone. Run FastAPI under Uvicorn; load models at start-up (Section 16.6) and report readiness through E22. Instance size depends on the chosen models (OD-13). Whisper, if added later, may need a larger instance or separate hosting.
+All of the following must be true (these are the requirements marked "before public deployment" in Section 19.0):
 
-**RDS.** Private subnet; security group allows connections only from the EC2 security group; automated backups on; connection pooling in the application; credentials from environment/secret store (S-16).
-
-**S3.** One private bucket, public access blocked, server-side encryption, object keys generated by the server (S-10), lifecycle rule for objects whose CV was deleted (E10 removes immediately; the rule is a safety net). The browser never reads CV objects directly.
-
-**CloudWatch.**
-
-| Signal | Purpose |
-| --- | --- |
-| Application logs (structured JSON with `request_id`, user id, route, status, duration; **no CV text or answers**) | debugging and audit |
-| Metrics: request count/latency/errors per route; `evaluation_latency_ms`; GenAI call latency and failure count; CV parse failures | "AWS CloudWatch monitoring system performance" (proposal) |
-| Alarms: 5xx rate, p95 latency of E11/E16, AI failure rate, RDS connections/CPU | operational response |
-| `/health` (E22) | readiness/liveness checks |
-
-### 20.6 Not part of the baseline (mentioned only so nobody assumes them)
-
-Amazon Cognito, Secrets Manager, CloudFront, an Application/Network Load Balancer, Lambda, SQS/job queues and a vector database service are **not** in the proposal. They may become sensible later (Section 22) but are not required by this design.
-
-### 20.7 Configuration surface (names are suggestions)
-
-| Setting | Used for |
-| --- | --- |
-| `DATABASE_URL` | RDS connection |
-| `S3_BUCKET`, `AWS_REGION` | CV storage |
-| `CORS_ORIGINS` | allow-list (S-20) |
-| `MAX_CV_BYTES` (5 242 880) | upload ceiling |
-| `QUESTION_SOURCE` (`bank` \| `genai`) | Section 16.3 |
-| `GENAI_PROVIDER`, `GENAI_MODEL` + credentials | only if GenAI is enabled |
-| `SCORING_VERSION`, category weights | Section 16.4 |
-| `JWT_SECRET`, token lifetimes | only if OD-1 = option A |
-| `ORIGIN_SECRET` | S-30 |
-
-The frontend counterpart is `VITE_API_BASE_URL` (already listed in `.env.example`).
+- Authentication is implemented (Phase 2), `AUTH_MODE` is not `demo`, and E23 is not registered.
+- HTTPS is in place and CORS lists only the deployed origin.
+- The database is not publicly reachable; secrets are not in the repository.
+- CV files are in private storage with no public access.
+- A retention and deletion policy for CVs and answers exists (OD-10).
+- The cost and session limits from 20.2 are understood.
 
 ---
 
 ## 21. MVP Scope
 
-Goal: the core workflow end to end — **CV → target role → interview → answers → evaluation → feedback → results → history** — with the existing frontend.
+Goal: the core workflow end to end — **CV → target role → interview → answers → evaluation → feedback → results → history** — running **locally** with the existing frontend (D1, D6).
 
-### 21.1 Included in the first working version
+### 21.1 Phases
+
+| Phase | Content | Status |
+| --- | --- | --- |
+| **1 — Local MVP** | the 13 endpoints below, local PostgreSQL, demo user, curated bank, local similarity + rules, private local CV storage | **[Decided]** — the committed scope |
+| **1b — Hardening** | the 6 Recommended endpoints (refresh recovery, cleanup, summary) and evaluation validation (V3–V5) | planned, follows Phase 1 |
+| **2 — Authentication** | E01–E04, real users, tokens, frontend sign-in | **[Deferred]**; mandatory before public deployment |
+| **3 — Cloud deployment** | AWS (or other) hosting, private S3 storage, managed database | **[Deferred]**; depends on AWS Academy availability (OD-17) |
+| **4 — Enhancements** | Section 22 | optional |
+
+### 21.2 Included in Phase 1 (local MVP)
 
 | Area | Included |
 | --- | --- |
-| Endpoints | all **9 Core** (E06, E07, E11, E14, E15, E16, E18, E19, E20) + **E05** (current user), **E10** (delete CV), **E22** (health) + **E01–E04** if OD-1 selects login = **16 endpoints** |
-| Data | `users`, `cvs`, `cv_profiles`, `cv_skills`, `interviews`, `interview_questions`, `answers`, `evaluations`, `interview_results`, `user_performance` (+ `refresh_tokens` if OD-1 = A; `question_bank` if `bank` mode) |
-| AI/ML | CV text extraction; Sentence-Transformers-based semantic score; interim category scoring (Section 16.4); rule-based strengths/weaknesses/tip/recommendations; **at least one** question source (`bank` or `genai`) working |
-| GenAI | optional per the proposal. If included in the first version: question and ideal-answer generation only; feedback wording stays rule-based with GenAI as an enhancement |
-| AWS | one EC2 instance, one RDS instance, one S3 bucket, API Gateway, CloudWatch logs and basic alarms |
-| Security | S-01–S-10, S-12–S-13, S-16–S-20, S-23–S-24, S-27, S-30 |
-| Frontend | adapter swap behind `api.js` plus changes FC-1 to FC-8 (Section 24) |
+| Endpoints | **13**: the 9 Core (E06, E07, E11, E14, E15, E16, E18, E19, E20) and 4 Supporting (E05 current user, E10 delete CV, E22 health, E23 demo reset) |
+| Data | `users` (demo user), `cvs`, `cv_profiles`, `cv_skills`, `interviews`, `interview_questions`, `answers`, `evaluations`, `interview_results`, `user_performance`, `question_bank` — **11 tables** (`refresh_tokens` is Phase 2) |
+| CV | upload, validation, text extraction with free libraries, rule-based skills, metadata in PostgreSQL, **private local file storage** |
+| Questions | curated bank with reference answers and key points; deterministic selection; CV skill templates |
+| Evaluation | local Sentence Transformers (candidate `all-MiniLM-L6-v2`) + explicit rule-based criteria; template feedback; **unvalidated** until Section 16.9 is run |
+| Auth | single seeded demo user; safeguards S-31 – S-34 |
+| Frontend | the adapter swap behind `api.js` with the mock kept available, plus the changes marked "required for the local MVP" in Section 24.2 (FC-1, 2, 3 (delete), 5, 6, 7, 8, 10, 12, 13) |
+| Security | the requirements listed under "Local MVP" in Section 19.0 |
 
-### 21.2 Deferred within the MVP phase (second iteration — "Recommended")
+### 21.3 Phase 1b (Recommended endpoints)
 
-E08/E09 (CV list/detail), E12 (resume state), E13 (abandon), E17 (fetch evaluation), E21 (summary). They improve robustness (refresh recovery, cleanup, no client-side aggregation) but the first demo works without them. Total **6 endpoints**.
+E08/E09 (CV list/detail, restores the CV after a refresh), E12 (resume state), E13 (abandon), E17 (fetch evaluation), E21 (dashboard summary) — **6 endpoints** — and the human-rated validation (V3–V5). They improve robustness but the first demo works without them.
 
-### 21.3 Explicitly **not** in the MVP
+### 21.4 Explicitly **not** in the MVP
 
-Whisper / speech answers · dynamic follow-up questions · job-description input · web-scraped job postings and a full RAG corpus · asynchronous job processing · account deletion and data export · email verification / password reset · antivirus scanning · admin tools for the question bank · multi-language support · fine-tuning models on human-rated data.
+Authentication and real user accounts · any AWS resource, S3 or API Gateway · GenAI question/ideal-answer/feedback generation (OpenAI, Bedrock or anything paid) · BERT/DistilBERT scoring heads and model fine-tuning · Whisper / speech answers · dynamic follow-up questions · job-description input · RAG with generation, and scraped job-posting pipelines · asynchronous job processing · account deletion and data export · email verification and password reset · antivirus scanning · multi-language support · admin tools for the question bank.
+
+### 21.5 Definition of done for Phase 1
+
+1. All nine `api.js` functions work against the real backend with the mock switched off, and the mock still works when switched on.
+2. Flows A–E (Section 3.3) pass manually from the browser.
+3. A brand-new database (no interviews) shows the dashboard and performance pages without crashing (F26).
+4. Frontend-submitted scores have no effect (S-03), verified by a test.
+5. Smoke and property checks V1–V2 pass; V3–V5 are either done and reported or the UI says plainly that scores are unvalidated estimates.
+6. The UI no longer claims to measure "confidence" (FC-13).
+7. A README lets someone else run the backend locally from scratch; no private data or secrets are committed (S-34).
 
 ---
 
 ## 22. Future Enhancements
 
-| Enhancement | Notes / sketch | Relates to |
+Everything here is **outside** the local MVP. "Depends on" says what must happen first.
+
+| Enhancement | Notes / sketch | Depends on |
 | --- | --- | --- |
-| **Speech answers (Whisper)** | add `POST /api/v1/transcriptions` (multipart audio ≤ gateway limit) returning `{ "text": "…" }`; the user confirms the transcript, then E15 stores it with `input_mode: "speech"`. UI needs a recorder | OD-6, F22, step L |
-| **Dynamic follow-up questions** | `POST /interviews/{id}/questions/{qid}/follow-up` generating a new question from the user's answer; the UI's fixed `n` and progress bar would need to change | F21, step M |
-| **Job-description input** | optional `job_description` (string) on E11, stored in `interviews`, used by steps C/D | OD-7, F23 |
-| **Full RAG** over curated resources and scraped job postings | offline ingestion pipeline + vector storage; retrieval in step C/D | OD-5 |
-| **Async processing** | `202 Accepted` with `GET /jobs/{id}`; UI polls. Needed only if sync calls approach the gateway timeout | OD-13, Section 20.3 |
-| **Account and data deletion** | `DELETE /users/me` removing all user data (replaces the demo-only "Reset demo data") | OD-9, OD-10, F11 |
+| **Authentication (Phase 2)** | E01–E04, `refresh_tokens`, frontend sign-in (FC-4), `AUTH_MODE=jwt`, E23 removed | mandatory before any public deployment (D3) |
+| **AWS deployment (Phase 3)** | Section 20 options; private S3 storage; managed database | OD-17, Phase 2 |
+| **Private S3 storage** | `S3StorageBackend` behind the existing storage interface; migrate files keeping their keys (Section 25.5) | OD-17 |
+| **Optional GenAI** | `question_source` / `feedback_source` gain `genai`; provider-agnostic adapter with rules as fallback; privacy and prompt-injection work (Section 16.5) | a decision to add it, provider choice, budget |
+| **BERT / DistilBERT scoring** | replace or complement the criteria with a fine-tuned model behind the same scorer interface | labelled data from the human-rated set (Section 16.9) |
+| **Speech answers (Whisper)** | add `POST /api/v1/transcriptions` (multipart audio) returning `{ "text": "…" }`; the user confirms, then E15 stores it with `input_mode: "speech"`; needs a recorder in the UI and a larger machine | D6 revisited |
+| **Dynamic follow-up questions** | `POST /interviews/{id}/questions/{qid}/follow-up`; the UI's fixed `n` and progress bar would need to change | F21, GenAI |
+| **Job-description input** | optional `job_description` on E11, stored with the interview, used for selection | OD-7 |
+| **RAG with generation; job-posting data** | offline ingestion of postings/resources, retrieval, generation | GenAI; OD-14 |
+| **Async processing** | `202 Accepted` + `GET /jobs/{id}` | only if local evaluation proves too slow (OD-13) |
+| **Account and data deletion** | `DELETE /users/me`; replaces the demo-only reset in a real deployment | Phase 2, OD-10 |
 | **Delete a past interview** | `DELETE /interviews/{id}` | — |
-| **Email verification, password reset** | only if OD-1 = option A | OD-1 |
-| **Direct-to-S3 uploads** | presigned URLs, only if CV size limits grow beyond the gateway ceiling | S-08 |
-| **Antivirus scanning** | scan uploads before parsing | S-11 |
-| **Model improvement** | fine-tune DistilBERT/BERT heads on human-rated answers; track correlation with human ratings | OD-8 |
-| **Server-side breakdown ranking** | return strengths/improvement lists from the server instead of client-side ranking | Section 2.6 |
-| **Streaming feedback** | stream evaluation text to the UI | step H |
-| **Admin tooling** | manage `question_bank` content | OD-5 |
+| **Email verification, password reset** | | Phase 2 |
+| **Antivirus scanning, direct-to-S3 uploads** | S-11 | Phase 3 |
+| **Server-side strengths/improvement lists** | return them from the server instead of ranking client-side | — |
+| **Admin tooling for the question bank** | edit/import bank content without redeploying | OD-14 |
 
 ---
 
 ## 23. Open Decisions / Questions
 
-Only items that the proposal or frontend genuinely leave unresolved. Each lists what it blocks so the team can order the discussions.
+The team is inactive, so every item still open carries a **default to proceed with**. A default is a working assumption, not a decision; it can be overturned later without redoing the MVP.
 
-### OD-1 — Authentication method
-- **Why open:** the proposal never mentions authentication; the UI has only a "Sign in as Alex" shortcut (F10).
-- **Options:** (A) email + password with JWT access/refresh tokens; (B) managed identity provider such as Cognito (not in the proposal); (C) no login for the capstone demo.
-- **Sub-questions:** refresh token in cookie vs response body; whether changing email requires verification.
-- **Recommended default:** A.
-- **Blocks:** E01–E06, S-01, S-21, FC-4. All other endpoints only assume "an authenticated user".
+### 23.1 Items from v0.1 and how the working decisions resolved them
 
-### OD-2 — PostgreSQL or MySQL
-- **Why open:** proposal says "PostgreSQL / MySQL, hosted on AWS RDS".
-- **Effect:** type mapping (Section 15), JSON and UUID handling, and the vector-search options in OD-5.
-- **Blocks:** database creation, migrations.
+| ID | Question (v0.1) | Resolution | What remains |
+| --- | --- | --- | --- |
+| OD-1 | Authentication method | **Resolved for the MVP by D3**: deferred; single demo user; auth-ready architecture | Phase 2 sub-questions only: refresh token in cookie vs body; whether changing email needs verification (non-blocking) |
+| OD-2 | PostgreSQL or MySQL | **Resolved by D2**: PostgreSQL locally; SQLite only as a documented temporary fallback | Whether RDS is available → OD-17 |
+| OD-3 | GenAI provider and whether GenAI is in the first release | **Resolved by D4**: no GenAI, no paid API | nothing for the MVP; provider choice is a future decision (Section 22) |
+| OD-4 | How structured CV information is extracted | **Resolved in principle by D4/D7**: rule-based extraction with free libraries | the skills list → OD-15 |
+| OD-5 | Question source and role of RAG | **Resolved in principle by D4**: curated bank; retrieval only, no generation | the bank's content → OD-14 |
+| OD-6 | Speech input (Whisper) in the first release | **Resolved by D6**: deferred | — |
+| OD-7 | Job-description input | **Not decided explicitly.** D6's workflow list does not include it, so it is treated as *not in the MVP* | still open as a future question; non-blocking |
+| OD-8 | Exact scoring and "confidence score" | **Partly resolved by D5**: similarity + explicit criteria; no claim about psychological confidence; scoring only on the backend | constants, weights, thresholds, calibration data and the acceptance threshold are **unresolved** (see 23.2) |
+| OD-9 | Profile edge cases | **Resolved for demo mode**: email editable without verification; "Reset demo data" → E23 | Phase 2: real account semantics |
+| OD-10 | Retention, consent, provider data handling | **Partly resolved**: the MVP is local and sends nothing to any provider | retention, consent and deletion policy for a **public** deployment remain open |
+| OD-11 | Where the React build is hosted | **Deferred with AWS (D8)** | open until Phase 3 |
+| OD-12 | API Gateway type and EC2 reachability | **Deferred with AWS (D8)**; API Gateway is optional | open until Phase 3 |
+| OD-13 | Latency budgets and sync vs async | **Partly resolved**: locally there is no gateway limit and no external call | actual evaluation time on the team's machines is **not measured** |
 
-### OD-3 — GenAI provider, model, and whether GenAI is in the first release
-- **Why open:** "OpenAI API / Amazon Bedrock (GenAI, optional)"; no model named.
-- **Options:** OpenAI; Bedrock (stays inside AWS); none in the first release (`bank` mode).
-- **Blocks:** step C/D implementation, `GENAI_*` configuration, data-privacy review (OD-10).
+### 23.2 Still open (new or remaining)
 
-### OD-4 — How structured CV information is extracted
-- **Why open:** the proposal says CVs are "converted to text"; it does not say how skills/experience are extracted, or whether GenAI is used for it.
-- **Options:** keyword/taxonomy matching; embedding-based matching; GenAI extraction; a combination.
-- **Blocks:** shape of `extracted` and `cv_profiles` (currently provisional), question personalization quality.
+Ordered by how much they block.
 
-### OD-5 — Question source and the role of RAG
-- **Why open:** the proposal lists "curated interview question banks and career resources used for RAG" and the "LLMs & RAG" track, but also marks GenAI optional and names no vector store or retrieval design.
-- **Options:** `bank` retrieval only; `genai` only; GenAI grounded by retrieved bank entries (RAG). Vector storage: none / a PostgreSQL vector extension / an external vector store.
-- **Blocks:** `question_bank` design, step C/D, content-curation work.
+#### OD-14 — Question bank content (blocks E11 end to end)
+- **Question:** who writes the questions, reference answers and key points; how many; for which roles; under what licence?
+- **Why unresolved:** the proposal mentions "curated interview question banks" as a data source but names none, and gives no size or authorship.
+- **Derived minimum:** Section 8.3 (at least 15 entries per type-and-difficulty cell, a general fallback set, role-specific entries for the 7 preset roles).
+- **Default to proceed:** the team authors an initial bank itself (so licensing is simple), starting with the general set, and a script checks the minimums before the server accepts the bank.
 
-### OD-6 — Is speech input (Whisper) in the first release?
-- **Why open:** Whisper appears in the ML engineer's role and the value proposition ("speech/text evaluation"), but the written workflow says answers are given "via text", and the UI is text-only (F22).
-- **Recommended default:** not in the MVP.
-- **Blocks:** a transcription endpoint, recorder UI, instance sizing.
+#### OD-8 (residual) — Scoring constants and acceptance (blocks trustworthy scores, not coding)
+- **Question:** similarity-to-score mapping bounds, thresholds, band limits, category weights, and what correlation with human ratings counts as acceptable.
+- **Why unresolved:** no data exists yet; fixing numbers now would be invention.
+- **Default to proceed:** implement the configurable structure of Section 16.4 with placeholder constants, mark `scoring_version` as draft, run Section 16.9, and set the acceptance threshold *before* the human-rating step.
 
-### OD-7 — Is job-description input required?
-- **Why open:** job descriptions are listed among data sources, but no workflow step takes one and the UI has no field (F23).
-- **Recommended default:** not in the MVP; reserve an optional field later.
+#### OD-15 — Source of the skills list used for CV skill extraction
+- **Question:** which curated list of skills the rule-based extractor matches against.
+- **Default to proceed:** a plain file maintained by the team, seeded from the bank's `skill_tags` plus common technology terms, so the bank and the CV vocabulary agree.
 
-### OD-8 — Exact scoring and "confidence score" definition
-- **Why open:** the proposal says the models "compute a confidence score" and validates it by correlation with human-rated benchmarks, but gives no formula. It also does not say how clarity, technical depth and confidence are derived (only semantic similarity is described). The UI uses "confidence" both as the overall figure on the dashboard and as a per-answer category (F16).
-- **Questions:** how each category is computed; the overall formula/weights; the calibration dataset; what the user-facing term for the overall figure should be.
-- **Blocks:** step F, `scoring_version`, E16/E14 numbers, label thresholds (88/78).
+#### OD-16 — DEPI programme requirements
+- **Question:** do the programme's rules require authentication, cloud deployment, a particular deliverable format or demo, or forbid anything this plan does?
+- **Why unresolved:** only the team's proposal was available; the programme's own requirements were not.
+- **Default to proceed:** the proposal is the only specification; deferring authentication does not conflict with it; the deliverable is a working local demo. Check the programme rubric as soon as it is reachable.
 
-### OD-9 — Profile edge cases
-- **Why open:** email is editable and "Reset demo data" exists in the UI (F11), but neither maps cleanly onto real accounts.
-- **Questions:** may email change without verification? Is "Reset demo data" removed in production, or replaced by account/data deletion?
+#### OD-17 — AWS Academy availability
+- **Question:** the six questions in Section 20.2.
+- **Default to proceed:** assume nothing is available; Phase 3 stays optional.
 
-### OD-10 — Data retention, consent and provider data handling
-- **Why open:** the proposal does not discuss privacy; CVs and answers are personal data and may be sent to an external LLM.
-- **Questions:** retention period for CVs and answers; consent wording; provider retention/training terms; deletion guarantees.
-- **Blocks:** S-25, S-26, account-deletion work.
+#### OD-18 — Keep the original CV file after text extraction?
+- **Question:** D7 says to store CV metadata and extracted information in PostgreSQL and to keep files out of public locations; it does not say whether the original file must be kept at all. The frontend never downloads it.
+- **Default to proceed:** keep the file privately (allows re-parsing when the extractor improves), controlled by `RETAIN_ORIGINAL_CV` (default `true`); setting it to `false` stores only the extracted text — less personal data kept.
 
-### OD-11 — Where the React build is hosted
-- **Why open:** the proposal does not say how the frontend is served.
-- **Options:** the same EC2 instance behind a web server; S3 static hosting (HTTPS needs an additional service); another host. Affects CORS origins.
+#### OD-19 — The team's development machines
+- **Question:** operating systems, Python version, free disk and memory, and whether PostgreSQL and PyTorch can be installed. D5 itself says "if compatible with the development machine".
+- **Default to proceed:** Python 3.12; run the one-line compatibility check (Section 26, step 8) before building on the model; if it fails, record the blocker and use `SIMILARITY_BACKEND=lexical`; if PostgreSQL cannot run, record the blocker and use SQLite (D2).
 
-### OD-12 — API Gateway type and how it reaches EC2
-- **Why open:** proposal says only "API Gateway".
-- **Options:** HTTP API vs REST API (Section 20.3); public EC2 with origin secret vs private integration (Section 20.4).
+#### Smaller items (non-blocking)
+- OD-7 job descriptions (future).
+- OD-10 retention policy for a public deployment (before Phase 3).
+- OD-11 and OD-12 hosting and gateway choices (Phase 3).
+- OD-13 measured evaluation latency (measure during Section 26, step 9).
+- Phase 2 sub-questions of OD-1.
 
-### OD-13 — Latency budgets, sync vs async, and instance sizing
-- **Why open:** depends on the chosen models (OD-3, OD-8) and measured performance.
-- **Questions:** target and hard limit for E11 and E16; whether an async job pattern is needed; EC2 instance size.
-
-### 23.2 Recommendations in this document that the team may override
+### 23.3 Recommendations in this document that the team may override
 
 | Recommendation | Section |
 | --- | --- |
@@ -1991,44 +2210,49 @@ Only items that the proposal or frontend genuinely leave unresolved. Each lists 
 | No `success` wrapper; uniform `error` envelope | 4.1, 18 |
 | Evaluation as `POST` (idempotent) plus `GET` | 10 |
 | `PUT` answer (upsert) | 9 |
-| Ideal answers generated at question-creation time and hidden until evaluated | 8 |
-| `QUESTION_SOURCE` switch (`bank` / `genai`) | 16.3 |
-| Rule-based feedback text with GenAI optional | 16.1 (H, J) |
-| Interim scoring baseline | 16.4 |
+| Reference answers copied into each interview at creation and hidden until evaluated | 8 |
+| E23 (demo reset) as a development-only endpoint | 4.5 |
+| Category **Structure** replacing **Confidence** | 16.4, FC-13 |
+| The specific criteria, signals and chunking in 16.4 | 16.4 |
 | `user_performance` as a recomputed table | 15.2 |
-| 15-minute access token, hashed rotating refresh token | 5.2 |
-| In-process model loading | 16.6 |
-| Strip contact details before sending CV text to an external LLM | 16.5 |
+| In-process model loading; explicit lexical fallback | 16.6 |
+| Python 3.12 and the dependency list | 25.2 |
+| Backend folder placed inside the existing project root as `backend/` | 25.1 |
 
 ---
 
 ## 24. Frontend Integration Plan
 
-### 24.1 Principles
+### 24.1 Principles **[Decided D1]**
 
-1. **Keep the `api` object and its function names.** Components and contexts keep calling `api.uploadCV()`, `api.startInterview()`, etc.
-2. **Do the translation inside `api.js`** (an adapter), using the mapping in Section 17.3, so UI code keeps its current data shapes.
-3. **Keep the mock implementation available** behind a switch (for example `VITE_USE_MOCK_API`) until the backend is stable. This matches the earlier instruction that mock functionality stays until the FastAPI backend exists. (A recommendation; no code is changed by this task.)
-4. Swap one endpoint group at a time, starting with the ones that need no auth change.
+1. **Preserve the existing React/Vite frontend and its functionality. Do not overwrite or recreate it.** Nothing in this task changes it.
+2. **Keep the `api` object and its function names.** Components and contexts keep calling `api.uploadCV()`, `api.startInterview()`, and so on.
+3. **Do the translation inside `api.js`** (an adapter) using the mapping in Section 17.3, so UI code keeps its current data shapes.
+4. **Keep the mock implementation available** behind a switch (for example `VITE_USE_MOCK_API`) until the backend is stable, so the app keeps working at every step.
+5. The backend lives in a **new `backend/` folder** next to `src/` (Section 25.1); no frontend file is moved.
 
 ### 24.2 Required frontend changes
 
-| ID | Change | Where (today) | Needed for | Finding |
-| --- | --- | --- | --- | --- |
-| **FC-1** | Pass the CV id when starting an interview — e.g. `startInterview(config, cvId)` using `cvFile.id` | `InterviewSetup.jsx` → `InterviewContext.start` → `api.startInterview` | E11 | F1 |
-| **FC-2** | Keep `question.id` in the session and call `submitAnswer(sessionId, question.id, answer)` instead of passing the array index | `InterviewContext.jsx` | E15, E16 | F2 |
-| **FC-3** | Call `deleteCV` from "Remove"/"Replace"; on app start call `listCVs` to restore the CV | `useCVUpload.js`, `AppContext.jsx` | E08, E10 | F9 |
-| **FC-4** | Authentication: sign-in/registration screens, token handling (memory), `Authorization` header, one silent refresh on `TOKEN_EXPIRED`, sign-out calling E04, hydrate `user` from `GET /users/me` | `Landing.jsx`, `Navbar.jsx`, `AppContext.jsx`, new pages | E01–E05 | F10 |
-| **FC-5** | Format `completed_at` into the existing display string in the adapter | `api.js` | E18, E19 | F5 |
-| **FC-6** | Throw a typed `ApiError { status, code, message, retryable }`; show `message`; client-side timeout; handle 401/429 | `api.js`, screens' catch blocks | all | F13 |
-| **FC-7** | Empty states: guard `rankSkills` and render Dashboard/Performance for users with no completed interviews | `utils/scoring.js`, `Dashboard.jsx`, `Performance.jsx` | E19–E21 | F26 |
-| **FC-8** | Use `XMLHttpRequest` (or equivalent) so `onProgress` reports real upload progress | `api.js` | E07 | F14 |
-| FC-9 | Call `abandonInterview(id)` when the user confirms "Exit" | `InterviewProgress.jsx` | E13 | F12 |
-| FC-10 | Remove or replace "Reset demo data" in production builds | `Profile.jsx` | OD-9 | F11 |
-| FC-11 | Optionally read dashboard stats and the trend from E21 instead of computing from the full history | `Dashboard.jsx`, `Performance.jsx` | E21 | F6 |
-| FC-12 | Read the API base URL from `import.meta.env.VITE_API_BASE_URL` | `api.js` | all | — |
+"Phase" says when each is needed. The four issues you asked to be carried forward are **FC-1** (missing CV id), **FC-2** (stable question ids), **FC-13/S-03** (server-side scoring), and **FC-7** (empty-history dashboard).
 
-FC-1 to FC-8 are required for the first working version; FC-9 to FC-11 belong to the second iteration; FC-12 is trivial and needed throughout.
+| ID | Change | Where (today) | Phase | Finding |
+| --- | --- | --- | --- | --- |
+| **FC-1** | **Pass the CV id when starting an interview** — e.g. `startInterview(config, cvId)` using `cvFile.id` | `InterviewSetup.jsx` → `InterviewContext.start` → `api.startInterview` | local MVP | F1 |
+| **FC-2** | **Keep `question.id` in the session** and call `submitAnswer(sessionId, question.id, answer)` instead of passing the array index | `InterviewContext.jsx` | local MVP | F2 |
+| **FC-3** | Call `deleteCV` from "Remove"/"Replace"; *(1b)* on app start call `listCVs` to restore the CV after a refresh | `useCVUpload.js`, `AppContext.jsx` | delete: local MVP · restore: 1b | F9 |
+| FC-4 | Authentication: sign-in/registration screens, token handling, `Authorization` header, silent refresh, sign-out calling E04, user from `GET /users/me` | `Landing.jsx`, `Navbar.jsx`, `AppContext.jsx`, new pages | **Phase 2** (not needed for the local MVP) | F10 |
+| **FC-5** | Format `completed_at` into the existing display string in the adapter | `api.js` | local MVP | F5 |
+| **FC-6** | Throw a typed `ApiError { status, code, message, retryable }`; show `message`; client-side timeout (401 handling is Phase 2) | `api.js`, screens' catch blocks | local MVP | F13 |
+| **FC-7** | **Empty states:** guard `rankSkills`, and render Dashboard and Performance for a user with no completed interviews | `utils/scoring.js`, `Dashboard.jsx`, `Performance.jsx` | local MVP | F26 |
+| **FC-8** | Use `XMLHttpRequest` (or equivalent) so `onProgress` reports real upload progress | `api.js` | local MVP | F14 |
+| FC-9 | Call `abandonInterview(id)` when the user confirms "Exit" | `InterviewProgress.jsx` | 1b | F12 |
+| **FC-10** | Wire "Reset demo data" to E23 (and hide the button when the backend is not in demo mode). Note the behaviour change: history is empty afterwards (F11, F26) | `Profile.jsx` | local MVP | F11 |
+| FC-11 | Read dashboard stats and the trend from E21 instead of computing them from the full history | `Dashboard.jsx`, `Performance.jsx` | 1b | F6 |
+| **FC-12** | Read the API base URL from `import.meta.env.VITE_API_BASE_URL` and append `/api/v1` | `api.js` | local MVP | — |
+| **FC-13** | **Replace "Confidence" with "Structure" and the overall "confidence" wording with "score"**, because psychological confidence is not measured (D5). Exact places found by search: `utils/scoring.js` (`mean('Confidence')`, the `Communication` formula), `pages/Dashboard.jsx` ("Average confidence", "average confidence score"), `data/constants.js` (landing text "See your confidence and skills improve…"). The mock (`data/mockData.js`, `services/mockEngine.js`) must be renamed in step so mock and real data keep the same shape. **The adapter must not map `structure` back to the label "Confidence".** | listed files | local MVP | F16 |
+| FC-14 | Make wording truthful to the MVP: "Questions generated from your own experience…" → questions *selected from a curated bank and tailored to your CV and role*; "AI recommendations/insight" → automated feedback; add a visible note on the Evaluation and Results pages that scores are **automated estimates for practice** (Section 16.8) | `data/constants.js`, `Results.jsx`, `Performance.jsx`, `Evaluation.jsx` | recommended with the MVP | F27 |
+
+Required for the local MVP: FC-1, 2, 3 (delete), 5, 6, 7, 8, 10, 12, 13. Phase 1b: FC-3 (restore), 9, 11. Phase 2: FC-4. FC-14 is recommended for honesty.
 
 ### 24.3 Target behaviour of each `api.js` function
 
@@ -2037,56 +2261,247 @@ FC-1 to FC-8 are required for the first working version; FC-9 to FC-11 belong to
 | `uploadCV(file, onProgress)` | multipart `POST /cvs` with progress events → `{ id, name }` |
 | `startInterview(config, cvId)` | `POST /interviews`; map enums; return `{ id, questions:[{id, text, type}], config }` |
 | `submitAnswer(sessionId, questionId, answer)` | `PUT …/answer` → `{ ok: true }` |
-| `getEvaluation(sessionId, question)` | `POST …/evaluation` → UI `ev` shape |
-| `completeInterview({ session })` | `POST …/complete` → UI results shape (client `items` no longer sent) |
+| `getEvaluation(sessionId, question)` | `POST …/evaluation` → UI `ev` shape (with `Structure`) |
+| `completeInterview({ session })` | `POST …/complete` → UI results shape (client `items` are no longer sent) |
 | `getInterviewResults(meta)` | `GET /interviews/{meta.id}/results` → UI results shape |
-| `getInterviewHistory()` | `GET /interviews?status=completed&limit=100` → array of UI `meta` |
-| `getSkills()` | `GET /performance/skills` → object preserving order |
+| `getInterviewHistory()` | `GET /interviews?status=completed&limit=100` → array of UI `meta` (may be empty) |
+| `getSkills()` | `GET /performance/skills` → object preserving order (may be empty) |
 | `updateProfile(profile)` | `PATCH /users/me` → `{ id, name, email }` |
-| *new:* `getMe`, `deleteCV`, `listCVs`, `abandonInterview`, `register`, `login`, `logout`, `getSummary` | thin wrappers around E05, E10, E08, E13, E01, E02, E04, E21 |
+| *new:* `deleteCV`, `resetDemo` | E10, E23 (Phase 1) |
+| *new, later:* `getMe`, `listCVs`, `abandonInterview`, `getSummary`; Phase 2: `register`, `login`, `logout` | thin wrappers around E05, E08, E13, E21; E01, E02, E04 |
 
-### 24.4 Suggested implementation order
+### 24.4 Implementation order
 
-| Phase | Work | Primary owner (from the proposal) |
-| --- | --- | --- |
-| 0 | Review this document; settle OD-1, OD-2, OD-3, OD-5, OD-8 | whole team |
-| 1 | FastAPI skeleton, configuration, `/health`, error envelope, request IDs; database schema and migrations | Backend, Database |
-| 2 | Users and authentication (per OD-1); `GET/PATCH /users/me` | Backend |
-| 3 | CV upload, parsing, S3 storage, delete | Backend, ML |
-| 4 | Interview creation with questions and ideal answers (first question source) | Backend, GenAI, ML |
-| 5 | Answer storage and evaluation (similarity + interim scoring + rule-based feedback) | ML, Backend |
-| 6 | Completion, results, history, performance | Backend, Database |
-| 7 | Frontend adapter swap per group (FC-1 to FC-8), keeping the mock switch | Frontend |
-| 8 | AWS deployment, CloudWatch dashboards/alarms, security checklist (Section 19) | Cloud/DevOps |
-| 9 | Second-iteration endpoints and calibration of scoring against human ratings | all |
+The single implementation sequence — backend steps and the frontend swap interleaved — is in **Section 26**.
 
 ### 24.5 Contract verification
 
 - Generate the OpenAPI document from FastAPI and diff it against Sections 4–14.
 - Use the JSON examples in this document as test fixtures (the adapter tests should turn each API example into the UI shape shown in Section 17.3).
-- Keep one end-to-end test per Flow A–E (Section 3.3).
+- Keep one end-to-end check per Flow A–E (Section 3.3).
+
+---
+
+## 25. Local Development: Structure, Dependencies and Environment
+
+**Specification only — nothing in this section has been installed, created or run.** Versions were read from PyPI metadata on October 19, 2026 and will move; they are a reference, not pins.
+
+### 25.1 Proposed backend layout
+
+The backend is **new** and sits in a `backend/` folder **inside the existing project root**, next to the untouched frontend (`src/`, `public/`, `package.json`). No frontend file is moved, so the frontend is neither overwritten nor recreated (D1).
+
+```
+ai-interview-coach/                 ← existing project root (frontend unchanged)
+├── API_SPECIFICATION.md
+├── src/  public/  package.json …   ← existing Vite frontend
+└── backend/                        ← NEW
+    ├── README.md                   how to run (kept short and accurate)
+    ├── requirements.txt            runtime dependencies (25.2)
+    ├── requirements-dev.txt        test/lint tools
+    ├── .env.example                variable names, no real values (25.3)
+    ├── alembic.ini  migrations/    schema migrations (Section 15)
+    ├── app/
+    │   ├── main.py                 creates the app: CORS, routers, start-up checks
+    │   ├── config.py               settings from environment + the S-31 demo-mode guard
+    │   ├── db.py                   engine and session
+    │   ├── deps.py                 get_db, get_current_user (demo user today)
+    │   ├── errors.py               error envelope and handlers (Section 18)
+    │   ├── models/                 SQLAlchemy tables (Section 15)
+    │   ├── schemas/                request/response models (Section 17)
+    │   ├── api/                    routers: health, users, cvs, interviews, answers,
+    │   │                           evaluations, results, performance, demo
+    │   ├── services/               interview lifecycle, question selection, aggregation
+    │   ├── cv/                     validation, text extraction, skill rules
+    │   ├── scoring/                similarity (sbert | lexical), criteria, scorer, templates, config
+    │   ├── storage/                base.py, local.py (s3.py later)
+    │   └── data/                   question_bank.json, skills list, feedback templates
+    ├── scripts/                    seed_bank.py, check_model.py
+    ├── storage/                    PRIVATE CV files — created at run time, git-ignored
+    └── tests/                      pytest
+```
+
+`backend/.venv/`, `backend/.env`, `backend/storage/` and any database dumps are added to `.gitignore` (S-34).
+
+### 25.2 Python dependencies
+
+All packages below are free and open source; **none is paid** and none requires an account or API key. Install **incrementally**, only when the step that needs them is reached (Section 26) — in particular, the model library is large and should not be installed first.
+
+**Python version.** Use **Python 3.12**. Reason: SQLAlchemy 2.1 and pydantic-settings 2.16 require Python ≥ 3.11 and NumPy 2.5 (installed with the model library) requires ≥ 3.12; every other package below supports ≥ 3.10.
+
+| Package | Purpose | Needed from step | Checked on PyPI | Licence |
+| --- | --- | --- | --- | --- |
+| `fastapi` | web framework | 1 | 0.149.0 | MIT |
+| `uvicorn` | server that runs FastAPI | 1 | 0.54.0 | BSD-3 |
+| `pydantic` | validation (installed with FastAPI) | 1 | 2.14.1 | MIT |
+| `pydantic-settings` | read settings from environment / `.env` | 1 | 2.16.0 | MIT |
+| `sqlalchemy` | database access (ORM) | 2 | 2.1.5 | MIT |
+| `alembic` | schema migrations | 2 | 1.20.0 | MIT |
+| `psycopg[binary]` | PostgreSQL driver (the `binary` extra avoids needing a C compiler; connection URL scheme `postgresql+psycopg://`) | 2 | 3.3.6 | LGPL-3.0 |
+| `python-multipart` | required by FastAPI for file uploads | 4 | 0.0.32 | Apache-2.0 |
+| `pypdf` | PDF text extraction (pure Python) | 4 | 6.21.1 | BSD-3 |
+| `python-docx` | DOCX text extraction | 4 | 1.2.0 | MIT |
+| `sentence-transformers` | local embedding model; pulls in PyTorch, `transformers` and NumPy | 8 | 6.1.0 | Apache-2.0 |
+| `pytest` *(dev)* | tests | 1 | 9.1.1 | MIT |
+| `httpx` *(dev)* | lets tests call the API in-process | 1 | 0.28.1 | BSD-3 |
+| `ruff` *(dev, optional)* | linter/formatter | any | 0.17.1 | MIT |
+
+**Deliberately not used.** `python-dotenv` (`pydantic-settings` already reads `.env`); `scikit-learn` (not needed — the lexical fallback uses only the standard library); `PyMuPDF` for PDFs (dual-licensed **AGPL** or commercial, which could create licence obligations — `pypdf` is permissive); `pdfminer.six` (MIT; a reasonable alternative if `pypdf` extracts poorly from a particular layout); any OpenAI/Bedrock/AWS SDK (`boto3`) — not needed until Phase 3 or GenAI.
+
+**Version policy.** After the first successful install, record the exact versions that worked (for example with `pip freeze`) and keep them in `requirements.txt`. Several releases above are only days old at the time of writing (FastAPI's was published the same day); if a brand-new release causes trouble, use the previous one. **Frontend:** no new npm dependency is required (`XMLHttpRequest` is built in).
+
+### 25.3 Environment variables
+
+Read once at start-up through one settings class (`config.py`). Names are suggestions. `backend/.env.example` lists them **without real values**; the real `.env` is git-ignored (S-16).
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `APP_ENV` | `development` | `development` or `production`; `AUTH_MODE=demo` is refused unless this is `development` (S-31) |
+| `AUTH_MODE` | `demo` | `demo` (single seeded user) now; `jwt` in Phase 2 |
+| `HOST` | `127.0.0.1` | address to bind; must be loopback in demo mode (S-31) |
+| `PORT` | `8000` | port |
+| `ALLOWED_HOSTS` | `localhost,127.0.0.1` | accepted `Host` header values (S-32) |
+| `CORS_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | allowed browser origins (S-20) |
+| `DATABASE_URL` | *(required)* | e.g. `postgresql+psycopg://interview_user:<password>@localhost:5432/interview_coach`; `sqlite:///./dev.db` only for the documented fallback |
+| `DEMO_USER_NAME` / `DEMO_USER_EMAIL` | `Alex Morgan` / `alex.morgan@email.com` | the seeded demo user (matches the frontend's `DEMO_USER`) |
+| `CV_STORAGE_BACKEND` | `local` | `local` now, `s3` later |
+| `CV_STORAGE_DIR` | `./storage/cvs` | private directory for CV files; an absolute path **outside the repository** is preferable (S-33) |
+| `MAX_CV_BYTES` | `5242880` | upload ceiling (5 MB) |
+| `CV_MIN_TEXT_CHARS` | *(set at implementation)* | minimum extracted text below which `CV_UNREADABLE` is returned — value not chosen here |
+| `RETAIN_ORIGINAL_CV` | `true` | keep the original file after extraction (OD-18) |
+| `QUESTION_SOURCE` | `bank` | `bank` only in the MVP |
+| `QUESTION_BANK_PATH` | `app/data/question_bank.json` | seed file for `question_bank` |
+| `SKILLS_LIST_PATH` | `app/data/skills.txt` | skills vocabulary for CV skill extraction (OD-15) |
+| `SIMILARITY_BACKEND` | `sbert` | `sbert` (local model) or `lexical` (explicit fallback, Section 16.6) |
+| `EMBEDDING_MODEL` | `sentence-transformers/all-MiniLM-L6-v2` | model id (candidate, D5) |
+| `EMBEDDING_MODEL_PATH` | *(empty)* | local folder with the model files, for offline use |
+| `SCORING_CONFIG_PATH` | `app/scoring/config.json` | the versioned constants, weights and thresholds (Section 16.4) |
+| `EVALUATION_TIMEOUT_SECONDS` | *(set after measuring)* | budget for E16; value not chosen here (OD-13) |
+| `LOG_LEVEL` | `INFO` | logging verbosity (never logs CV text or answers, S-24) |
+| *Phase 2* `JWT_SECRET`, `ACCESS_TOKEN_MINUTES`, `REFRESH_TOKEN_DAYS` | — | only when `AUTH_MODE=jwt` |
+| *Phase 3* `S3_BUCKET`, `AWS_REGION` | — | only when `CV_STORAGE_BACKEND=s3` |
+
+**Frontend variables** (a local `.env` file next to `package.json`, git-ignored): `VITE_API_BASE_URL` (the backend origin without a path, for example `http://127.0.0.1:8000`; the adapter appends `/api/v1`) and `VITE_USE_MOCK_API` (`true` keeps the mock, `false` uses the backend). The existing `.env.example` shows `http://localhost:8000`; use `127.0.0.1` locally if `localhost` resolves to IPv6 on your machine — both origins are in the CORS allow-list.
+
+### 25.4 Local database setup (documentation — not executed)
+
+**Primary: PostgreSQL on the developer's machine (D2), free.**
+
+1. Install PostgreSQL with the official installer for your operating system, **or** run it in a container — either is free. If using a container, publish the port **only on the loopback address** (`127.0.0.1:5432`).
+2. Create a role and an empty database, choosing your own password:
+   ```sql
+   CREATE USER interview_user WITH PASSWORD '<choose-a-password>';
+   CREATE DATABASE interview_coach OWNER interview_user;
+   ```
+3. Put the connection URL in `backend/.env` as `DATABASE_URL` (never commit it).
+4. Create the tables only through migrations (`alembic upgrade head`), never by hand.
+
+**Fallback: SQLite — only if step 1 is a blocker.** Write down what blocked PostgreSQL, set `DATABASE_URL=sqlite:///./dev.db`, enable foreign-key enforcement for each connection, and run migrations in batch mode. Limits are in Section 15; anything verified only on SQLite is not considered verified. This does **not** change the primary decision.
+
+**Moving to AWS RDS later (if permitted):** change `DATABASE_URL`, run the same migrations. No application code changes if the portability rules in Section 15 were followed.
+
+### 25.5 Private local CV storage and the path to private S3 **[Decided D7]**
+
+| Rule | Detail |
+| --- | --- |
+| Location | `CV_STORAGE_DIR` — default `backend/storage/cvs`, git-ignored; an absolute path **outside the repository** is preferable. It must **never** be inside the frontend's `public/` or `src/`, a static-files mount, or any web-served folder |
+| Names | each file is saved as `<random-uuid>.<ext>`; the original filename is kept only as metadata in the database |
+| Database | stores a **relative** `storage_key` and `storage_backend = local` |
+| Path safety | every resolved path is checked to lie inside the storage directory (no `..` tricks); user input is never used to build a path |
+| Access | no endpoint serves the file; FastAPI never mounts the directory as static files; restrictive directory permissions where the OS supports them |
+| Lifecycle | the file is removed by E10 and E23; if the database write fails, the file is removed |
+| Minimising data | with `RETAIN_ORIGINAL_CV=false` only the extracted text is kept (OD-18) |
+
+**Future migration to private S3 (Phase 3, only if available — OD-17):**
+
+1. Add an `S3StorageBackend` with the same three operations as the local one (save, open, delete); nothing else in the application changes.
+2. Create a **private** bucket with *Block Public Access* on and server-side encryption; the application authenticates with an IAM role rather than keys stored in files.
+3. Set `CV_STORAGE_BACKEND=s3`, `S3_BUCKET`, `AWS_REGION`.
+4. Copy each existing local file to the bucket **keeping its key**, update that row's `storage_backend` to `s3`, verify, then delete the local copy.
+5. No pre-signed URLs are needed: the browser never downloads a CV.
+
+### 25.6 Planned run commands (documentation — not executed)
+
+```
+# backend (from the backend/ folder)
+python -m venv .venv                    # then activate it
+pip install -r requirements.txt
+alembic upgrade head                    # create the tables
+python scripts/seed_bank.py             # load the question bank
+uvicorn app.main:app --host 127.0.0.1 --port 8000
+
+# frontend (project root, unchanged)
+npm run dev                             # http://localhost:5173
+```
+
+---
+
+## 26. Implementation Sequence (beginner-friendly)
+
+A plan for building a **locally runnable** FastAPI backend in small steps, each of which ends with something you can *see working* before moving on. Nothing here has been done yet.
+
+**Working rules for every step**
+
+1. Do **one step at a time**; do not start the next until the check passes.
+2. **Install packages only when a step says so** (Section 25.2); the model library comes late on purpose.
+3. **Commit after each working step** — and never commit `.env`, CV files, database dumps or real personal data (S-34).
+4. Add a test for each endpoint as you build it; a green test run is part of "done".
+5. If something is blocked, **write the blocker down** and use the documented fallback instead of silently changing a decision (D2, D5).
+6. The frontend keeps working at every step because the mock stays available (Section 24.1).
+
+### Before step 1 (no code needed; can run in parallel)
+
+- Confirm Python 3.12 is installed, and note each teammate's operating system, free disk space and memory (OD-19).
+- Start writing the **question bank** entries (OD-14, Section 8.3): this is the longest non-coding task and it blocks step 6.
+
+### The steps
+
+| # | Goal | What you build | Install | Check that it works | Frontend |
+| --- | --- | --- | --- | --- | --- |
+| **1** | **Skeleton that starts** | `backend/` folder, virtual environment, `app/main.py`, `config.py` (settings + the demo-mode start-up guard S-31), the error envelope, request ids, CORS, and a minimal **`GET /api/v1/health`** (E22, without database checks yet) | `fastapi`, `uvicorn`, `pydantic-settings`; dev: `pytest`, `httpx` | server starts; `http://127.0.0.1:8000/api/v1/health` returns JSON; `/docs` opens; starting with `APP_ENV=production` and `AUTH_MODE=demo` **refuses to start**; the tests pass | none |
+| **2** | **A database that migrates** | PostgreSQL created (25.4), `db.py`, Alembic, first migration for `users`, seeding of the demo user, database check added to E22 | `sqlalchemy`, `alembic`, `psycopg[binary]` | `alembic upgrade head` succeeds; the demo user row exists; health shows `database: ok` | none |
+| **3** | **First real endpoints** | `get_current_user` (demo), **E05** `GET /users/me`, **E06** `PATCH /users/me` | — | tests; in `/docs` the name changes and persists after a restart | **first swap:** add the adapter foundation (FC-12 base URL, FC-6 typed errors, the `VITE_USE_MOCK_API` switch) and move **Profile** to the backend — proves the whole chain early |
+| **4** | **CV upload** | storage backend (25.5), file validation (S-06 – S-10), text extraction, rule-based skills, tables `cvs`, `cv_profiles`, `cv_skills`, **E07** and **E10** | `python-multipart`, `pypdf`, `python-docx` | tests with small **synthetic** PDF/DOCX files: wrong type → 415, over 5 MB → 413, valid file → 201 with skills; the stored file sits in the private directory under a random name and is gone after delete | swap `uploadCV` and the Remove button (FC-8 real progress, FC-3 delete) |
+| **5** | **A usable question bank** | `question_bank` table, `seed_bank.py`, and a **checker script** that fails if any (type × difficulty) cell has fewer than 15 entries or a reference answer is too long (Section 8.3) | — | the checker passes on your seed file | none |
+| **6** | **Create an interview** | `interviews` and `interview_questions` tables; **E11** with the selection rules (Section 7) and `QUESTION_BANK_INSUFFICIENT` | — | tests: exactly *n* distinct questions, requested type respected, CV-template questions filled from the CV, unknown CV → 404, impossible request → 422 | swap `startInterview` — **FC-1** (send the CV id) and **FC-2** (keep question ids) |
+| **7** | **Store answers** | `answers` table, **E15** with the 30–1500 rules | — | tests: short → `ANSWER_TOO_SHORT`, resubmit replaces, answering after evaluation is refused | swap `submitAnswer` (question id) |
+| **8** | **Can this machine run the model?** | `scripts/check_model.py`, then the similarity engine with chunking (16.4) behind the `sbert`/`lexical` switch; reference embeddings cached | `sentence-transformers` | the script encodes two sentences and prints a cosine similarity. **If it cannot run, write down why and use `SIMILARITY_BACKEND=lexical`** (16.6) | none |
+| **9** | **Evaluate an answer** | criteria signals, scoring constants file (draft `scoring_version`), feedback templates, `evaluations` table, **E16**; **V1–V2 checks** (16.9); **measure** how long an evaluation takes (OD-13) | — | tests: reference answer scores high, unrelated text low, same input twice gives the same result, a 1500-character answer works, **a score sent by the client changes nothing** (S-03) | swap `getEvaluation` — the UI now shows **Structure** (**FC-13**, adapter and mock renamed together) |
+| **10** | **Finish, results, history, skills** | `interview_results`, `user_performance`; **E14**, **E18**, **E19**, **E20**; empty-state responses | — | tests: incomplete → 409, results match the formulas in Section 11, a brand-new user gets empty lists, numbers round half up | swap the remaining functions; **FC-5** dates; **FC-7** empty-state fixes so Dashboard/Performance do not crash |
+| **11** | **Demo reset and the rest of Phase 1b** | **E23** (development only), then E08, E09, E12, E13, E17, E21 as time allows | — | after reset the app shows its empty state; E23 returns 404 outside demo/development | **FC-10**; later FC-3 restore, FC-9, FC-11 |
+| **12** | **Full walk-through** | nothing new — switch the mock **off** and run Flows A–E (Section 3.3) in the browser | — | every flow works; refresh and error cases behave | all required FCs done |
+| **13** | **Check the evaluation honestly** | human-rated sample set, calibration on one subset and reporting on another, written report (16.9 V3–V5) | — | a report exists and the UI/README claims match it; if the result is weak, say so and adjust the wording (FC-14) | FC-14 notes |
+| **14** | **Wrap up Phase 1** | README for `backend/`, `.env.example`, the checklist in Section 21.5 | — | someone else can run it from scratch | — |
+
+After step 14: **Phase 2** (authentication) if a public deployment is wanted, then **Phase 3** (AWS) only if OD-17 allows.
+
+### The exact first implementation task
+
+> **Step 1 — create the backend skeleton and the health endpoint.**
+> In a new `backend/` folder, create a Python 3.12 virtual environment; install only `fastapi`, `uvicorn`, `pydantic-settings`, `pytest` and `httpx`; write the settings loader with the `AUTH_MODE` / `APP_ENV` / `HOST` start-up guard; implement the uniform error envelope and request ids; and implement `GET /api/v1/health` returning `{"status": "ok", ...}`.
+> **Done when:** the server starts on `127.0.0.1:8000`, the health URL returns JSON, `/docs` loads, the server **refuses to start** with `APP_ENV=production` and `AUTH_MODE=demo`, and `pytest` passes.
+> It touches no database, no model and no frontend file.
 
 ---
 
 ## Appendix A — Validation report
 
-This appendix records the checks required before the specification could be called complete. "Verified mechanically" means a script compared this document with the source code or with itself; everything else was checked by reading.
+This appendix records the checks made before the specification was called complete. "Verified mechanically" means a script compared this document with the source code or with itself; everything else was checked by reading. **No backend exists, so nothing here has been tested against running code, and the AI evaluation has not been validated.**
 
 ### A.1 Every frontend service function against the API
 
 | Function | Endpoint | What the UI sends today → what the API needs | What the UI consumes | Result |
 | --- | --- | --- | --- | --- |
-| `uploadCV(file, onProgress)` | E07 | file → file | `res.id` only | Supported. Real progress needs XHR (FC-8); auth header (FC-4) |
-| `startInterview(config)` | E11 | `{role,type,diff,n}` → **plus `cv_id`** | `id`, `questions[].text/type` (**plus `id`**) | Supported **after FC-1, FC-2** |
-| `submitAnswer(sessionId, index, answer)` | E15 | index → **question id** | nothing | Supported **after FC-2** |
-| `getEvaluation(sessionId, question, answer)` | E16 | question text + answer → **question id only** | `score, cats, strengths, weaknesses, tip, ideal` | Supported **after FC-2**; all six fields present in the response |
-| `completeInterview({session, config, items})` | E14 | client `items` → **nothing** (server aggregates) | `meta, items[{q,ev}], extraStrength, extraImprovement, recommendations` | Supported; the client payload becomes unnecessary (F4) |
+| `uploadCV(file, onProgress)` | E07 | file → file | `res.id` only | Supported. Real progress needs XHR (FC-8) |
+| `startInterview(config)` | E11 | `{role,type,diff,n}` → **plus `cv_id`** *(issue 1)* | `id`, `questions[].text/type` (**plus stable `id`** *(issue 2)*) | Supported **after FC-1, FC-2** |
+| `submitAnswer(sessionId, index, answer)` | E15 | index → **question id** *(issue 2)* | nothing | Supported **after FC-2** |
+| `getEvaluation(sessionId, question, answer)` | E16 | question text + answer → **question id only** | `score, cats, strengths, weaknesses, tip, ideal` | Supported **after FC-2**; the category `Confidence` becomes `Structure` (FC-13) |
+| `completeInterview({session, config, items})` | E14 | client `items` and scores → **nothing** *(issue 3: server-side scoring, S-03)* | `meta, items[{q,ev}], extraStrength, extraImprovement, recommendations` | Supported; the client payload is ignored |
 | `getInterviewResults(meta)` | E18 | `meta` → `meta.id` | same results shape | Supported via adapter |
-| `getInterviewHistory()` | E19 | — | `id, date, role, type, diff, n, score, status` | Supported via adapter; ISO date formatting (FC-5); 100-row cap (F6) |
-| `getSkills()` | E20 | — | ordered skills object | Supported via adapter (F7); **empty state breaks the UI (FC-7)** |
-| `updateProfile(profile)` | E06 | `{name,email}` → `{name?,email?}` | returned user | Supported |
+| `getInterviewHistory()` | E19 | — | `id, date, role, type, diff, n, score, status` | Supported via adapter; may be **empty** *(issue 4)*; 100-row cap (F6) |
+| `getSkills()` | E20 | — | ordered skills object | Supported via adapter; may be **empty** — **breaks the UI until FC-7** *(issue 4)* |
+| `updateProfile(profile)` | E06 | `{name,email}` → `{name?,email?}` | returned user | Supported (demo user) |
 
-Verified mechanically: all nine function names found in `api.js` appear in the Section 3.1 table; every field name above exists in the contract.
+The four issues carried forward from the earlier analysis are: **(1)** missing CV id (F1, FC-1) · **(2)** stable question ids (F2, FC-2) · **(3)** server-side scoring only (F4, S-03, Section 16.4) · **(4)** empty-history dashboard (F26, FC-7).
 
 ### A.2 Frontend operations → endpoint
 
@@ -2094,105 +2509,88 @@ Verified mechanically: all nine function names found in `api.js` appear in the S
 | --- | --- | --- |
 | Upload / replace CV | E07 (+ E10 for replace) | |
 | Remove CV | E10 | no function today (F9) |
-| Restore CV after refresh | E08 / E09 | no function today (F9) |
+| Restore CV after refresh | E08 / E09 | Phase 1b |
 | Choose role / type / difficulty / count; type or clear an answer; next question; theme toggle; history filter; estimated time | none — client-only | filter may use E19's optional `type` |
 | Start interview | E11 | |
 | Submit answer | E15 | |
-| View evaluation, expand "stronger answer example" | E16 (the example is in the same response) | no extra call |
+| View evaluation, expand "stronger answer example" | E16 (the example is in the same response) | |
 | Finish interview | E14 | |
-| Exit interview | E13 | no function today (F12) |
-| Open results (dashboard, history) | E18 | |
-| Open per-question feedback modal | none — data is already inside the results payload | |
-| Dashboard figures | E19 + E20 today; E21 recommended | |
-| Performance page | E19 + E20 today; E21 recommended | |
+| Exit interview | E13 | Phase 1b (F12) |
+| Open results (dashboard, history) / per-question modal | E18 / none (data already in the payload) | |
+| Dashboard and Performance figures | E19 + E20 (E21 recommended) | must handle empty data (F26) |
 | Save profile | E06 | |
-| Load current user | E05 | no function today (F10) |
-| Sign in / register / sign out | E02 / E01 / E04 (+ E03) | no UI today (F10) |
-| Reset demo data | none | OD-9 |
+| Load current user | E05 | |
+| Sign in / sign out | none in the MVP (navigation only, as today) | E01–E04 deferred (D3) |
+| Reset demo data | E23 | development only; history is empty afterwards (F11) |
 
 ### A.3 Do the database models support every operation?
 
 | Operation | Reads | Writes |
 | --- | --- | --- |
-| Upload CV | — | `cvs`, `cv_profiles`, `cv_skills`, S3 |
-| Delete CV | `cvs` | `cvs`, `cv_profiles`, `cv_skills`, `interviews.cv_id` → NULL, S3 |
-| Create interview | `cvs`, `cv_profiles`, `cv_skills`, (`question_bank`) | `interviews`, `interview_questions` |
+| Upload CV | — | `cvs`, `cv_profiles`, `cv_skills`, private file |
+| Delete CV | `cvs` | `cvs`, `cv_profiles`, `cv_skills`, `interviews.cv_id` → NULL, file |
+| Create interview | `cvs`, `cv_skills`, `question_bank` | `interviews`, `interview_questions` |
 | Submit answer | `interviews`, `interview_questions` | `answers` |
-| Evaluate | `answers`, `interview_questions` (ideal answer) | `evaluations` |
+| Evaluate | `answers`, `interview_questions` (reference answer, key points) | `evaluations` |
 | Complete | `evaluations`, `answers`, `interview_questions` | `interview_results`, `interviews`, `user_performance` |
 | Results | `interview_results`, `interviews`, `interview_questions`, `answers`, `evaluations` | — |
 | History | `interviews` | — |
 | Skills / summary | `user_performance`, `interviews` | — |
 | Profile | `users` | `users` |
-| Resume state (E12) | `interviews`, `interview_questions`, `answers`, `evaluations` | — |
+| Demo reset | `cvs`, `interviews` | deletes from the tables above except `users`, `question_bank` |
 
-Every field the UI displays is stored: `meta` fields in `interviews`; evaluation fields in `evaluations` (+ `ideal_answer` in `interview_questions`); results strings in `interview_results`; skills in `user_performance`.
+Every field the UI displays is stored: `meta` fields in `interviews`; evaluation fields in `evaluations` (+ reference answer in `interview_questions`); results strings in `interview_results`; skills in `user_performance`.
 
 ### A.4 Alignment with the proposal
 
-| Proposal statement | Where it is addressed | Status |
-| --- | --- | --- |
-| User uploads a CV (PDF/DOCX converted to text) | E07, step A | covered |
-| User selects a target job role | E11 (`target_role`, free text) | covered |
-| Answers via text | E15 | covered |
-| FastAPI backend connecting frontend and AI modules | Sections 4, 16 | covered |
-| Data stored in PostgreSQL/MySQL on AWS RDS | Section 15 | covered; engine open (OD-2) |
-| Sentence Transformers / BERT / DistilBERT score answers against ideal responses | Section 16 steps E–F | covered; BERT/DistilBERT role and category methods open (OD-8) |
-| Confidence score, strengths, weaknesses, improvement suggestions | E16, E14, E18 | covered; exact formula open (OD-8) |
-| GenAI generates personalized questions and ideal answers | E11, steps C–D | covered; **optional** per proposal (OD-3) |
-| GenAI generates personalized **follow-up** questions | Section 22 | **not supported by the current UI (F21)**; deferred |
-| Whisper speech-to-text | Section 22 | in the ML role and value proposition only; deferred (OD-6) |
-| Job descriptions as input data | Section 22 | no workflow step or UI field; deferred (OD-7) |
-| Curated question banks and career resources "used for RAG" | `question_bank`, Section 16.3 | mechanism open (OD-5) |
-| Web-scraped postings, synthetic Q&A data | — | offline data/training pipeline; **no runtime API**, outside this document |
-| AWS EC2, S3, RDS, API Gateway, CloudWatch | Section 20 | covered; no other AWS service in the baseline |
-| Results shown in React; history and performance stored | E18–E21 | covered |
-| No orchestration framework specified | — | none assumed |
+The full proposal-to-MVP table is Section 1.7. Summary of how the finalized decisions relate to the proposal:
 
-**Additions beyond the proposal**, all tagged **[Recommended]** so they can be rejected: authentication and a user model, error envelope and API conventions, `question_source` switch, interim scoring heuristics, rule-based feedback text, abandon/resume endpoints, the `user_performance` table. **No contradiction with the proposal was found.** One brief-versus-proposal nuance: the brief's example routes feedback wording through GenAI, whereas the proposal assigns GenAI only to questions and ideal answers; this document keeps GenAI optional for wording (step H).
+- **Kept as proposed:** CV upload and text conversion, target role, text answers, FastAPI, relational storage, Sentence Transformers semantic similarity, strengths/weaknesses/suggestions, history and performance tracking, the human-rated-benchmark correlation as acceptance test (not yet run).
+- **Kept in reduced form:** personalized questions (selected from a bank, not generated), RAG (retrieval only), the "confidence score" (an overall answer score).
+- **Deferred:** BERT/DistilBERT, GenAI, Whisper, follow-up questions, job descriptions, AWS.
+- **Deliberate deviation from the proposal's wording:** the proposal speaks of a "confidence score"; D5 forbids claiming to measure psychological confidence from text, so the per-answer category is **Structure** and the overall figure a *score*. This is the one place the specification departs from the proposal's terminology.
+- **Additions not in the proposal**, tagged **[Recommended]**: the demo user and E23, the error envelope and API conventions, the specific scoring criteria, `user_performance`, abandon/resume endpoints.
 
-### A.5 Frontend items that cannot be supported by the proposed backend as the UI stands today
+### A.5 Frontend items that cannot be supported as the UI stands today
 
 | Item | Why | Resolution |
 | --- | --- | --- |
 | Starting an interview | UI never sends the CV id (F1) | FC-1 |
 | Answer/evaluation calls | UI addresses questions by index/text (F2) | FC-2 |
-| Authenticated access | no login, tokens or 401 handling (F10, F13) | FC-4, FC-6 (method: OD-1) |
+| Scoring | the old `completeInterview` sent client-built scores (F4) | backend ignores them (S-03) |
 | New users with no history | `rankSkills({})` throws (F26) — verified by running the function | FC-7 |
+| "Confidence" labels | psychological confidence is not measured (F16) | FC-13 |
+| Truthful wording | "generated", "AI recommendations" (F27) | FC-14 |
 | Real upload progress | `fetch` has none (F14) | FC-8 |
-| CV removal / restore | no API call, state in memory (F9) | FC-3 |
-| Exit interview cleanup, resume | no API call (F12) | FC-9 (optional) |
-| "Reset demo data" | no production meaning (F11) | OD-9, FC-10 |
-| Dynamic follow-up questions | fixed question count (F21) | deferred |
-| Speech answers | text-only UI (F22) | deferred (OD-6) |
-| Job description | no field (F23) | deferred (OD-7) |
-| Full-history assumptions | dashboard/trend computed from a complete list (F6) | E21 / FC-11, or the 100-row cap |
+| CV removal / restore | no API call; state in memory (F9) | FC-3 |
+| "Reset demo data" | sample history is no longer restored (F11) | FC-10 |
+| Authenticated access | no login UI (F10) | **not needed for the local MVP**; FC-4 in Phase 2 |
+| Exit cleanup, resume | no API call (F12) | FC-9 (Phase 1b) |
+| Dynamic follow-ups, speech, job description | fixed `n`, text-only UI, no field (F21–F23) | deferred |
+| Full-history assumptions | stats computed from a complete list (F6) | E21 / FC-11, or the 100-row cap |
 
-### A.6 Missing backend requirements identified
+### A.6 Requirements that remain unresolved
 
-Neither source defines these; they were **not silently invented** — each is either an open decision or an explicit provisional value:
+See Section 23.2: **OD-14** question-bank content, **OD-8** scoring constants and acceptance threshold, **OD-15** skills list, **OD-16** DEPI programme requirements, **OD-17** AWS Academy availability, **OD-18** keeping the original CV file, **OD-19** team machines — plus the small items listed there. Each has a default so work can proceed.
 
-- Authentication method (OD-1), database engine (OD-2), GenAI provider (OD-3), CV structure extraction (OD-4), question source/RAG (OD-5), scoring formula (OD-8), retention and privacy (OD-10), frontend hosting (OD-11), gateway type (OD-12), latency and sizing (OD-13).
-- Provisional values to confirm: maximum role length 100, name length 2–100, minimum CV text length (not set; configurable), token lifetimes, rate-limit numbers, mixed-interview ratio.
-- Unstated assumption: **interviews are in English** (the UI copy is English; neither source mentions other languages).
-- Not specified anywhere and not required for the MVP: cost budgets for GenAI calls, monitoring thresholds, backup/restore targets.
+Provisional values to confirm: maximum role length 100, name length 2–100, minimum CV text length (not set), evaluation timeout (not set), mixed-interview ratio, all scoring constants. Unstated assumption: **interviews are in English**.
 
 ### A.7 Totals
 
 | Item | Count |
 | --- | --- |
-| API endpoints | **22** (9 Core · 7 Supporting · 6 Recommended); 16 in the first working version if OD-1 selects login |
+| API endpoints | **23** (9 Core · 4 Supporting · 4 Deferred authentication · 6 Recommended); **13 in the first local MVP** |
 | Frontend service functions analysed | 9 (all mapped) |
-| Frontend findings | 26 (F1–F26) |
-| Required / optional frontend changes | 12 (FC-1…FC-12) |
-| Database tables | 12 (10 core + `refresh_tokens` conditional on OD-1 + `question_bank` conditional on OD-5) |
-| Error codes | 31 |
-| Security requirements | 30 (S-01…S-30) |
-| Open decisions | 13 (OD-1…OD-13) |
-| JSON examples validated as syntactically valid | all in this document |
+| Frontend findings | 27 (F1–F27) |
+| Frontend changes | 14 (FC-1…FC-14); 10 required for the local MVP |
+| Database tables | 12 specified; **11 in the MVP** (`refresh_tokens` is Phase 2) |
+| Error codes | 33 |
+| Security requirements | 34 (S-01…S-34) |
+| Finalized decisions | 8 (D1–D8) |
+| Open items | 19 identifiers (OD-1…OD-19); 13 from v0.1 resolved, partly resolved or deferred by the decisions, 6 new (OD-14…OD-19) plus the residuals listed in 23.2 |
 
 ### A.8 How this was validated, and its limits
 
-Verified mechanically (script run against the repository and this file): the nine `api.js` functions are all mapped; the endpoint catalog has 22 unique IDs, each with a detail section whose method and path match; classes total 9/7/6; every `F`, `FC`, `S`, `OD`, `E` reference resolves; every error code used in the text exists in the catalog; every in-document link resolves; all JSON examples parse; example numbers are consistent (history average = summary average, Communication = rounded mean of Clarity and Confidence, skills sorted, question counts match); the UI limits quoted (5 MB, PDF/DOCX, answer 30–1500, role ≥ 3) and findings F1, F4, F5, F7 and F26 match the actual source.
+**Verified mechanically** (a script run against the repository and this file): the nine `api.js` functions are all mapped; the endpoint catalog has 23 unique IDs, each with a detail section whose method and path match; classes total 9/4/4/6; every `F`, `FC`, `S`, `OD`, `D` and `E` reference resolves; every error code used in the text exists in the catalog; every in-document link resolves; all JSON examples parse; example numbers are consistent (history average = summary average, Communication = rounded mean of Clarity and Structure, skills sorted, question counts match); every `S` requirement is assigned to a phase in Section 19.0; the term "confidence" appears only where the specification explains its removal or limits; the UI limits quoted (5 MB, PDF/DOCX, answer 30–1500, role ≥ 3) and findings F1, F4, F5, F7, F26 match the actual source; the frontend files are unchanged by this task; dependency versions and licences were read from PyPI; the model's 256-word-piece truncation was checked against its published model information.
 
-Not verified, because nothing exists yet to test against: that a real backend will meet latency targets; that chosen models will produce well-distributed scores; contract tests against a running API. AWS limits were checked against AWS documentation on the date above and should be rechecked at deployment. **Everything in this document is specification, not implementation.**
+**Not verified, because nothing exists yet to test:** that the backend works; that the chosen model suits this content; that the scoring criteria correlate with human judgement (Section 16.9 has not been run); latency on the team's machines; AWS Academy availability. **Everything in this document is specification, not implementation, and no claim of AI accuracy is made.**
