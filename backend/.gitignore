@@ -1,0 +1,33 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python bytecode and build output
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Test and tool caches
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Local configuration and secrets (keep .env.example tracked)
+.env
+.env.*
+!.env.example
+
+# Local databases (for later milestones)
+*.sqlite3
+*.db
+
+# Editor / OS files
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
