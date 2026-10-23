@@ -1,0 +1,9 @@
+# OPTIONAL: local Sentence-Transformers model for answer evaluation
+# (SIMILARITY_BACKEND=sbert). Not needed for the default lexical backend.
+#
+# Warning: this installs PyTorch, a large download (several hundred MB to GBs).
+# The model itself (sentence-transformers/all-MiniLM-L6-v2, ~90 MB) is
+# downloaded once on first start and then works offline.
+#
+# Install with:  pip install -r requirements-ml.txt
+sentence-transformers>=3.0,<7.0

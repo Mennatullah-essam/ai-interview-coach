@@ -1,0 +1,387 @@
+{
+  "backend": "milestone-4 baseline",
+  "engine": "lexical",
+  "startup_ms": 440.3,
+  "memory_mb_after_load": 54.6,
+  "memory_mb_delta": 40.9,
+  "evaluation": {
+    "cases": 73,
+    "agreement": 0.712,
+    "by_label": {
+      "concise_correct": "8/9",
+      "incorrect": "6/8",
+      "irrelevant": "10/10",
+      "keyword_stuffed": "7/10",
+      "paraphrase": "2/8",
+      "partial": "3/10",
+      "strong": "8/10",
+      "unsupported": "8/8"
+    },
+    "pairwise_ordering": "42/52",
+    "unsupported_flagged": "n/a",
+    "latency_ms_median": 1.78,
+    "latency_ms_p95": 5.1,
+    "failures": [
+      {
+        "q": "What is overfitting",
+        "label": "partial",
+        "overall": 23,
+        "correctness": 0,
+        "failures": [
+          "overall=23 (min 30)"
+        ]
+      },
+      {
+        "q": "How would you handle an imbalanced dataset",
+        "label": "partial",
+        "overall": 21,
+        "correctness": 0,
+        "failures": [
+          "overall=21 (min 30)"
+        ]
+      },
+      {
+        "q": "How would you handle an imbalanced dataset",
+        "label": "paraphrase",
+        "overall": 26,
+        "correctness": 0,
+        "failures": [
+          "correctness=0 (min 60)",
+          "overall=26 (min 60)"
+        ]
+      },
+      {
+        "q": "Explain the bias-variance trade-off",
+        "label": "partial",
+        "overall": 18,
+        "correctness": 0,
+        "failures": [
+          "overall=18 (min 30)"
+        ]
+      },
+      {
+        "q": "Explain the bias-variance trade-off",
+        "label": "incorrect",
+        "overall": 44,
+        "correctness": 48,
+        "failures": [
+          "correctness=48 (max 40)"
+        ]
+      },
+      {
+        "q": "Explain the bias-variance trade-off",
+        "label": "keyword_stuffed",
+        "overall": 61,
+        "correctness": 50,
+        "failures": [
+          "overall=61 (max 55)"
+        ]
+      },
+      {
+        "q": "Explain the bias-variance trade-off",
+        "label": "paraphrase",
+        "overall": 50,
+        "correctness": 48,
+        "failures": [
+          "correctness=48 (min 60)",
+          "overall=50 (min 60)"
+        ]
+      },
+      {
+        "q": "Which evaluation metrics would you choose for a fraud detection model",
+        "label": "keyword_stuffed",
+        "overall": 56,
+        "correctness": 50,
+        "failures": [
+          "overall=56 (max 55)"
+        ]
+      },
+      {
+        "q": "Which evaluation metrics would you choose for a fraud detection model",
+        "label": "paraphrase",
+        "overall": 32,
+        "correctness": 0,
+        "failures": [
+          "correctness=0 (min 60)",
+          "overall=32 (min 60)"
+        ]
+      },
+      {
+        "q": "How do database indexes work",
+        "label": "strong",
+        "overall": 69,
+        "correctness": 61,
+        "failures": [
+          "overall=69 (min 70)",
+          "correctness=61 (min 70)"
+        ]
+      },
+      {
+        "q": "How do database indexes work",
+        "label": "partial",
+        "overall": 22,
+        "correctness": 0,
+        "failures": [
+          "overall=22 (min 30)"
+        ]
+      },
+      {
+        "q": "How do database indexes work",
+        "label": "paraphrase",
+        "overall": 47,
+        "correctness": 48,
+        "failures": [
+          "correctness=48 (min 60)",
+          "overall=47 (min 60)"
+        ]
+      },
+      {
+        "q": "What are database transactions",
+        "label": "incorrect",
+        "overall": 39,
+        "correctness": 48,
+        "failures": [
+          "correctness=48 (max 40)"
+        ]
+      },
+      {
+        "q": "What are database transactions",
+        "label": "paraphrase",
+        "overall": 41,
+        "correctness": 48,
+        "failures": [
+          "correctness=48 (min 60)",
+          "overall=41 (min 60)"
+        ]
+      },
+      {
+        "q": "How do authentication and authorization differ",
+        "label": "strong",
+        "overall": 65,
+        "correctness": 61,
+        "failures": [
+          "overall=65 (min 70)",
+          "correctness=61 (min 70)"
+        ]
+      },
+      {
+        "q": "How do authentication and authorization differ",
+        "label": "partial",
+        "overall": 25,
+        "correctness": 48,
+        "failures": [
+          "overall=25 (min 30)"
+        ]
+      },
+      {
+        "q": "How do authentication and authorization differ",
+        "label": "keyword_stuffed",
+        "overall": 59,
+        "correctness": 50,
+        "failures": [
+          "overall=59 (max 55)"
+        ]
+      },
+      {
+        "q": "Explain how the browser event loop",
+        "label": "partial",
+        "overall": 21,
+        "correctness": 0,
+        "failures": [
+          "overall=21 (min 30)"
+        ]
+      },
+      {
+        "q": "Explain how the browser event loop",
+        "label": "paraphrase",
+        "overall": 52,
+        "correctness": 48,
+        "failures": [
+          "correctness=48 (min 60)",
+          "overall=52 (min 60)"
+        ]
+      },
+      {
+        "q": "Tell me about a deadline you nearly missed",
+        "label": "partial",
+        "overall": 20,
+        "correctness": null,
+        "failures": [
+          "overall=20 (min 30)"
+        ]
+      },
+      {
+        "q": "Tell me about a deadline you nearly missed",
+        "label": "concise_correct",
+        "overall": 49,
+        "correctness": null,
+        "failures": [
+          "overall=49 (min 50)"
+        ]
+      }
+    ]
+  },
+  "evaluation_holdout": {
+    "cases": 27,
+    "agreement": 0.63,
+    "by_label": {
+      "concise_correct": "1/1",
+      "incorrect": "1/2",
+      "irrelevant": "4/4",
+      "keyword_stuffed": "4/4",
+      "paraphrase": "0/4",
+      "partial": "0/5",
+      "strong": "5/5",
+      "unsupported": "2/2"
+    },
+    "pairwise_ordering": "12/17",
+    "unsupported_flagged": "n/a",
+    "latency_ms_median": 2.56,
+    "latency_ms_p95": 8.23,
+    "failures": [
+      {
+        "q": "How do you monitor a model's performance after deployment",
+        "label": "partial",
+        "overall": 16,
+        "correctness": 0,
+        "failures": [
+          "overall=16 (min 30)"
+        ]
+      },
+      {
+        "q": "How do you monitor a model's performance after deployment",
+        "label": "paraphrase",
+        "overall": 25,
+        "correctness": 0,
+        "failures": [
+          "correctness=0 (min 60)",
+          "overall=25 (min 60)"
+        ]
+      },
+      {
+        "q": "What makes a REST API well designed",
+        "label": "partial",
+        "overall": 17,
+        "correctness": 0,
+        "failures": [
+          "overall=17 (min 30)"
+        ]
+      },
+      {
+        "q": "What makes a REST API well designed",
+        "label": "paraphrase",
+        "overall": 30,
+        "correctness": 0,
+        "failures": [
+          "correctness=0 (min 60)",
+          "overall=30 (min 60)"
+        ]
+      },
+      {
+        "q": "How would you use caching to speed up a slow API endpoint",
+        "label": "partial",
+        "overall": 20,
+        "correctness": 0,
+        "failures": [
+          "overall=20 (min 30)"
+        ]
+      },
+      {
+        "q": "How would you use caching to speed up a slow API endpoint",
+        "label": "incorrect",
+        "overall": 39,
+        "correctness": 48,
+        "failures": [
+          "correctness=48 (max 40)"
+        ]
+      },
+      {
+        "q": "How would you use caching to speed up a slow API endpoint",
+        "label": "paraphrase",
+        "overall": 25,
+        "correctness": 0,
+        "failures": [
+          "correctness=0 (min 60)",
+          "overall=25 (min 60)"
+        ]
+      },
+      {
+        "q": "What is the difference between a process and a thread",
+        "label": "partial",
+        "overall": 17,
+        "correctness": 0,
+        "failures": [
+          "overall=17 (min 30)"
+        ]
+      },
+      {
+        "q": "What problem does Docker solve",
+        "label": "partial",
+        "overall": 22,
+        "correctness": 0,
+        "failures": [
+          "overall=22 (min 30)"
+        ]
+      },
+      {
+        "q": "What problem does Docker solve",
+        "label": "paraphrase",
+        "overall": 26,
+        "correctness": 0,
+        "failures": [
+          "correctness=0 (min 60)",
+          "overall=26 (min 60)"
+        ]
+      }
+    ]
+  },
+  "selection": {
+    "interviews": 42,
+    "on_role_rate": 1.0,
+    "required_skill_coverage_mean": 0.667,
+    "duplicate_rate": 0.0,
+    "redundant_pair_rate": 0.0076,
+    "repeat_rate_next_interview": 0.764,
+    "deterministic": true,
+    "latency_ms_median": 3.21
+  },
+  "agent": {
+    "appropriate_follow_up_rate": 0.877,
+    "actions_by_label": {
+      "strong": {
+        "deepen": 7,
+        "continue": 3
+      },
+      "partial": {
+        "probe_concept": 8,
+        "request_example": 2
+      },
+      "incorrect": {
+        "probe_concept": 8
+      },
+      "irrelevant": {
+        "probe_concept": 8,
+        "request_example": 2
+      },
+      "keyword_stuffed": {
+        "request_example": 8,
+        "probe_concept": 2
+      },
+      "paraphrase": {
+        "request_example": 3,
+        "probe_concept": 4,
+        "continue": 1
+      },
+      "concise_correct": {
+        "continue": 6,
+        "deepen": 1,
+        "request_example": 2
+      },
+      "unsupported": {
+        "probe_concept": 8
+      }
+    },
+    "fallback_success_rate": "n/a"
+  },
+  "memory_mb_peak": 66.6
+}

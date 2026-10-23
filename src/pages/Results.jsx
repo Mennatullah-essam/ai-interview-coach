@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import Chip from '../components/Chip';
+import AgentDecision from '../components/AgentDecision';
 import Feedback from '../components/Feedback';
 import Modal from '../components/Modal';
 import PressableRow from '../components/PressableRow';
@@ -32,7 +33,7 @@ export default function Results() {
   if (!results) return <div className="wrap"><Spinner label="Loading results…" className="mt-xl" /></div>;
 
   const { meta, items, recommendations, extraStrength, extraImprovement } = results;
-  const breakdown = buildBreakdown(items);
+  const breakdown = results.breakdown ?? buildBreakdown(items);
   const ranked = Object.entries(breakdown).sort((a, b) => b[1] - a[1]);
   const overall = scoreLabel(meta.score);
 
@@ -42,6 +43,7 @@ export default function Results() {
         <h2>Interview results</h2>
         <div className="row">
           <Button to="/dashboard">Back to Dashboard</Button>
+          <Button to={`/plan/${meta.id}`}>Improvement plan</Button>
           <Button variant="primary" to="/cv-upload">Practice Again</Button>
         </div>
       </div>
@@ -82,23 +84,24 @@ export default function Results() {
             </StaggerList>
           </Card>
           <Card>
-            <h3 className="mb-md">AI recommendations</h3>
+            <h3 className="mb-md">Recommendations</h3>
             <StaggerList className="l r">
               {recommendations.map((r) => <StaggerItem as="li" key={r}>{r}</StaggerItem>)}
             </StaggerList>
+            <Button className="mt-md" variant="primary" to={`/plan/${meta.id}`}>Open your improvement plan →</Button>
           </Card>
         </div>
 
         <Card>
           <h3>Question-by-question</h3>
-          <p className="mut mb-sm">Select a question to see detailed feedback.</p>
+          <p className="mut mb-sm">Select a question to see detailed feedback. Scores are automated estimates for practice, not a hiring assessment.</p>
           <div className="qr hd" aria-hidden="true"><span>Question</span><span>Score</span><span>Status</span></div>
           <StaggerList as="div" gap={0.05} delay={0.2}>
             {items.map((x, i) => {
               const label = scoreLabel(x.ev.score);
               return (
                 <PressableRow key={i} className="qr" label={`Question ${i + 1}, score ${x.ev.score}%. Open feedback`} onActivate={() => setSelected(x)}>
-                  <span><b>Q{i + 1}.</b> {x.q.text}</span>
+                  <span>{x.q.category === 'follow_up' ? <b>↳ Follow-up.</b> : <b>Q{i + 1}.</b>} {x.q.text}</span>
                   <b>{x.ev.score}%</b>
                   <span><Chip tone={label.tone}>{label.text}</Chip></span>
                 </PressableRow>
@@ -115,6 +118,9 @@ export default function Results() {
               <h3 style={{ flex: 1 }}>{selected.q.text}</h3>
               <Button aria-label="Close feedback" onClick={() => setSelected(null)}>✕</Button>
             </div>
+            {selected.ev.decision && selected.ev.decision.action !== 'continue' && (
+              <div className="mb-md"><AgentDecision decision={selected.ev.decision} followUpAdded /></div>
+            )}
             <Feedback evaluation={selected.ev} />
           </Modal>
         )}

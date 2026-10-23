@@ -1,4 +1,27 @@
-node_modules
-dist
+# Python virtual environment and cache
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Environment variables and secrets
 .env
-.env.local
+.env.*
+!.env.example
+
+# Frontend dependencies and build output
+node_modules/
+dist/
+
+# Database backups
+*.backup
+*.dump
+*.sql
+
+# Logs
+*.log
+
+# Local IDE and operating system files
+.vscode/
+.DS_Store
+Thumbs.db

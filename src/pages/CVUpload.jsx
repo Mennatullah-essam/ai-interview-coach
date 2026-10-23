@@ -75,7 +75,9 @@ export default function CVUpload() {
               <div className="row mt-md">
                 <Button onClick={() => input.current.click()}>Replace</Button>
                 <Button onClick={remove}>Remove</Button>
+                <Button to="/profile/review">Review extracted profile</Button>
               </div>
+              <p className="mut mt-sm" style={{ fontSize: '0.88rem' }}>We built a draft profile from this CV. Review and confirm it to personalise your questions.</p>
             </Card>
           </motion.div>
         )}

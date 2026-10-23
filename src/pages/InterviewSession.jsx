@@ -13,12 +13,13 @@ import { swap } from '../animations/variants';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { useInterview } from '../hooks/useInterview';
 import { useMounted } from '../hooks/useMounted';
+import { errorMessage } from '../services/api';
 
 export default function InterviewSession() {
   useDocumentTitle('Interview');
   const navigate = useNavigate();
   const mounted = useMounted();
-  const { session, index, submitAnswer } = useInterview();
+  const { session, index, submitAnswer, abandon } = useInterview();
   const [answer, setAnswer] = useState('');
   const [phase, setPhase] = useState('answer'); // answer | loading
   const [error, setError] = useState('');
@@ -30,23 +31,23 @@ export default function InterviewSession() {
 
   const submit = async () => {
     if (answer.trim().length < MIN_ANSWER_LENGTH) {
-      return setError(`Please write at least ${MIN_ANSWER_LENGTH} characters so the AI can evaluate your answer.`);
+      return setError(`Please write at least ${MIN_ANSWER_LENGTH} characters so your answer can be evaluated.`);
     }
     setError('');
     setPhase('loading');
     try {
       const evaluation = await submitAnswer(answer);
       if (evaluation && mounted.current) navigate('/interview/evaluation');
-    } catch {
+    } catch (e) {
       if (!mounted.current) return;
-      setError('Evaluation failed. Please try again.');
+      setError(errorMessage(e, 'Evaluation failed. Please try again.'));
       setPhase('answer');
     }
   };
 
   return (
     <div className="wrap">
-      <InterviewProgress current={index + 1} total={total} config={session.config} progress={(index / total) * 100} onExit={() => navigate('/dashboard')} />
+      <InterviewProgress current={index + 1} total={total} config={session.config} progress={(index / total) * 100} onExit={() => { abandon(); navigate('/dashboard'); }} />
       <div className="main2">
         <div className="g">
           <QuestionCard question={question} slideIn={index > 0} />

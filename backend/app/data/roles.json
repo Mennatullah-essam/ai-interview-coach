@@ -1,0 +1,47 @@
+{
+  "_comment": "Role requirement profiles for the 7 preset roles (curated by the team). required_skills are core for the role; preferred_skills are a plus. Names must match skills.txt / skill_catalog.json. These describe typical entry-to-mid level expectations, not a specific employer.",
+  "roles": {
+    "AI Engineer": {
+      "description": "Builds and deploys AI features: machine learning and NLP models, LLM and retrieval systems, and the APIs and infrastructure that serve them.",
+      "required_skills": ["Python", "Machine Learning", "Deep Learning", "NLP", "PyTorch", "Model Deployment", "REST", "Git"],
+      "preferred_skills": ["LLM", "RAG", "Transformers", "Hugging Face", "Docker", "FastAPI", "Sentence Transformers", "AWS"],
+      "competencies": ["model development", "evaluation metrics", "deployment and monitoring", "LLM and retrieval systems"]
+    },
+    "Machine Learning Engineer": {
+      "description": "Designs, trains, evaluates and productionises machine learning models with reliable data pipelines and monitoring.",
+      "required_skills": ["Python", "Machine Learning", "scikit-learn", "Feature Engineering", "Model Deployment", "SQL", "Git"],
+      "preferred_skills": ["PyTorch", "TensorFlow", "Docker", "MLflow", "Airflow", "Kubernetes", "AWS", "Statistics"],
+      "competencies": ["feature engineering", "model evaluation", "MLOps and monitoring", "data pipelines"]
+    },
+    "Data Scientist": {
+      "description": "Turns data into decisions with statistics, experiments, machine learning and clear communication of findings.",
+      "required_skills": ["Python", "SQL", "Statistics", "Pandas", "Machine Learning", "Data Visualization", "A/B Testing"],
+      "preferred_skills": ["scikit-learn", "NumPy", "Jupyter", "Feature Engineering", "Spark", "Tableau", "Deep Learning"],
+      "competencies": ["statistical reasoning", "experimentation", "modelling", "communicating insights"]
+    },
+    "Software Engineer": {
+      "description": "Designs, builds and maintains reliable software, from APIs and databases to user interfaces, with tests and good engineering practice.",
+      "required_skills": ["Data Structures", "Algorithms", "Git", "Unit Testing", "OOP", "SQL", "REST"],
+      "preferred_skills": ["Python", "Java", "JavaScript", "Docker", "System Design", "CI/CD", "Linux", "React"],
+      "competencies": ["problem solving", "code quality and testing", "system design", "collaboration"]
+    },
+    "Backend Developer": {
+      "description": "Builds secure, scalable server-side applications: APIs, databases, caching, messaging and deployment.",
+      "required_skills": ["REST", "SQL", "PostgreSQL", "Git", "Unit Testing", "Docker", "Python"],
+      "preferred_skills": ["FastAPI", "Django", "Node.js", "Redis", "Kafka", "Microservices", "System Design", "AWS", "CI/CD"],
+      "competencies": ["API design", "databases and performance", "security", "scalability"]
+    },
+    "Frontend Developer": {
+      "description": "Builds accessible, responsive and fast user interfaces and connects them to backend APIs.",
+      "required_skills": ["JavaScript", "HTML", "CSS", "React", "Responsive Design", "Git"],
+      "preferred_skills": ["TypeScript", "Accessibility", "Redux", "Next.js", "Jest", "Vite", "REST"],
+      "competencies": ["UI implementation", "state management", "accessibility", "performance"]
+    },
+    "Data Analyst": {
+      "description": "Collects, cleans and analyses data, builds reports and dashboards, and explains findings to stakeholders.",
+      "required_skills": ["SQL", "Excel", "Data Visualization", "Statistics", "Pandas"],
+      "preferred_skills": ["Python", "Power BI", "Tableau", "A/B Testing", "ETL", "Looker"],
+      "competencies": ["data cleaning", "analysis and statistics", "dashboards and reporting", "stakeholder communication"]
+    }
+  }
+}

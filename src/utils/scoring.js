@@ -9,20 +9,25 @@ export const scoreLabel = (s) => {
   return { text: 'Needs Improvement', tone: 'warn' };
 };
 
+/** Strongest and weakest skill; both null for a user with no completed interviews. */
 export function rankSkills(skills) {
-  const sorted = Object.entries(skills).sort((a, b) => b[1] - a[1]);
+  const sorted = Object.entries(skills ?? {}).sort((a, b) => b[1] - a[1]);
+  if (!sorted.length) return { strongest: null, weakest: null };
   return { strongest: sorted[0][0], weakest: sorted[sorted.length - 1][0] };
 }
 
-/** Aggregates per-question evaluations into the Results "Performance breakdown". */
+/**
+ * Fallback only: the server sends the authoritative breakdown with the results.
+ * Mirrors the server formula (Communication = mean of Clarity and Structure).
+ */
 export function buildBreakdown(items) {
   const mean = (key) => avg(items.map((x) => x.ev.cats[key]));
   const breakdown = {
-    Confidence: mean('Confidence'),
+    Structure: mean('Structure'),
     Relevance: mean('Relevance'),
     Clarity: mean('Clarity'),
     'Technical Knowledge': mean('Technical Depth'),
   };
-  breakdown.Communication = avg([breakdown.Clarity, breakdown.Confidence]);
+  breakdown.Communication = avg([breakdown.Clarity, breakdown.Structure]);
   return breakdown;
 }

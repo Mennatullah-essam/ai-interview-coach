@@ -5,15 +5,15 @@ import Logo from './Logo';
 import Button from './Button';
 import ThemeToggle from './ThemeToggle';
 import { NAV_ITEMS } from '../data/constants';
-import { useApp } from '../hooks/useApp';
+import { useAuth } from '../hooks/useAuth';
 import { getActiveNavPath, isFocusRoute } from '../utils/navigation';
-import { getFirstName, getInitials } from '../utils/format';
+import { getInitials } from '../utils/format';
 
 const pillSpring = { type: 'spring', stiffness: 500, damping: 38 };
 
 /** Sticky top bar. `variant="landing"` shows the marketing header; otherwise the signed-in app navigation. */
 export default function Navbar({ variant = 'app' }) {
-  const { user } = useApp();
+  const { user, status, signOut } = useAuth();
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -42,6 +42,11 @@ export default function Navbar({ variant = 'app' }) {
   }, [menuOpen]);
 
   const go = (path) => { setMenuOpen(false); navigate(path); };
+  const logOut = async () => {
+    setMenuOpen(false);
+    await signOut();
+    navigate('/login', { replace: true });
+  };
 
   if (variant === 'landing') {
     return (
@@ -50,7 +55,14 @@ export default function Navbar({ variant = 'app' }) {
           <Logo />
           <div style={{ flex: 1 }} />
           <ThemeToggle />
-          <Button to="/dashboard">Sign in as {getFirstName(user.name)}</Button>
+          {status === 'authenticated' ? (
+            <Button variant="primary" to="/dashboard">Go to dashboard</Button>
+          ) : (
+            <>
+              <Button to="/login">Log in</Button>
+              <Button variant="primary" to="/signup">Sign up</Button>
+            </>
+          )}
         </div>
       </motion.header>
     );
@@ -84,7 +96,7 @@ export default function Navbar({ variant = 'app' }) {
             whileHover={{ scale: 1.06 }}
             whileTap={{ scale: 0.94 }}
           >
-            {getInitials(user.name)}
+            {getInitials(user?.name ?? '')}
           </motion.button>
         )}
       </div>
@@ -100,7 +112,8 @@ export default function Navbar({ variant = 'app' }) {
             transition={{ duration: 0.15 }}
           >
             <button type="button" role="menuitem" onClick={() => go('/profile')}>👤 Profile &amp; settings</button>
-            <button type="button" role="menuitem" onClick={() => go('/')}>↩ Sign out</button>
+            {user && <div className="mut" style={{ padding: '6px 12px', fontSize: '0.85rem' }}>{user.email}</div>}
+            <button type="button" role="menuitem" onClick={logOut}>↩ Log out</button>
           </motion.div>
         )}
       </AnimatePresence>

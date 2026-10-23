@@ -1,0 +1,1252 @@
+{
+  "_comment": "Question-specific rubric enrichment (Milestone 5): other common ways to express each rubric key point, so a correct answer in different words is recognised without an embedding model. Keys are key points (lower case) from question_bank.json; values are phrases matched as whole words, case-insensitive. A phrase only counts when it appears in an explanatory sentence (see app/scoring/concepts.py), so listing these words alone does not earn credit. Written from general domain knowledge; extend it when reviewers find valid answers that were missed.",
+  "aliases": {
+    "training versus validation gap": [
+      "training score is much higher",
+      "worse on validation",
+      "worse on unseen data",
+      "held-out score",
+      "gap between training and validation",
+      "training accuracy is high but validation",
+      "much worse than the training",
+      "validation loss goes up",
+      "validation loss rises",
+      "fails on unseen data",
+      "poorly on new data"
+    ],
+    "cross-validation": [
+      "k-fold",
+      "kfold",
+      "cross validation"
+    ],
+    "regularization": [
+      "weight decay",
+      "dropout",
+      "l1",
+      "l2",
+      "penalty on the weights",
+      "penalise large weights",
+      "lasso",
+      "ridge"
+    ],
+    "early stopping": [
+      "stop training early",
+      "stop training when the validation",
+      "stop when the validation loss",
+      "stop training once"
+    ],
+    "separate test set": [
+      "untouched test set",
+      "final test set",
+      "hold out a test set",
+      "held-out test set",
+      "keep a test set",
+      "test set untouched"
+    ],
+    "precision and recall instead of accuracy": [
+      "precision and recall",
+      "precision, recall",
+      "f1",
+      "pr-auc",
+      "how many flagged cases are right",
+      "how many real cases we catch",
+      "accuracy is misleading",
+      "don't trust accuracy",
+      "not accuracy"
+    ],
+    "resampling or smote": [
+      "oversampling",
+      "undersampling",
+      "oversample",
+      "undersample",
+      "synthetic minority",
+      "smote",
+      "resample",
+      "synthetic examples"
+    ],
+    "class weights": [
+      "class weight",
+      "class_weight",
+      "weight the minority",
+      "weight the rare class",
+      "bigger penalty",
+      "higher penalty",
+      "cost-sensitive",
+      "penalty in the loss"
+    ],
+    "stratified split": [
+      "stratify",
+      "stratified",
+      "keep the class ratio",
+      "same class ratio",
+      "class proportions in each split"
+    ],
+    "decision threshold": [
+      "threshold",
+      "cut-off",
+      "cutoff",
+      "move the cut-off",
+      "tune the threshold",
+      "probability threshold"
+    ],
+    "bias as underfitting": [
+      "too simple",
+      "too rigid",
+      "underfits",
+      "systematic error",
+      "misses real structure",
+      "high bias"
+    ],
+    "variance as overfitting": [
+      "too complex",
+      "too flexible",
+      "chases noise",
+      "sensitive to the training data",
+      "high variance",
+      "swing a lot"
+    ],
+    "model complexity": [
+      "more complex",
+      "more flexible",
+      "deeper model",
+      "more parameters",
+      "simpler model"
+    ],
+    "validation error": [
+      "held-out error",
+      "validation loss",
+      "test error",
+      "error on new data",
+      "u-shaped",
+      "validation score"
+    ],
+    "regularization or ensembles": [
+      "regularization",
+      "regularisation",
+      "bagging",
+      "averaging many models",
+      "random forest",
+      "ensemble",
+      "penalties",
+      "weight decay",
+      "dropout"
+    ],
+    "accuracy is misleading": [
+      "accuracy is useless",
+      "accuracy tells us nothing",
+      "predicting no fraud",
+      "99%",
+      "always predicts the majority",
+      "share of correct predictions tells us nothing",
+      "accuracy looks high"
+    ],
+    "precision and recall": [
+      "precision",
+      "recall",
+      "how many alerts are really",
+      "how many fraud cases we catch",
+      "false positives and false negatives",
+      "f1"
+    ],
+    "pr-auc": [
+      "precision-recall curve",
+      "area under the precision-recall",
+      "average precision",
+      "pr auc"
+    ],
+    "threshold from business cost": [
+      "business cost",
+      "cost of a missed",
+      "cost of each mistake",
+      "missed fraud costs",
+      "where to cut the score",
+      "depends on money",
+      "cost of false"
+    ],
+    "time-based validation": [
+      "time-based split",
+      "train on older",
+      "test on the most recent",
+      "out-of-time",
+      "time split",
+      "chronological split",
+      "test on the latest"
+    ],
+    "b-tree structure": [
+      "b-tree",
+      "btree",
+      "sorted tree",
+      "balanced tree",
+      "sorted structure"
+    ],
+    "avoid full table scans": [
+      "full table scan",
+      "read the whole table",
+      "scan every row",
+      "jump to the right rows",
+      "without scanning"
+    ],
+    "selectivity": [
+      "selective",
+      "few distinct values",
+      "narrows the result",
+      "high cardinality",
+      "low cardinality",
+      "couple of distinct values"
+    ],
+    "slower writes": [
+      "writes get slower",
+      "slows down inserts",
+      "inserts are slower",
+      "maintain the index",
+      "maintain the tree",
+      "write overhead",
+      "every insert"
+    ],
+    "explain query plan": [
+      "explain",
+      "execution plan",
+      "query plan",
+      "explain analyze"
+    ],
+    "all or nothing": [
+      "either every change is saved or none",
+      "all succeed or all fail",
+      "indivisible",
+      "atomicity",
+      "succeed or fail together"
+    ],
+    "consistency and constraints": [
+      "foreign keys",
+      "rules still hold",
+      "valid state"
+    ],
+    "isolation levels": [
+      "isolation",
+      "read committed",
+      "serializable",
+      "repeatable read",
+      "don't see each other",
+      "half-finished changes",
+      "concurrent transactions"
+    ],
+    "durability": [
+      "survives a crash",
+      "survives a power cut",
+      "write-ahead log",
+      "committed data survives",
+      "durable"
+    ],
+    "concrete example": [
+      "for example",
+      "for instance",
+      "bank transfer",
+      "moving money",
+      "e.g."
+    ],
+    "authentication is identity": [
+      "who you are",
+      "proves identity",
+      "verify the user"
+    ],
+    "authorization is permission": [
+      "what you are allowed",
+      "permission",
+      "decides access",
+      "allowed to do",
+      "access control"
+    ],
+    "server-side checks": [
+      "on the server",
+      "in backend code",
+      "server side",
+      "backend checks",
+      "every request"
+    ],
+    "do not trust client input": [
+      "can be modified",
+      "can be forged",
+      "never trust the client",
+      "never trust",
+      "browser can be changed",
+      "client can be manipulated"
+    ],
+    "hashed passwords": [
+      "hash",
+      "bcrypt",
+      "scrypt",
+      "argon2",
+      "salted",
+      "never the raw password"
+    ],
+    "single thread and call stack": [
+      "single thread",
+      "one thread",
+      "call stack",
+      "stack of function calls",
+      "one piece of script runs at a time",
+      "main thread"
+    ],
+    "callback queues": [
+      "task queue",
+      "callback queue",
+      "message queue",
+      "waiting in lines",
+      "queued"
+    ],
+    "microtasks before tasks": [
+      "microtask",
+      "promise callbacks run first",
+      "promise continuations",
+      "drains all promise",
+      "before the next task",
+      "before settimeout"
+    ],
+    "rendering between tasks": [
+      "repaint",
+      "paint between"
+    ],
+    "avoid blocking": [
+      "freezes the page",
+      "blocks the page",
+      "web worker",
+      "break it into chunks",
+      "long synchronous",
+      "blocking the main thread",
+      "don't block"
+    ],
+    "the business problem": [
+      "the problem was",
+      "business goal",
+      "pain point",
+      "stakeholders needed",
+      "customers needed"
+    ],
+    "data preparation": [
+      "cleaned",
+      "labelled",
+      "labeled",
+      "preprocessing",
+      "preprocessed",
+      "feature engineering",
+      "prepared the data"
+    ],
+    "baseline comparison": [
+      "baseline",
+      "compared a simple",
+      "simple model first",
+      "benchmark model"
+    ],
+    "evaluation metric": [
+      "f1",
+      "accuracy",
+      "precision",
+      "recall"
+    ],
+    "measurable impact": [
+      "percent",
+      "reduced",
+      "increased",
+      "saved",
+      "improved from",
+      "dropped by"
+    ],
+    "token versus sentence embeddings": [
+      "token embeddings",
+      "one vector per sentence",
+      "sentence embedding",
+      "per-token vectors"
+    ],
+    "siamese fine-tuning": [
+      "siamese",
+      "trained on sentence pairs",
+      "contrastive",
+      "fine-tuned on pairs",
+      "triplet"
+    ],
+    "cosine similarity": [
+      "cosine",
+      "dot product",
+      "angle between vectors"
+    ],
+    "encode once for search": [
+      "precompute",
+      "pre-compute",
+      "encode once",
+      "index the embeddings",
+      "embed the corpus once",
+      "cache the embeddings"
+    ],
+    "cross-encoder comparison": [
+      "cross-encoder",
+      "cross encoder",
+      "rerank",
+      "re-rank",
+      "both sentences together"
+    ],
+    "chunking and embeddings": [
+      "chunk",
+      "split documents",
+      "embeddings",
+      "embed"
+    ],
+    "vector retrieval": [
+      "vector search",
+      "nearest neighbour",
+      "vector database",
+      "faiss",
+      "top-k",
+      "retrieve the most similar"
+    ],
+    "grounded prompt with context": [
+      "put the retrieved",
+      "context in the prompt",
+      "answer only from",
+      "grounded",
+      "cite the sources"
+    ],
+    "retrieval recall": [
+      "recall@k",
+      "hit rate",
+      "did we retrieve",
+      "retrieval quality",
+      "recall"
+    ],
+    "faithfulness evaluation": [
+      "faithful",
+      "hallucination",
+      "supported by the context",
+      "groundedness",
+      "answer is supported"
+    ],
+    "explore the data": [
+      "eda",
+      "exploratory",
+      "look at distributions",
+      "profile the data",
+      "understand the data"
+    ],
+    "missing values": [
+      "impute",
+      "imputation",
+      "missing data"
+    ],
+    "encoding categorical variables": [
+      "one-hot",
+      "one hot",
+      "target encoding",
+      "label encoding",
+      "categorical"
+    ],
+    "domain-driven features": [
+      "domain knowledge",
+      "ratios",
+      "business features",
+      "domain features",
+      "date features"
+    ],
+    "avoid data leakage": [
+      "leakage",
+      "fit on the training data only",
+      "only on the training set",
+      "future information"
+    ],
+    "measure how much is missing": [
+      "percentage missing",
+      "how many values are missing",
+      "count the missing",
+      "share of missing"
+    ],
+    "understand why it is missing": [
+      "why it is missing",
+      "missing at random",
+      "mcar",
+      "mnar",
+      "reason it is missing"
+    ],
+    "drop or impute": [
+      "impute",
+      "fill with the median",
+      "fill with the mean",
+      "imputation",
+      "remove rows"
+    ],
+    "missing indicator": [
+      "indicator column",
+      "flag column",
+      "was_missing",
+      "binary flag"
+    ],
+    "document the choice": [
+      "write down",
+      "record the decision"
+    ],
+    "correlation versus causation": [
+      "correlation does not imply causation",
+      "correlated",
+      "does not cause",
+      "causal"
+    ],
+    "confounding variable": [
+      "confounder",
+      "confounding",
+      "third variable",
+      "hidden factor",
+      "lurking variable"
+    ],
+    "randomised experiment": [
+      "randomized",
+      "a/b test",
+      "controlled experiment",
+      "random assignment",
+      "rct"
+    ],
+    "assumptions": [
+      "assumption"
+    ],
+    "group by with having": [
+      "group by",
+      "having count",
+      "having"
+    ],
+    "row_number window function": [
+      "row_number",
+      "window function",
+      "partition by",
+      "rank()"
+    ],
+    "keep one row per group": [
+      "keep one",
+      "keep the first",
+      "keep the latest",
+      "delete the others"
+    ],
+    "transaction and backup": [
+      "backup",
+      "transaction",
+      "begin",
+      "rollback"
+    ],
+    "unique constraint": [
+      "unique index",
+      "unique constraint",
+      "prevent duplicates"
+    ],
+    "hypothesis and primary metric": [
+      "primary metric",
+      "success metric",
+      "north star"
+    ],
+    "sample size": [
+      "power analysis",
+      "how many users",
+      "sample size",
+      "statistical power"
+    ],
+    "random assignment": [
+      "randomly assign",
+      "random split of users",
+      "randomised",
+      "randomized"
+    ],
+    "statistical significance": [
+      "p-value",
+      "confidence interval",
+      "significance"
+    ],
+    "guardrail metrics": [
+      "guardrail",
+      "counter metric",
+      "don't hurt",
+      "secondary metrics"
+    ],
+    "resource naming": [
+      "nouns",
+      "plural nouns",
+      "/users",
+      "resource names"
+    ],
+    "http methods and status codes": [
+      "status code",
+      "404",
+      "201"
+    ],
+    "consistent errors": [
+      "error format",
+      "error envelope",
+      "consistent error",
+      "error codes"
+    ],
+    "pagination and versioning": [
+      "pagination",
+      "paginate",
+      "limit and offset",
+      "cursor",
+      "versioning",
+      "/v1"
+    ],
+    "authentication and documentation": [
+      "openapi",
+      "swagger",
+      "documentation"
+    ],
+    "measure first": [
+      "find the bottleneck",
+      "benchmark"
+    ],
+    "cache frequently read data": [
+      "redis",
+      "memcached",
+      "in-memory cache"
+    ],
+    "expiry and invalidation": [
+      "ttl",
+      "expire",
+      "invalidate",
+      "invalidation",
+      "stale"
+    ],
+    "cache key design": [
+      "cache key",
+      "key includes",
+      "per user key"
+    ],
+    "measure hit rate": [
+      "hit rate",
+      "hit ratio",
+      "cache hits"
+    ],
+    "start with a modular monolith": [
+      "modular monolith",
+      "start with a monolith",
+      "monolith first"
+    ],
+    "independent scaling and deployment": [
+      "deploy independently",
+      "scale independently",
+      "independent deployment"
+    ],
+    "team ownership": [
+      "separate teams",
+      "team owns",
+      "ownership"
+    ],
+    "operational complexity": [
+      "network calls",
+      "distributed",
+      "operational cost",
+      "harder to debug",
+      "observability",
+      "more moving parts"
+    ],
+    "domain boundaries": [
+      "bounded context",
+      "domain boundaries",
+      "business capability"
+    ],
+    "unit tests": [
+      "unit test",
+      "test single functions",
+      "pytest",
+      "jest"
+    ],
+    "integration tests": [
+      "integration test",
+      "test with the database",
+      "test components together"
+    ],
+    "end-to-end tests": [
+      "e2e",
+      "end to end",
+      "playwright",
+      "cypress",
+      "selenium"
+    ],
+    "run in ci": [
+      "continuous integration",
+      "ci pipeline",
+      "github actions",
+      "on every push"
+    ],
+    "test for every bug": [
+      "regression test",
+      "test that reproduces the bug",
+      "every bug gets a test"
+    ],
+    "growth with input size": [
+      "as the input grows",
+      "scales with n",
+      "grows with n",
+      "input size"
+    ],
+    "worst case": [
+      "worst-case",
+      "upper bound"
+    ],
+    "nested loops example": [
+      "nested loop",
+      "o(n^2)",
+      "o(n2)",
+      "quadratic",
+      "two loops"
+    ],
+    "hash set improvement": [
+      "hash set",
+      "hash map",
+      "set lookup",
+      "dictionary lookup",
+      "o(n)",
+      "constant time lookup"
+    ],
+    "time and memory trade-off": [
+      "extra memory",
+      "more memory",
+      "space for time",
+      "memory trade-off"
+    ],
+    "separate memory for processes": [
+      "own memory space",
+      "separate memory",
+      "isolated memory"
+    ],
+    "shared memory for threads": [
+      "share memory",
+      "shared memory",
+      "same memory"
+    ],
+    "race conditions and locks": [
+      "race condition",
+      "lock",
+      "mutex",
+      "synchronisation",
+      "synchronization"
+    ],
+    "cpu-bound versus i/o-bound": [
+      "cpu-bound",
+      "cpu bound",
+      "i/o-bound",
+      "io bound",
+      "gil"
+    ],
+    "consistent environments": [
+      "works on my machine",
+      "same environment",
+      "reproducible"
+    ],
+    "dockerfile and images": [
+      "dockerfile",
+      "build an image"
+    ],
+    "small base image and layers": [
+      "slim image",
+      "alpine",
+      "layer caching",
+      "multi-stage"
+    ],
+    "compose for local services": [
+      "docker compose",
+      "docker-compose",
+      "compose"
+    ],
+    "secrets as environment variables": [
+      "environment variables",
+      "env vars",
+      ".env",
+      "secrets"
+    ],
+    "package model and preprocessing": [
+      "save the model and the preprocessing",
+      "pipeline object",
+      "serialize the model",
+      "pickle",
+      "joblib",
+      "onnx"
+    ],
+    "api endpoint": [
+      "endpoint",
+      "fastapi",
+      "flask",
+      "rest api",
+      "/predict"
+    ],
+    "docker container": [
+      "docker",
+      "container",
+      "containerise",
+      "containerize"
+    ],
+    "load once at startup": [
+      "load the model once",
+      "load at startup",
+      "on startup",
+      "not per request"
+    ],
+    "monitoring and scaling": [
+      "autoscale",
+      "scale out",
+      "replicas",
+      "latency metrics"
+    ],
+    "log predictions and labels": [
+      "log predictions",
+      "store predictions",
+      "collect labels",
+      "ground truth"
+    ],
+    "data drift": [
+      "distribution shift",
+      "input distribution changes",
+      "psi"
+    ],
+    "metrics against a baseline": [
+      "compare to the baseline",
+      "against the baseline",
+      "compare with the training metrics"
+    ],
+    "alerts": [
+      "alerting",
+      "page someone"
+    ],
+    "retraining and rollback": [
+      "retrain",
+      "roll back",
+      "rollback",
+      "previous model version"
+    ],
+    "re-render on change": [
+      "re-render",
+      "rerender",
+      "renders again"
+    ],
+    "lifting state up": [
+      "lift state",
+      "lift it up",
+      "common parent",
+      "shared parent"
+    ],
+    "context for shared data": [
+      "usecontext",
+      "redux",
+      "global store"
+    ],
+    "keep state local": [
+      "local state",
+      "keep state close",
+      "as low as possible"
+    ],
+    "usestate local state": [
+      "usestate",
+      "component state"
+    ],
+    "profile first": [
+      "react profiler",
+      "devtools",
+      "measure first"
+    ],
+    "unnecessary re-renders": [
+      "re-render",
+      "rerender",
+      "renders too often"
+    ],
+    "memoisation": [
+      "memo",
+      "usememo",
+      "usecallback",
+      "react.memo",
+      "memoization",
+      "memoize"
+    ],
+    "list virtualisation": [
+      "virtualize",
+      "virtualization",
+      "react-window",
+      "windowing",
+      "only render visible"
+    ],
+    "measure again": [
+      "measure again",
+      "re-measure",
+      "compare before and after"
+    ],
+    "semantic html": [
+      "button element",
+      "headings",
+      "landmarks"
+    ],
+    "keyboard navigation and focus": [
+      "keyboard",
+      "tab order",
+      "focus",
+      "focus ring"
+    ],
+    "alt text and contrast": [
+      "alt text",
+      "alt attribute",
+      "contrast",
+      "colour contrast",
+      "color contrast"
+    ],
+    "labelled forms": [
+      "aria-label",
+      "form labels"
+    ],
+    "testing with a screen reader": [
+      "screen reader",
+      "nvda",
+      "voiceover",
+      "axe",
+      "lighthouse"
+    ],
+    "mobile first": [
+      "mobile-first",
+      "start with mobile",
+      "small screens first"
+    ],
+    "grid and flexbox": [
+      "flexbox",
+      "css grid"
+    ],
+    "media queries": [
+      "media query",
+      "breakpoints",
+      "@media"
+    ],
+    "flexible images": [
+      "max-width: 100%",
+      "responsive images",
+      "srcset"
+    ],
+    "test on devices": [
+      "real devices",
+      "device toolbar",
+      "test on phones",
+      "browserstack"
+    ],
+    "avoid localstorage for tokens": [
+      "not in localstorage",
+      "localstorage is readable",
+      "avoid localstorage"
+    ],
+    "access token in memory": [
+      "in memory",
+      "javascript variable",
+      "short-lived access token"
+    ],
+    "httponly refresh cookie": [
+      "httponly",
+      "http-only",
+      "secure cookie"
+    ],
+    "silent refresh": [
+      "refresh endpoint",
+      "refresh token",
+      "silently refresh"
+    ],
+    "xss and csrf protection": [
+      "xss",
+      "csrf",
+      "samesite",
+      "content security policy",
+      "csp"
+    ],
+    "feature branches": [
+      "feature branch"
+    ],
+    "small clear commits": [
+      "small commits",
+      "clear commit messages",
+      "atomic commits"
+    ],
+    "pull requests and review": [
+      "pull request",
+      "code review",
+      "pr review",
+      "reviewer"
+    ],
+    "tests in ci": [
+      "continuous integration",
+      "github actions"
+    ],
+    "no secrets in the repository": [
+      ".gitignore",
+      "never commit secrets",
+      "no passwords in git",
+      "secrets out of git"
+    ],
+    "gather logs and evidence": [
+      "collect evidence",
+      "stack trace",
+      "error reports"
+    ],
+    "form hypotheses": [
+      "hypotheses",
+      "possible causes"
+    ],
+    "targeted logging": [
+      "add logging",
+      "more logs",
+      "extra logging"
+    ],
+    "reproduce the conditions": [
+      "reproduce",
+      "same conditions",
+      "same data"
+    ],
+    "test that proves the fix": [
+      "regression test",
+      "test that fails before",
+      "write a test"
+    ],
+    "clear naming": [
+      "descriptive names",
+      "meaningful names"
+    ],
+    "single responsibility": [
+      "one responsibility",
+      "does one thing",
+      "small functions"
+    ],
+    "avoid duplication": [
+      "dry",
+      "don't repeat",
+      "duplication"
+    ],
+    "separation of concerns": [
+      "separate concerns"
+    ],
+    "tests and code review": [
+      "code review"
+    ],
+    "clarify the problem and success metric": [
+      "clarify requirements",
+      "success metric",
+      "understand the problem"
+    ],
+    "design and edge cases": [
+      "edge cases",
+      "design doc",
+      "corner cases"
+    ],
+    "team review": [
+      "design review",
+      "review with the team",
+      "feedback from the team"
+    ],
+    "small steps with tests": [
+      "small steps",
+      "incremental",
+      "with tests"
+    ],
+    "gradual release and monitoring": [
+      "feature flag",
+      "canary",
+      "gradual rollout",
+      "monitor after release"
+    ],
+    "run tests on every change": [
+      "every push",
+      "every commit",
+      "on each pull request",
+      "automated tests"
+    ],
+    "linting and build": [
+      "lint",
+      "linter",
+      "build step"
+    ],
+    "versioned artifacts": [
+      "tagged image"
+    ],
+    "staging and smoke tests": [
+      "smoke test"
+    ],
+    "rollback": [
+      "roll back",
+      "revert",
+      "previous version"
+    ],
+    "measure the bottleneck": [
+      "load test"
+    ],
+    "horizontal scaling": [
+      "more instances",
+      "scale out",
+      "load balancer",
+      "horizontal"
+    ],
+    "caching": [
+      "cdn",
+      "redis"
+    ],
+    "database optimisation": [
+      "indexes",
+      "read replicas",
+      "query optimisation",
+      "connection pooling"
+    ],
+    "background queues and monitoring": [
+      "background jobs",
+      "workers",
+      "monitoring"
+    ],
+    "validate input early": [
+      "validate input",
+      "input validation",
+      "fail fast"
+    ],
+    "catch specific exceptions": [
+      "specific exceptions",
+      "not a bare except",
+      "except valueerror"
+    ],
+    "central error handler": [
+      "global error handler",
+      "exception handler"
+    ],
+    "log details safely": [
+      "log the error",
+      "no secrets in logs",
+      "structured logging"
+    ],
+    "test failure paths": [
+      "test the error cases",
+      "test failures",
+      "negative tests"
+    ],
+    "sql injection": [
+      "parameterized queries",
+      "prepared statements"
+    ],
+    "cross-site scripting": [
+      "xss",
+      "escape output"
+    ],
+    "csrf": [
+      "cross-site request forgery",
+      "csrf token",
+      "samesite"
+    ],
+    "server-side authorization": [
+      "check permissions on the server",
+      "authorization on the server",
+      "server-side checks"
+    ],
+    "password hashing and secrets": [
+      "hash passwords",
+      "bcrypt",
+      "secrets in environment variables"
+    ],
+    "decouple services": [
+      "decouple",
+      "loosely coupled",
+      "producer and consumer"
+    ],
+    "background work and spikes": [
+      "absorb spikes",
+      "smooth out load",
+      "async processing"
+    ],
+    "idempotent consumers": [
+      "process twice safely",
+      "deduplicate"
+    ],
+    "retries and dead-letter queue": [
+      "dead letter",
+      "dlq"
+    ],
+    "monitoring": [
+      "queue length"
+    ],
+    "create and redirect endpoints": [
+      "create endpoint",
+      "301",
+      "302"
+    ],
+    "short code generation": [
+      "base62",
+      "hash the url",
+      "short code",
+      "random code"
+    ],
+    "database mapping with index": [
+      "index on the code",
+      "key-value",
+      "mapping table"
+    ],
+    "caching for reads": [
+      "read-heavy"
+    ],
+    "rate limiting": [
+      "rate limit",
+      "throttle",
+      "abuse"
+    ],
+    "scheduled extraction": [
+      "airflow",
+      "daily job"
+    ],
+    "warehouse and transformations": [
+      "warehouse",
+      "transformations",
+      "dbt"
+    ],
+    "data quality checks": [
+      "data quality",
+      "row counts",
+      "validation checks",
+      "null checks"
+    ],
+    "idempotent re-runs": [
+      "re-run safely",
+      "rerun",
+      "overwrite partition"
+    ],
+    "alerting": [
+      "on failure"
+    ],
+    "decisions it supports": [
+      "what decision",
+      "who uses it"
+    ],
+    "clear metric definitions": [
+      "metric definitions",
+      "define each metric",
+      "single source of truth"
+    ],
+    "simple layout": [
+      "clean layout",
+      "few charts"
+    ],
+    "validate the numbers": [
+      "reconcile",
+      "check the numbers"
+    ],
+    "feedback and iteration": [
+      "iteration"
+    ],
+    "assess impact and communicate": [
+      "how many users are affected",
+      "status page",
+      "communicate"
+    ],
+    "check logs and monitoring": [
+      "monitoring"
+    ],
+    "recent changes": [
+      "recent deploy",
+      "last deployment",
+      "what changed"
+    ],
+    "roll back to restore service": [
+      "roll back",
+      "rollback",
+      "revert"
+    ],
+    "post-mortem": [
+      "postmortem",
+      "post-mortem",
+      "root cause analysis",
+      "blameless"
+    ]
+  }
+}

@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react';
-import api from '../services/api';
+import api, { errorMessage } from '../services/api';
 import { CV_ACCEPTED_EXTENSIONS, CV_MAX_SIZE_MB } from '../data/constants';
-import { formatFileSize } from '../utils/format';
 
 /** Validation + upload progress for the CV step. `file` / `setFile` live in AppContext. */
 export function useCVUpload({ file, setFile, onSuccess }) {
@@ -14,19 +13,33 @@ export function useCVUpload({ file, setFile, onSuccess }) {
     if (!CV_ACCEPTED_EXTENSIONS.includes(ext)) return setError('Unsupported format. Please upload a PDF or DOCX file.');
     if (picked.size > CV_MAX_SIZE_MB * 1024 * 1024) return setError(`File is too large. Maximum size is ${CV_MAX_SIZE_MB} MB.`);
     setError('');
+    const previous = file;
     setFile(null);
     setProgress(1);
     try {
-      const res = await api.uploadCV(picked, setProgress);
-      setFile({ name: picked.name, ext: ext.toUpperCase(), size: formatFileSize(picked.size), id: res.id });
+      const stored = await api.uploadCV(picked, setProgress);
+      setFile(stored);
       onSuccess?.();
-    } catch {
-      setError('Upload failed. Try again.');
+      // Replacing: remove the previous CV from the server (interviews that used it are kept).
+      if (previous?.id) api.deleteCV(previous.id).catch((e) => console.error(e));
+    } catch (e) {
+      setError(errorMessage(e, 'Upload failed. Try again.'));
       setProgress(0);
+      setFile(previous);
     }
-  }, [setFile, onSuccess]);
+  }, [file, setFile, onSuccess]);
 
-  const remove = useCallback(() => { setFile(null); setProgress(0); }, [setFile]);
+  const remove = useCallback(async () => {
+    if (!file) return;
+    setError('');
+    try {
+      await api.deleteCV(file.id);
+      setFile(null);
+      setProgress(0);
+    } catch (e) {
+      setError(errorMessage(e, 'Could not remove the CV. Please try again.'));
+    }
+  }, [file, setFile]);
 
   const status = file ? 'done' : progress > 0 ? 'uploading' : 'idle';
   return { status, progress, error, upload, remove };

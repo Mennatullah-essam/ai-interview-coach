@@ -25,7 +25,7 @@ export default function InterviewProgress({ current, total, config, progress, on
       </Card>
       <AnimatePresence>
         {leaving && (
-          <ConfirmModal title="Exit interview?" text="Your progress in this session will be lost." confirmLabel="Exit" onConfirm={onExit} onCancel={() => setLeaving(false)} />
+          <ConfirmModal title="Exit interview?" text="This interview will be ended and won't appear in your history." confirmLabel="Exit" onConfirm={onExit} onCancel={() => setLeaving(false)} />
         )}
       </AnimatePresence>
     </>

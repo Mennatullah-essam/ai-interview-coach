@@ -3,5 +3,6 @@
 -r requirements.txt
 
 pytest>=8.0,<10.0
-# FastAPI's TestClient sends requests through httpx.
-httpx>=0.27,<1.0
+# FastAPI's TestClient (from Starlette) sends requests through httpx2. The old
+# `httpx` package still works but makes Starlette emit a deprecation warning.
+httpx2>=2.0,<3.0

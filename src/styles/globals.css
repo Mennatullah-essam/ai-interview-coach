@@ -140,12 +140,12 @@ a.logo:hover i { filter: brightness(1.1); }
 .metric-list { flex: 1; min-width: 220px; }
 
 /* ---------- Forms ---------- */
-textarea, input[type='text'], input[type='email'] {
+textarea, select, input[type='text'], input[type='email'], input[type='password'] {
   width: 100%; border: 1.5px solid var(--line); border-radius: 14px; padding: 14px; font: inherit; color: var(--ink);
   background: var(--card); outline: none; transition: border-color 0.15s, box-shadow 0.15s;
 }
 textarea { min-height: 200px; resize: vertical; }
-textarea:focus, input:focus { border-color: var(--pri); box-shadow: 0 0 0 4px var(--focus-ring); }
+textarea:focus, select:focus, input:focus { border-color: var(--pri); box-shadow: 0 0 0 4px var(--focus-ring); }
 .field { display: grid; gap: 6px; font-weight: 600; font-size: 0.92rem; }
 .opt { position: relative; border: 1.5px solid var(--line); border-radius: 14px; padding: 14px; background: var(--card); text-align: left; flex: 1; min-width: 140px; transition: border-color 0.15s, background-color 0.15s; }
 .opt:hover { border-color: var(--pri); }
@@ -193,6 +193,40 @@ ul.r li::before { content: '→'; color: var(--pri); }
 .modal-panel.sm { max-width: 440px; }
 .toast-region { position: fixed; bottom: 84px; left: 0; right: 0; display: flex; justify-content: center; pointer-events: none; z-index: 60; padding: 0 16px; }
 .toast { background: var(--ink); color: var(--bg); padding: 12px 20px; border-radius: 12px; box-shadow: var(--sh); font-weight: 500; }
+
+/* ---------- Intelligence (profile review, explained feedback, plans) ---------- */
+textarea.short { min-height: 110px; }
+.chip.bad { background: var(--badbg); color: var(--bad); }
+.chip.muted { background: var(--soft2); color: var(--mut); border-color: var(--line); }
+.chip-x { margin-left: 6px; border: 0; background: none; color: inherit; font: inherit; font-weight: 800; cursor: pointer; padding: 0 2px; border-radius: 6px; }
+.chip-x:hover { color: var(--bad); }
+.src { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; margin-left: 6px; opacity: 0.75; }
+.why { font-size: 0.86rem; color: var(--mut); margin-top: 10px; }
+.why b { color: var(--ink); font-weight: 600; }
+.note { background: var(--soft2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; font-size: 0.9rem; }
+.note.ok { background: var(--okbg); border-color: transparent; color: var(--ok); }
+.note.warn { background: var(--warnbg); border-color: transparent; color: var(--warn); }
+.dim-note { font-size: 0.8rem; color: var(--mut); margin: 4px 0 10px; }
+.switch { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; }
+.switch input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--pri); flex: none; }
+.entry { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.entry + .entry { margin-top: 8px; }
+.step { border-left: 3px solid var(--pri); padding: 4px 0 4px 14px; }
+.step.high { border-color: var(--bad); }
+.step.medium { border-color: var(--warn); }
+.step.low { border-color: var(--line); }
+.delta.up { color: var(--ok); font-weight: 700; }
+.delta.down { color: var(--bad); font-weight: 700; }
+
+/* ---------- Evidence (Milestone 5) ---------- */
+.evidence-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.quote { display: block; margin-top: 4px; padding-left: 10px; border-left: 3px solid var(--line); color: var(--mut); font-size: 0.88rem; font-style: italic; quotes: '“' '”'; }
+.quote.block { margin-bottom: 6px; }
+h4 { font-size: 0.95rem; }
+.table-wrap { overflow-x: auto; }
+.ctable { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.ctable th, .ctable td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.ctable th { color: var(--mut); font-weight: 600; font-size: 0.8rem; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 860px) {

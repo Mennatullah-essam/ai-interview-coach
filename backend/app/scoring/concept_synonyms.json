@@ -1,0 +1,1215 @@
+{
+  "_comment": "Equivalent wordings for key concepts, so a correct answer in different words still gets credit. Keys are the concept word used in key points; values are phrases that count as that concept. Matching is case-insensitive.",
+  "synonyms": {
+    "regularization": [
+      "regularisation",
+      "l1",
+      "l2",
+      "dropout",
+      "weight decay",
+      "lasso",
+      "ridge"
+    ],
+    "cross-validation": [
+      "cross validation",
+      "k-fold",
+      "kfold",
+      "k fold"
+    ],
+    "precision": [
+      "positive predictive value"
+    ],
+    "recall": [
+      "sensitivity",
+      "true positive rate"
+    ],
+    "resampling": [
+      "oversampling",
+      "undersampling",
+      "over-sampling",
+      "under-sampling",
+      "smote"
+    ],
+    "smote": [
+      "synthetic minority"
+    ],
+    "threshold": [
+      "cut-off",
+      "cutoff"
+    ],
+    "validation": [
+      "held-out",
+      "holdout",
+      "hold-out",
+      "dev set"
+    ],
+    "baseline": [
+      "simple model",
+      "benchmark model"
+    ],
+    "metric": [
+      "metrics",
+      "kpi",
+      "f1",
+      "auc",
+      "accuracy"
+    ],
+    "impact": [
+      "result",
+      "outcome",
+      "improved",
+      "reduced",
+      "increased",
+      "saved"
+    ],
+    "monitoring": [
+      "monitor",
+      "alerts",
+      "dashboards",
+      "observability",
+      "logging"
+    ],
+    "drift": [
+      "distribution shift",
+      "data shift",
+      "concept drift",
+      "psi"
+    ],
+    "rollback": [
+      "roll back",
+      "revert",
+      "previous version"
+    ],
+    "container": [
+      "docker",
+      "containerise",
+      "containerize",
+      "image"
+    ],
+    "api": [
+      "endpoint",
+      "rest",
+      "fastapi",
+      "flask",
+      "service"
+    ],
+    "cache": [
+      "caching",
+      "redis",
+      "memcached"
+    ],
+    "index": [
+      "indexes",
+      "indices",
+      "b-tree",
+      "btree"
+    ],
+    "transaction": [
+      "transactions",
+      "commit",
+      "rollback",
+      "atomic"
+    ],
+    "hash": [
+      "hashed",
+      "hashing",
+      "bcrypt",
+      "argon2",
+      "scrypt",
+      "salted"
+    ],
+    "authentication": [
+      "login",
+      "log in",
+      "sign in",
+      "identity",
+      "credentials"
+    ],
+    "authorization": [
+      "permission",
+      "permissions",
+      "access control",
+      "roles"
+    ],
+    "test": [
+      "tests",
+      "testing",
+      "unit test",
+      "pytest",
+      "jest"
+    ],
+    "communicat": [
+      "explained",
+      "told",
+      "spoke",
+      "discussed",
+      "informed",
+      "presented"
+    ],
+    "stakeholder": [
+      "stakeholders",
+      "manager",
+      "client",
+      "users",
+      "team"
+    ],
+    "lesson": [
+      "learned",
+      "learnt",
+      "takeaway",
+      "next time",
+      "would do differently"
+    ],
+    "situation": [
+      "context",
+      "background",
+      "problem",
+      "challenge"
+    ],
+    "action": [
+      "i did",
+      "i built",
+      "i implemented",
+      "i decided",
+      "my role"
+    ],
+    "trade-off": [
+      "tradeoff",
+      "trade off",
+      "downside",
+      "cost",
+      "pros and cons",
+      "however"
+    ],
+    "scale": [
+      "scaling",
+      "scalable",
+      "horizontal",
+      "load balancer",
+      "replicas"
+    ],
+    "semantic": [
+      "meaning",
+      "html elements",
+      "button",
+      "heading"
+    ],
+    "keyboard": [
+      "tab key",
+      "focus",
+      "focusable"
+    ],
+    "responsive": [
+      "media query",
+      "media queries",
+      "mobile first",
+      "breakpoints"
+    ],
+    "re-render": [
+      "rerender",
+      "re-renders",
+      "renders"
+    ],
+    "memoisation": [
+      "memoization",
+      "usememo",
+      "usecallback",
+      "react.memo",
+      "memo"
+    ],
+    "confounding": [
+      "confounder",
+      "confounders",
+      "third variable",
+      "lurking variable"
+    ],
+    "randomised": [
+      "randomized",
+      "random assignment",
+      "a/b test",
+      "experiment"
+    ],
+    "significance": [
+      "p-value",
+      "p value",
+      "statistically significant",
+      "confidence interval"
+    ],
+    "sample size": [
+      "power analysis",
+      "enough users",
+      "number of users"
+    ],
+    "embedding": [
+      "embeddings",
+      "vector",
+      "vectors",
+      "encode"
+    ],
+    "cosine": [
+      "cosine similarity",
+      "dot product"
+    ],
+    "chunk": [
+      "chunks",
+      "chunking",
+      "split documents",
+      "passages"
+    ],
+    "retrieve": [
+      "retrieval",
+      "search",
+      "top-k",
+      "top k"
+    ],
+    "imputation": [
+      "impute",
+      "fill",
+      "fillna",
+      "median",
+      "mean value"
+    ],
+    "duplicate": [
+      "duplicates",
+      "dedupe",
+      "deduplicate"
+    ],
+    "big o": [
+      "complexity",
+      "o(n)",
+      "o(1)",
+      "o(n^2)",
+      "o(log n)"
+    ],
+    "thread": [
+      "threads",
+      "threading",
+      "concurrency"
+    ],
+    "process": [
+      "processes",
+      "multiprocessing"
+    ],
+    "branch": [
+      "branches",
+      "feature branch"
+    ],
+    "pull request": [
+      "pr",
+      "merge request",
+      "code review"
+    ]
+  },
+  "_comment_rubric_cues": "Cues for the general rubric words used in key points (mostly behavioural answers, which are written as stories rather than with the rubric's own words). Same format as 'synonyms'. A cue only credits the rubric word; the key point still needs most of its words to be covered.",
+  "rubric_cues": {
+    "situation": [
+      "when i",
+      "while i",
+      "during my",
+      "during our",
+      "in my internship",
+      "in my last",
+      "in our team",
+      "at my",
+      "at university",
+      "in a project",
+      "last year",
+      "last semester"
+    ],
+    "problem": [
+      "issue",
+      "challenge",
+      "bottleneck",
+      "bug",
+      "pain point",
+      "was slow",
+      "was failing",
+      "kept failing",
+      "complaint",
+      "missed",
+      "spent hours",
+      "manually",
+      "manual",
+      "failed",
+      "errors",
+      "slow",
+      "hard to"
+    ],
+    "business": [
+      "customer",
+      "customers",
+      "users",
+      "stakeholder",
+      "stakeholders",
+      "support team",
+      "revenue",
+      "cost"
+    ],
+    "preparation": [
+      "cleaned",
+      "cleaning",
+      "labelled",
+      "labeled",
+      "preprocess",
+      "preprocessing",
+      "feature engineering",
+      "prepared"
+    ],
+    "evaluation": [
+      "evaluated",
+      "measured",
+      "tested",
+      "held-out",
+      "test set",
+      "validated"
+    ],
+    "measurable": [
+      "percent",
+      "seconds",
+      "minutes",
+      "hours",
+      "days",
+      "times faster",
+      "dropped by",
+      "reduced by",
+      "increased by",
+      "x faster"
+    ],
+    "comparison": [
+      "compared",
+      "versus",
+      "vs",
+      "against",
+      "benchmarked"
+    ],
+    "result": [
+      "outcome",
+      "in the end",
+      "as a result",
+      "finally",
+      "reduced",
+      "increased",
+      "improved",
+      "dropped",
+      "delivered",
+      "shipped",
+      "launched",
+      "passed",
+      "finished on time",
+      "on time",
+      "won",
+      "saved",
+      "cut",
+      "went from",
+      "saving",
+      "confirmed",
+      "ran smoothly",
+      "placed",
+      "disappeared",
+      "became part of",
+      "succeeded",
+      "worked"
+    ],
+    "outcome": [
+      "result",
+      "in the end",
+      "as a result",
+      "reduced",
+      "increased",
+      "improved",
+      "delivered",
+      "shipped",
+      "launched",
+      "on time",
+      "cut",
+      "went from",
+      "saving",
+      "saved",
+      "confirmed",
+      "ran smoothly",
+      "placed",
+      "disappeared",
+      "became part of",
+      "succeeded",
+      "worked"
+    ],
+    "lesson": [
+      "learned",
+      "learnt",
+      "taught me",
+      "now i",
+      "since then",
+      "next time",
+      "i realised",
+      "i realized"
+    ],
+    "learn": [
+      "learned",
+      "learnt",
+      "learning",
+      "taught me",
+      "studied",
+      "read the docs",
+      "tutorial",
+      "course"
+    ],
+    "communication": [
+      "told",
+      "explained",
+      "informed",
+      "updated",
+      "messaged",
+      "emailed",
+      "talked",
+      "spoke",
+      "meeting",
+      "stand-up",
+      "standup",
+      "raised it"
+    ],
+    "communicated": [
+      "told",
+      "explained",
+      "informed",
+      "updated",
+      "talked",
+      "spoke",
+      "meeting",
+      "raised it",
+      "discussed",
+      "showed",
+      "presented",
+      "asked users"
+    ],
+    "communicate": [
+      "told",
+      "explained",
+      "informed",
+      "updated",
+      "talked",
+      "spoke",
+      "meeting",
+      "raised it",
+      "discussed"
+    ],
+    "prioritisation": [
+      "prioritised",
+      "prioritized",
+      "prioritize",
+      "prioritise",
+      "priority",
+      "priorities",
+      "most important first",
+      "cut scope",
+      "dropped the"
+    ],
+    "concrete": [
+      "for example",
+      "for instance",
+      "specifically",
+      "once",
+      "last year",
+      "last semester",
+      "in my",
+      "last",
+      "during my"
+    ],
+    "action": [
+      "i built",
+      "i wrote",
+      "i set up",
+      "i created",
+      "i added",
+      "i fixed",
+      "i organised",
+      "i organized",
+      "i scheduled",
+      "i split",
+      "i asked",
+      "i proposed",
+      "i ran"
+    ],
+    "actions": [
+      "i built",
+      "i wrote",
+      "i set up",
+      "i created",
+      "i added",
+      "i fixed",
+      "i organised",
+      "i organized",
+      "i scheduled",
+      "i split",
+      "i asked",
+      "i proposed",
+      "i ran"
+    ],
+    "deadline": [
+      "due",
+      "submission",
+      "demo day",
+      "release date",
+      "sprint end",
+      "deadline",
+      "one week",
+      "two weeks",
+      "by friday",
+      "on time",
+      "in time"
+    ],
+    "feedback": [
+      "review",
+      "reviewed",
+      "comments",
+      "asked for input",
+      "asked my mentor",
+      "asked a senior"
+    ],
+    "asking": [
+      "asked",
+      "ask"
+    ],
+    "ownership": [
+      "my fault",
+      "my mistake",
+      "i was responsible",
+      "took responsibility",
+      "i owned",
+      "admitted",
+      "i told my"
+    ],
+    "taking": [
+      "took",
+      "take"
+    ],
+    "fixed": [
+      "fix",
+      "patched",
+      "corrected",
+      "resolved",
+      "rolled back",
+      "reverted",
+      "repaired"
+    ],
+    "prevention": [
+      "prevent",
+      "checklist",
+      "added a test",
+      "added tests",
+      "automated check",
+      "so it would not happen",
+      "never happened again",
+      "safeguard"
+    ],
+    "conversation": [
+      "talked",
+      "spoke",
+      "chat",
+      "one-on-one",
+      "1:1",
+      "met with",
+      "sat down"
+    ],
+    "agreed": [
+      "agreed",
+      "agreement",
+      "compromise",
+      "we decided",
+      "settled on"
+    ],
+    "solution": [
+      "solution",
+      "solved",
+      "fix",
+      "approach",
+      "plan"
+    ],
+    "validated": [
+      "validated",
+      "tested",
+      "measured",
+      "verified",
+      "evaluated",
+      "checked"
+    ],
+    "reacted": [
+      "reacted",
+      "responded",
+      "listened",
+      "thanked",
+      "did not argue",
+      "stayed calm",
+      "asked questions",
+      "took notes"
+    ],
+    "improvement": [
+      "improved",
+      "better",
+      "faster",
+      "fewer",
+      "reduced",
+      "increased",
+      "automated",
+      "went from",
+      "cut",
+      "simplified"
+    ],
+    "noticed": [
+      "noticed",
+      "saw that",
+      "realised",
+      "realized",
+      "spotted",
+      "found that"
+    ],
+    "initiative": [
+      "on my own",
+      "volunteered",
+      "proposed",
+      "nobody asked",
+      "took the initiative",
+      "outside my tasks",
+      "nobody had asked",
+      "no one asked",
+      "not my task",
+      "beyond my"
+    ],
+    "built": [
+      "built",
+      "created",
+      "wrote",
+      "made",
+      "developed",
+      "set up",
+      "implemented",
+      "automated"
+    ],
+    "buy-in": [
+      "convinced",
+      "got approval",
+      "agreed to",
+      "persuaded",
+      "demoed",
+      "showed the team"
+    ],
+    "alternatives": [
+      "alternative",
+      "instead of",
+      "other options",
+      "compared",
+      "versus",
+      "vs"
+    ],
+    "sources": [
+      "documentation",
+      "docs",
+      "courses",
+      "course",
+      "books",
+      "papers",
+      "tutorials",
+      "blogs",
+      "videos"
+    ],
+    "sharing": [
+      "shared",
+      "presented",
+      "wrote a post",
+      "taught",
+      "workshop",
+      "demo"
+    ],
+    "criteria": [
+      "criteria",
+      "based on",
+      "cost",
+      "latency",
+      "accuracy",
+      "maintainability",
+      "because",
+      "requirements",
+      "needs",
+      "how fresh",
+      "constraints"
+    ],
+    "decision": [
+      "decided",
+      "chose",
+      "picked",
+      "went with",
+      "decision",
+      "choose"
+    ],
+    "choice": [
+      "chose",
+      "picked",
+      "went with",
+      "selected",
+      "decided",
+      "choose"
+    ],
+    "final": [
+      "finally",
+      "in the end",
+      "eventually",
+      "chose",
+      "went with",
+      "we chose",
+      "we picked",
+      "we went with",
+      "we precomputed"
+    ],
+    "options": [
+      "option",
+      "alternatives",
+      "either",
+      "instead of",
+      "compared"
+    ],
+    "considered": [
+      "compared",
+      "considered",
+      "looked at",
+      "evaluated",
+      "weighed",
+      "choose between",
+      "between",
+      "options",
+      "listed"
+    ],
+    "measurements": [
+      "measured",
+      "benchmarked",
+      "profiled",
+      "metrics",
+      "numbers",
+      "data showed"
+    ],
+    "audience": [
+      "manager",
+      "client",
+      "customer",
+      "non-technical",
+      "stakeholder",
+      "parents",
+      "students",
+      "business team",
+      "marketing"
+    ],
+    "topic": [
+      "explain",
+      "explained",
+      "concept",
+      "how it works"
+    ],
+    "analogy": [
+      "like a",
+      "similar to",
+      "imagine",
+      "for example",
+      "for instance",
+      "analogy"
+    ],
+    "checking": [
+      "asked them",
+      "asked if",
+      "checked",
+      "confirm",
+      "repeat back",
+      "questions"
+    ],
+    "understanding": [
+      "understood",
+      "understand",
+      "made sure",
+      "asked why",
+      "listened"
+    ],
+    "handling": [
+      "handled",
+      "dealt with",
+      "solved",
+      "resolved",
+      "managed"
+    ],
+    "wrong": [
+      "failed",
+      "went wrong",
+      "broke",
+      "missed",
+      "did not work",
+      "didn't work",
+      "crashed",
+      "late"
+    ],
+    "analysis": [
+      "analysed",
+      "analyzed",
+      "root cause",
+      "investigated",
+      "looked into",
+      "traced",
+      "measured",
+      "found that",
+      "mapped",
+      "identified",
+      "profiled"
+    ],
+    "cause": [
+      "root cause",
+      "because",
+      "caused by",
+      "due to",
+      "reason"
+    ],
+    "changes": [
+      "changed",
+      "switched",
+      "added",
+      "introduced",
+      "replaced",
+      "now we"
+    ],
+    "later": [
+      "afterwards",
+      "next",
+      "since then",
+      "later",
+      "the following"
+    ],
+    "uncertainty": [
+      "uncertain",
+      "unknown",
+      "incomplete",
+      "missing information",
+      "not sure",
+      "no data",
+      "without all",
+      "were not known",
+      "not known",
+      "unclear",
+      "before we knew"
+    ],
+    "managing": [
+      "mitigated",
+      "reduced the risk",
+      "fallback",
+      "backup plan",
+      "reversible",
+      "small trial",
+      "checkpoint",
+      "hard to reverse",
+      "review point",
+      "assumptions",
+      "documented"
+    ],
+    "risk": [
+      "risk",
+      "risky",
+      "could fail",
+      "danger",
+      "safety net",
+      "hard to reverse",
+      "assumptions",
+      "what could go wrong",
+      "fallback"
+    ],
+    "gathered": [
+      "gathered",
+      "collected",
+      "asked",
+      "looked up",
+      "read",
+      "checked"
+    ],
+    "reasoning": [
+      "because",
+      "so that",
+      "the reason",
+      "since",
+      "which meant"
+    ],
+    "motivation": [
+      "i enjoy",
+      "i love",
+      "i like",
+      "excites me",
+      "interested in",
+      "passion",
+      "fascinated",
+      "motivated"
+    ],
+    "genuine": [
+      "i enjoy",
+      "i love",
+      "i like",
+      "excites me",
+      "fascinated",
+      "since i"
+    ],
+    "experience": [
+      "project",
+      "internship",
+      "course",
+      "built",
+      "worked on",
+      "competition"
+    ],
+    "goal": [
+      "goal",
+      "aim",
+      "want to",
+      "hope to",
+      "in three years",
+      "in 3 years",
+      "become"
+    ],
+    "link": [
+      "this role",
+      "this position",
+      "this company",
+      "your team",
+      "which is why"
+    ],
+    "help": [
+      "helped",
+      "supported",
+      "explained",
+      "paired",
+      "pair programming",
+      "mentored",
+      "showed"
+    ],
+    "encouraging": [
+      "encouraged",
+      "let them",
+      "guided",
+      "hints",
+      "instead of doing it"
+    ],
+    "independence": [
+      "on their own",
+      "by themselves",
+      "independently",
+      "themselves",
+      "next time"
+    ],
+    "gained": [
+      "gained",
+      "learned",
+      "learnt",
+      "taught me",
+      "improved my",
+      "realised",
+      "realized"
+    ],
+    "old": [
+      "previously",
+      "before",
+      "used to",
+      "manual",
+      "manually",
+      "old"
+    ],
+    "adoption": [
+      "adopted",
+      "the team started",
+      "everyone uses",
+      "now uses",
+      "rolled out",
+      "introduced it",
+      "trained the team",
+      "became part of",
+      "the team uses",
+      "others used"
+    ],
+    "change": [
+      "changed",
+      "new requirement",
+      "requirements changed",
+      "pivot",
+      "switched",
+      "scope"
+    ],
+    "re-planning": [
+      "re-planned",
+      "replanned",
+      "reprioritised",
+      "reprioritized",
+      "new plan",
+      "adjusted the plan",
+      "cut scope"
+    ],
+    "trade-off": [
+      "trade-off",
+      "tradeoff",
+      "trade off",
+      "at the cost of",
+      "instead of",
+      "sacrifice",
+      "instead",
+      "at the cost",
+      "dropped",
+      "postponed",
+      "delayed"
+    ],
+    "idea": [
+      "idea",
+      "proposal",
+      "proposed",
+      "suggested"
+    ],
+    "resistance": [
+      "skeptical",
+      "sceptical",
+      "pushed back",
+      "disagreed",
+      "worried",
+      "hesitant",
+      "did not want",
+      "resist"
+    ],
+    "concerns": [
+      "concern",
+      "worried",
+      "worries",
+      "objection",
+      "risk",
+      "objections"
+    ],
+    "evidence": [
+      "data",
+      "benchmark",
+      "measured",
+      "numbers",
+      "prototype",
+      "demo",
+      "results showed"
+    ],
+    "low-risk": [
+      "small trial",
+      "pilot",
+      "one sprint",
+      "prototype",
+      "trial",
+      "experiment",
+      "reversible"
+    ],
+    "habits": [
+      "sleep",
+      "exercise",
+      "breaks",
+      "routine",
+      "walk",
+      "schedule"
+    ],
+    "healthy": [
+      "sleep",
+      "exercise",
+      "breaks",
+      "routine",
+      "walk"
+    ],
+    "breaking": [
+      "break",
+      "broke",
+      "split",
+      "smaller tasks",
+      "chunks",
+      "steps"
+    ],
+    "proud": [
+      "proud",
+      "pleased",
+      "happy with"
+    ],
+    "disagreement": [
+      "disagreed",
+      "different opinion",
+      "did not agree",
+      "conflict",
+      "argued"
+    ],
+    "team": [
+      "team",
+      "teammate",
+      "group",
+      "colleagues",
+      "classmates"
+    ],
+    "person": [
+      "teammate",
+      "colleague",
+      "classmate",
+      "friend",
+      "student",
+      "he",
+      "she",
+      "junior"
+    ],
+    "fine-tuning": [
+      "fine-tuned",
+      "fine tuning",
+      "finetuned",
+      "trained on pairs",
+      "contrastive"
+    ],
+    "encode": [
+      "encoded",
+      "embed",
+      "embedded",
+      "precompute",
+      "pre-compute",
+      "index"
+    ],
+    "information": [
+      "data",
+      "numbers",
+      "facts",
+      "what we knew"
+    ],
+    "practising": [
+      "practised",
+      "practiced",
+      "practice",
+      "sample app",
+      "toy project",
+      "small project",
+      "tried it on"
+    ],
+    "taken": [
+      "i changed",
+      "i started",
+      "i rewrote",
+      "i added"
+    ],
+    "role": [
+      "i was responsible",
+      "my part",
+      "my role",
+      "i led",
+      "i built",
+      "i wrote"
+    ],
+    "clarify": [
+      "clarified",
+      "asked",
+      "confirmed",
+      "checked with"
+    ],
+    "assess": [
+      "assessed",
+      "estimated",
+      "ranked",
+      "listed",
+      "compared"
+    ],
+    "three-year": [
+      "three years",
+      "3 years",
+      "few years",
+      "long term",
+      "long-term"
+    ]
+  }
+}

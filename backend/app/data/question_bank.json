@@ -1,0 +1,1590 @@
+{
+  "version": 1,
+  "source_note": "Written by the AI Interview Coach team for this project (initial bank, OD-14). Reference answers are examples of strong answers, not the only correct answers.",
+  "questions": [
+    {
+      "type": "technical",
+      "difficulty": "beginner",
+      "role_tags": [
+        "AI Engineer",
+        "Machine Learning Engineer",
+        "Data Scientist"
+      ],
+      "skill_tags": [
+        "Machine Learning"
+      ],
+      "text": "Can you explain a machine learning project you worked on and the impact it had?",
+      "reference_answer": "In my internship I built a classifier that routed support tickets. The problem was slow manual triage. I cleaned and labelled the data, compared a TF-IDF baseline with a fine-tuned DistilBERT model, and evaluated both with macro F1 on a held-out test set. The transformer improved F1 from 0.71 to 0.89. After deployment, triage time dropped by about 30 percent and we monitored accuracy weekly.",
+      "key_points": [
+        "the business problem",
+        "data preparation",
+        "baseline comparison",
+        "evaluation metric",
+        "measurable impact"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "beginner",
+      "role_tags": [
+        "AI Engineer",
+        "Machine Learning Engineer",
+        "Data Scientist"
+      ],
+      "skill_tags": [
+        "Machine Learning",
+        "Statistics"
+      ],
+      "text": "What is overfitting, and how do you detect and prevent it?",
+      "reference_answer": "Overfitting happens when a model learns noise in the training data, so it scores well on training data but poorly on new data. I detect it by comparing training and validation performance, for example with cross-validation and learning curves. To prevent it I use more data or augmentation, regularization such as L2 or dropout, simpler models, early stopping, and I keep a separate test set for the final check.",
+      "key_points": [
+        "training versus validation gap",
+        "cross-validation",
+        "regularization",
+        "early stopping",
+        "separate test set"
+      ],
+      "misconceptions": [
+        {
+          "pattern": "overfitting (is|means) .{0,40}(too simple|underfit|not enough parameters)",
+          "explanation": "That describes underfitting; overfitting is a model that fits noise in the training data."
+        },
+        {
+          "pattern": "(more|higher) training accuracy (always )?(means|=|is) (a )?better model",
+          "explanation": "Higher training accuracy alone can be a sign of overfitting; validation performance is what matters."
+        }
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "AI Engineer",
+        "Machine Learning Engineer",
+        "Data Scientist"
+      ],
+      "skill_tags": [
+        "Machine Learning"
+      ],
+      "text": "How would you handle an imbalanced dataset in a classification task?",
+      "reference_answer": "First I measure the imbalance and choose metrics that reflect it, such as precision, recall, F1 or PR-AUC instead of accuracy. Then I try resampling, like oversampling the minority class with SMOTE or undersampling the majority, or class weights in the loss function. I use stratified splits so every fold keeps the class ratio, and I tune the decision threshold based on the business cost of false positives and false negatives.",
+      "key_points": [
+        "precision and recall instead of accuracy",
+        "resampling or SMOTE",
+        "class weights",
+        "stratified split",
+        "decision threshold"
+      ],
+      "misconceptions": [
+        {
+          "pattern": "accuracy (is|would be) (the )?(best|right|correct|good|most important)",
+          "explanation": "On imbalanced data accuracy is misleading; a model predicting only the majority class can look accurate."
+        },
+        {
+          "pattern": "(just|simply) (delete|remove|drop) (the )?(minority|rare)",
+          "explanation": "Dropping the minority class removes exactly the cases the model must learn."
+        },
+        {
+          "pattern": "(oversampl|undersampl|smote|resampl|balanc)\\w* .{0,50}before (splitting|the split|we split|you split|split)",
+          "explanation": "Resample only the training data after splitting; resampling before the split leaks information into the test set."
+        }
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "AI Engineer",
+        "Machine Learning Engineer",
+        "Data Scientist"
+      ],
+      "skill_tags": [
+        "Machine Learning",
+        "Statistics"
+      ],
+      "text": "Explain the bias-variance trade-off with an example.",
+      "reference_answer": "Bias is error from overly simple assumptions, and variance is error from being too sensitive to the training data. A linear model on a curved relationship has high bias and underfits. A very deep decision tree has high variance and overfits. Increasing model complexity lowers bias but raises variance, so I look for the point where validation error is lowest, using cross-validation, regularization or ensembles such as random forests to reduce variance.",
+      "key_points": [
+        "bias as underfitting",
+        "variance as overfitting",
+        "model complexity",
+        "validation error",
+        "regularization or ensembles"
+      ],
+      "misconceptions": [
+        {
+          "pattern": "(high|more) bias (means|=|is|causes) overfitting",
+          "explanation": "High bias leads to underfitting, not overfitting."
+        },
+        {
+          "pattern": "(high|more) variance (means|=|is|causes) underfitting",
+          "explanation": "High variance leads to overfitting, not underfitting."
+        },
+        {
+          "pattern": "(high|more) bias (means|=|is|causes|leads to)( that)?( the model)? (is )?overfit",
+          "explanation": "High bias is underfitting (a model too simple to capture the pattern), not overfitting."
+        },
+        {
+          "pattern": "(high|more) variance (means|=|is|causes|leads to)( that)?( the model)? (is )?underfit",
+          "explanation": "High variance is overfitting (a model too sensitive to the training data), not underfitting."
+        },
+        {
+          "pattern": "complexity (always )?(reduces|lowers|decreases) both (bias and variance|of them)",
+          "explanation": "More complexity lowers bias but raises variance; it does not reduce both."
+        }
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "AI Engineer",
+        "Machine Learning Engineer",
+        "Data Scientist"
+      ],
+      "skill_tags": [
+        "Machine Learning",
+        "Statistics"
+      ],
+      "text": "Which evaluation metrics would you choose for a fraud detection model, and why?",
+      "reference_answer": "Fraud is rare, so accuracy is misleading. I would focus on recall to catch fraud and precision to avoid blocking good customers, and summarise them with PR-AUC and F1. I would pick the decision threshold from the cost of each error type, check performance per segment, and validate on a time-based split because fraud patterns change over time.",
+      "key_points": [
+        "accuracy is misleading",
+        "precision and recall",
+        "PR-AUC",
+        "threshold from business cost",
+        "time-based validation"
+      ],
+      "misconceptions": [
+        {
+          "pattern": "accuracy (is|would be) (the )?(best|right|main|most important)",
+          "explanation": "Fraud is rare, so accuracy hides missed fraud cases."
+        }
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "advanced",
+      "role_tags": [
+        "AI Engineer",
+        "Machine Learning Engineer",
+        "Data Scientist"
+      ],
+      "skill_tags": [
+        "Model Deployment",
+        "MLflow"
+      ],
+      "text": "How do you monitor a model's performance after deployment?",
+      "reference_answer": "I log predictions, inputs and, when available, the true labels. I track model metrics over time against the offline baseline, and watch for data drift by comparing feature distributions with statistics such as PSI. I also monitor latency and errors. Alerts trigger when metrics cross thresholds, and a retraining pipeline with versioned models lets me roll back if a new model performs worse.",
+      "key_points": [
+        "log predictions and labels",
+        "data drift",
+        "metrics against a baseline",
+        "alerts",
+        "retraining and rollback"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "advanced",
+      "role_tags": [
+        "AI Engineer",
+        "Machine Learning Engineer"
+      ],
+      "skill_tags": [
+        "Model Deployment",
+        "Docker",
+        "FastAPI"
+      ],
+      "text": "Describe how you would deploy a machine learning model as a service.",
+      "reference_answer": "I would package the trained model with its preprocessing code and version, wrap it in an API such as FastAPI, and containerise it with Docker. The model is loaded once at startup. I would add input validation, health checks, logging and tests, then deploy behind a load balancer with CI/CD. For heavy traffic I would batch requests or scale horizontally, and I would monitor latency, errors and prediction quality.",
+      "key_points": [
+        "package model and preprocessing",
+        "API endpoint",
+        "Docker container",
+        "load once at startup",
+        "monitoring and scaling"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "AI Engineer",
+        "Machine Learning Engineer",
+        "Data Scientist"
+      ],
+      "skill_tags": [
+        "NLP",
+        "BERT",
+        "Sentence Transformers",
+        "Transformers"
+      ],
+      "text": "What is the difference between BERT and Sentence Transformers for similarity tasks?",
+      "reference_answer": "BERT produces token embeddings and was not trained to give meaningful sentence vectors, so using its raw CLS or averaged output for cosine similarity works poorly. Sentence Transformers fine-tune models like BERT with a siamese setup on sentence pairs, so the pooled embeddings can be compared directly with cosine similarity. That makes semantic search fast, because each sentence is encoded once, while a BERT cross-encoder must process every pair.",
+      "key_points": [
+        "token versus sentence embeddings",
+        "siamese fine-tuning",
+        "cosine similarity",
+        "encode once for search",
+        "cross-encoder comparison"
+      ],
+      "misconceptions": [
+        {
+          "pattern": "(no|there is no) difference",
+          "explanation": "Sentence Transformers are fine-tuned to produce comparable sentence embeddings; raw BERT outputs are not."
+        }
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "advanced",
+      "role_tags": [
+        "AI Engineer",
+        "Machine Learning Engineer"
+      ],
+      "skill_tags": [
+        "LLM",
+        "RAG",
+        "NLP"
+      ],
+      "text": "How would you design a retrieval-augmented generation (RAG) system, and how would you evaluate it?",
+      "reference_answer": "I would split documents into chunks, embed them, and store them in a vector index. For each question I retrieve the most relevant chunks, possibly re-rank them, and pass them to the LLM with instructions to answer only from that context and cite sources. I evaluate retrieval with recall at k on a labelled question set, and generation with faithfulness and answer relevance, plus human review of failure cases.",
+      "key_points": [
+        "chunking and embeddings",
+        "vector retrieval",
+        "grounded prompt with context",
+        "retrieval recall",
+        "faithfulness evaluation"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "beginner",
+      "role_tags": [
+        "AI Engineer",
+        "Machine Learning Engineer",
+        "Data Scientist"
+      ],
+      "skill_tags": [
+        "Feature Engineering",
+        "Pandas"
+      ],
+      "text": "How do you approach feature engineering for a tabular dataset?",
+      "reference_answer": "I start by understanding the domain and exploring the data for missing values, outliers and types. I handle missing values, encode categorical variables with one-hot or target encoding, scale numeric features when the model needs it, and create features like ratios or date parts that capture domain knowledge. I check each feature's value with validation scores and feature importance, and I avoid leakage by fitting transformations only on training data.",
+      "key_points": [
+        "explore the data",
+        "missing values",
+        "encoding categorical variables",
+        "domain-driven features",
+        "avoid data leakage"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "beginner",
+      "role_tags": [
+        "Data Scientist",
+        "Data Analyst"
+      ],
+      "skill_tags": [
+        "SQL"
+      ],
+      "text": "How would you find duplicate records in a SQL table, and how would you remove them safely?",
+      "reference_answer": "I would group by the columns that define a duplicate and use HAVING COUNT(*) > 1 to find them, or use ROW_NUMBER() over a partition of those columns. To remove them safely I keep one row per group, for example the one with the lowest id, delete rows where the row number is above one, run it inside a transaction, check the counts first, and add a unique constraint to stop new duplicates.",
+      "key_points": [
+        "GROUP BY with HAVING",
+        "ROW_NUMBER window function",
+        "keep one row per group",
+        "transaction and backup",
+        "unique constraint"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "beginner",
+      "role_tags": [
+        "Data Scientist",
+        "Data Analyst"
+      ],
+      "skill_tags": [
+        "Pandas",
+        "Statistics"
+      ],
+      "text": "How do you handle missing values in a dataset?",
+      "reference_answer": "First I find out how much is missing and why, because data missing at random is treated differently from data missing for a reason. Depending on that, I drop rows or columns with too much missing data, impute with the median, mode or a model-based method, or add an indicator column that marks missingness. I compare results with and without imputation and document every choice.",
+      "key_points": [
+        "measure how much is missing",
+        "understand why it is missing",
+        "drop or impute",
+        "missing indicator",
+        "document the choice"
+      ],
+      "misconceptions": [
+        {
+          "pattern": "always (drop|delete|remove) (every|all|the) rows?",
+          "explanation": "Always dropping rows can bias the data and throw away information; the choice depends on why data is missing."
+        }
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "Data Scientist",
+        "Data Analyst"
+      ],
+      "skill_tags": [
+        "A/B Testing",
+        "Statistics"
+      ],
+      "text": "How would you design and analyse an A/B test for a new feature?",
+      "reference_answer": "I define one primary metric and a hypothesis, calculate the sample size from the minimum effect worth detecting, and randomly assign users to control and treatment. I run the test for the planned duration without peeking, check that the groups are balanced, then test significance with a t-test or proportion test and report the confidence interval. I also check guardrail metrics before recommending a launch.",
+      "key_points": [
+        "hypothesis and primary metric",
+        "sample size",
+        "random assignment",
+        "statistical significance",
+        "guardrail metrics"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "Data Scientist",
+        "Data Analyst"
+      ],
+      "skill_tags": [
+        "Data Visualization",
+        "Tableau",
+        "Power BI"
+      ],
+      "text": "How do you build a dashboard that stakeholders actually use?",
+      "reference_answer": "I start by asking stakeholders which decisions the dashboard should support and which metrics matter. I define each metric clearly, keep the layout simple with the key numbers first, choose charts that fit the data, and add filters only where they help. I validate the numbers against trusted sources, automate the data refresh, and collect feedback after launch to improve it.",
+      "key_points": [
+        "decisions it supports",
+        "clear metric definitions",
+        "simple layout",
+        "validate the numbers",
+        "feedback and iteration"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "Data Scientist",
+        "Data Analyst"
+      ],
+      "skill_tags": [
+        "Statistics"
+      ],
+      "text": "Explain the difference between correlation and causation with a practical example.",
+      "reference_answer": "Correlation means two variables move together, while causation means one actually changes the other. For example, ice cream sales and drowning incidents are correlated because both rise in summer, a confounding variable. To claim causation I would run a randomised experiment, or use methods such as difference-in-differences when experiments are not possible, and state the assumptions clearly.",
+      "key_points": [
+        "correlation versus causation",
+        "confounding variable",
+        "concrete example",
+        "randomised experiment",
+        "assumptions"
+      ],
+      "misconceptions": [
+        {
+          "pattern": "correlation (proves|means|implies|shows) causation",
+          "explanation": "Correlation alone does not establish causation; confounders can explain it."
+        }
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "advanced",
+      "role_tags": [
+        "Data Scientist",
+        "Data Analyst"
+      ],
+      "skill_tags": [
+        "ETL",
+        "SQL",
+        "Data Warehousing"
+      ],
+      "text": "How would you design a data pipeline that produces reliable daily reports?",
+      "reference_answer": "I would extract data from sources on a schedule with an orchestrator such as Airflow, load it into a warehouse, and transform it with versioned SQL models. I add data quality checks for row counts, nulls and freshness, make each step idempotent so it can be re-run, and alert when a check fails. Clear documentation and a single definition per metric keep reports consistent.",
+      "key_points": [
+        "scheduled extraction",
+        "warehouse and transformations",
+        "data quality checks",
+        "idempotent re-runs",
+        "alerting"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "beginner",
+      "role_tags": [
+        "Software Engineer",
+        "Backend Developer"
+      ],
+      "skill_tags": [
+        "REST"
+      ],
+      "text": "What makes a REST API well designed?",
+      "reference_answer": "A well designed REST API uses clear, plural resource names, correct HTTP methods and status codes, and a consistent JSON format with predictable error responses. It validates input, supports pagination for lists, and is versioned so clients do not break. It is secured with authentication and authorization on every endpoint, documented with OpenAPI, and idempotent where clients may retry.",
+      "key_points": [
+        "resource naming",
+        "HTTP methods and status codes",
+        "consistent errors",
+        "pagination and versioning",
+        "authentication and documentation"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "Software Engineer",
+        "Backend Developer"
+      ],
+      "skill_tags": [
+        "PostgreSQL",
+        "SQL"
+      ],
+      "text": "How do database indexes work, and when can they hurt performance?",
+      "reference_answer": "An index, usually a B-tree, keeps a sorted structure of column values pointing to rows, so lookups, joins and sorting avoid full table scans. Indexes help on columns used in WHERE, JOIN and ORDER BY clauses with good selectivity. They hurt because every insert and update must also update the index, they use storage, and too many or unused indexes slow writes. I check query plans with EXPLAIN before adding one.",
+      "key_points": [
+        "B-tree structure",
+        "avoid full table scans",
+        "selectivity",
+        "slower writes",
+        "EXPLAIN query plan"
+      ],
+      "misconceptions": [
+        {
+          "pattern": "indexes? (always|never) (make|makes|slow|slows|speed|speeds)",
+          "explanation": "Indexes speed up reads but add cost to every write; neither 'always' nor 'never' is right."
+        },
+        {
+          "pattern": "index (every|all) columns?",
+          "explanation": "Indexing every column slows writes and wastes storage; index selective columns used in queries."
+        },
+        {
+          "pattern": "index\\w* .{0,30}(speed up|make faster|improve) (inserts|writes|updates)",
+          "explanation": "Indexes make writes slower, because every insert or update must also update each index."
+        },
+        {
+          "pattern": "(have|has|with) no (cost|downside|drawback)",
+          "explanation": "Indexes cost storage and slow down writes."
+        }
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "Software Engineer",
+        "Backend Developer"
+      ],
+      "skill_tags": [
+        "Redis"
+      ],
+      "text": "How would you use caching to speed up a slow API endpoint?",
+      "reference_answer": "First I measure where the time goes. If the data is read often and changes rarely, I cache the result in Redis or in memory with a sensible expiry. I choose a cache key that includes everything the result depends on, decide how to invalidate it when the data changes, and protect against stampedes when many requests miss at once. I then measure the hit rate and the latency improvement.",
+      "key_points": [
+        "measure first",
+        "cache frequently read data",
+        "expiry and invalidation",
+        "cache key design",
+        "measure hit rate"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "advanced",
+      "role_tags": [
+        "Software Engineer",
+        "Backend Developer"
+      ],
+      "skill_tags": [
+        "Microservices",
+        "System Design"
+      ],
+      "text": "When would you choose microservices over a monolith?",
+      "reference_answer": "I would start with a modular monolith for a small team because it is simpler to build, test and deploy. Microservices make sense when parts of the system need to scale or be released independently, or when separate teams own clear domains. They add costs: network failures, distributed transactions, monitoring and deployment complexity. So I would split along stable domain boundaries only when those benefits outweigh the costs.",
+      "key_points": [
+        "start with a modular monolith",
+        "independent scaling and deployment",
+        "team ownership",
+        "operational complexity",
+        "domain boundaries"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "advanced",
+      "role_tags": [
+        "Software Engineer",
+        "Backend Developer"
+      ],
+      "skill_tags": [
+        "System Design",
+        "Redis",
+        "PostgreSQL"
+      ],
+      "text": "How would you design a URL shortener service?",
+      "reference_answer": "The core is an API that takes a long URL and returns a short code, and a redirect endpoint. I would generate codes with a base62 encoded counter or random ids with a uniqueness check, and store the mapping in a database with an index on the code. Redirects are read-heavy, so I would cache popular codes in Redis and scale reads horizontally. I would add rate limiting, analytics and expiry.",
+      "key_points": [
+        "create and redirect endpoints",
+        "short code generation",
+        "database mapping with index",
+        "caching for reads",
+        "rate limiting"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "Software Engineer",
+        "Backend Developer"
+      ],
+      "skill_tags": [
+        "SQL",
+        "PostgreSQL"
+      ],
+      "text": "What are database transactions, and what do the ACID properties mean?",
+      "reference_answer": "A transaction groups several operations so they succeed or fail together. ACID means atomicity, all or nothing; consistency, constraints remain valid; isolation, concurrent transactions do not see each other's partial work, controlled by isolation levels; and durability, committed data survives crashes. For example, a money transfer debits one account and credits another in one transaction.",
+      "key_points": [
+        "all or nothing",
+        "consistency and constraints",
+        "isolation levels",
+        "durability",
+        "concrete example"
+      ],
+      "misconceptions": [
+        {
+          "pattern": "acid (stands for|means) .{0,30}(availability|scalability)",
+          "explanation": "ACID is atomicity, consistency, isolation and durability."
+        },
+        {
+          "pattern": "atomicity (means|is) .{0,40}(fast|speed|quick)",
+          "explanation": "Atomicity means all-or-nothing, not speed."
+        },
+        {
+          "pattern": "durability (means|is) .{0,50}(memory|cache|ram)\\b",
+          "explanation": "Durability means committed data survives crashes because it is persisted (e.g. the write-ahead log), not kept in memory."
+        },
+        {
+          "pattern": "transaction is (just |simply )?(a |one )?single (sql )?(query|statement)",
+          "explanation": "A transaction groups one or more statements that succeed or fail together."
+        }
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "beginner",
+      "role_tags": [
+        "Software Engineer",
+        "Backend Developer"
+      ],
+      "skill_tags": [
+        "REST"
+      ],
+      "text": "How do authentication and authorization differ in a web application?",
+      "reference_answer": "Authentication checks who the user is, for example with a password and a session or token. Authorization decides what that user may do, such as only reading their own data or requiring an admin role. In an API, every request is authenticated first, then each endpoint checks permissions on the server, never trusting ids or roles sent by the client. Passwords are stored as slow salted hashes.",
+      "key_points": [
+        "authentication is identity",
+        "authorization is permission",
+        "server-side checks",
+        "do not trust client input",
+        "hashed passwords"
+      ],
+      "misconceptions": [
+        {
+          "pattern": "(authentication and authorization are|they are) (the same|identical)",
+          "explanation": "Authentication is identity; authorization is permission. They are different checks."
+        },
+        {
+          "pattern": "(store|save|keep) (the )?passwords? (in )?(plain ?text|as is|unencrypted)",
+          "explanation": "Passwords must be stored as slow, salted hashes, never in plain text."
+        }
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "advanced",
+      "role_tags": [
+        "Software Engineer",
+        "Backend Developer"
+      ],
+      "skill_tags": [
+        "Kafka",
+        "RabbitMQ"
+      ],
+      "text": "When would you use a message queue, and what problems does it introduce?",
+      "reference_answer": "A message queue such as RabbitMQ or Kafka decouples producers from consumers, absorbs traffic spikes and lets slow work like emails or reports run in the background. It introduces new problems: messages may be delivered more than once, so consumers must be idempotent; ordering may not be guaranteed; failed messages need retries and a dead-letter queue; and monitoring queue depth becomes essential.",
+      "key_points": [
+        "decouple services",
+        "background work and spikes",
+        "idempotent consumers",
+        "retries and dead-letter queue",
+        "monitoring"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "beginner",
+      "role_tags": [
+        "Frontend Developer",
+        "Software Engineer"
+      ],
+      "skill_tags": [
+        "React"
+      ],
+      "text": "How does state management work in React, and when would you lift state up or use context?",
+      "reference_answer": "Each component can hold local state with useState, and React re-renders when it changes. When two siblings need the same data I lift the state to their closest common parent and pass it down with props. When many distant components need it, such as the current user or theme, I use context or a library like Redux, while keeping state as local as possible to avoid unnecessary re-renders.",
+      "key_points": [
+        "useState local state",
+        "re-render on change",
+        "lifting state up",
+        "context for shared data",
+        "keep state local"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "Frontend Developer",
+        "Software Engineer"
+      ],
+      "skill_tags": [
+        "React",
+        "JavaScript"
+      ],
+      "text": "How would you find and fix a performance problem in a React application?",
+      "reference_answer": "I would reproduce it and profile with the React DevTools Profiler and the browser performance tab to find slow or frequent renders. Common fixes are memoising expensive calculations with useMemo, avoiding new object props on every render, using React.memo for pure components, virtualising long lists, and code-splitting large bundles. I measure again after each change to confirm the improvement.",
+      "key_points": [
+        "profile first",
+        "unnecessary re-renders",
+        "memoisation",
+        "list virtualisation",
+        "measure again"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "Frontend Developer",
+        "Software Engineer"
+      ],
+      "skill_tags": [
+        "Accessibility",
+        "HTML"
+      ],
+      "text": "How do you make a web page accessible?",
+      "reference_answer": "I use semantic HTML elements such as buttons, headings and labels, so assistive technology understands the page. Every interactive element works with the keyboard and shows a visible focus state. Images have alt text, colour contrast meets WCAG guidelines, forms have labels and clear error messages, and I add ARIA only when native elements are not enough. I test with a screen reader and automated tools.",
+      "key_points": [
+        "semantic HTML",
+        "keyboard navigation and focus",
+        "alt text and contrast",
+        "labelled forms",
+        "testing with a screen reader"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "beginner",
+      "role_tags": [
+        "Frontend Developer",
+        "Software Engineer"
+      ],
+      "skill_tags": [
+        "CSS",
+        "Responsive Design"
+      ],
+      "text": "How do you build a responsive layout that works on mobile and desktop?",
+      "reference_answer": "I design mobile first, use flexible layouts with CSS grid and flexbox, relative units, and media queries at the points where the content breaks. Images scale with max-width and responsive sources. Touch targets are large enough, text stays readable without zooming, and I test on real devices and different screen sizes, including the browser device toolbar.",
+      "key_points": [
+        "mobile first",
+        "grid and flexbox",
+        "media queries",
+        "flexible images",
+        "test on devices"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "Frontend Developer",
+        "Software Engineer"
+      ],
+      "skill_tags": [
+        "JavaScript"
+      ],
+      "text": "Explain how the browser event loop handles asynchronous JavaScript.",
+      "reference_answer": "JavaScript runs on one main thread with a call stack. Asynchronous work such as timers, network requests and events is handled by the browser, and its callbacks are queued. When the stack is empty, the event loop first runs all microtasks, such as resolved promises, then takes the next task, such as a timer callback, and the browser renders between tasks. Long synchronous code blocks everything, so heavy work should be split or moved to a web worker.",
+      "key_points": [
+        "single thread and call stack",
+        "callback queues",
+        "microtasks before tasks",
+        "rendering between tasks",
+        "avoid blocking"
+      ],
+      "misconceptions": [
+        {
+          "pattern": "javascript (runs|is) multi-?threaded",
+          "explanation": "JavaScript runs on a single main thread; asynchronous work is scheduled by the event loop."
+        },
+        {
+          "pattern": "promises? (run|runs|execute|executes) (on|in) (a )?(separate|another|new) thread",
+          "explanation": "Promise callbacks run on the main thread as microtasks, not on separate threads."
+        },
+        {
+          "pattern": "settimeout.{0,40}(always )?(runs?|executes?) before .{0,15}promise",
+          "explanation": "Promise callbacks are microtasks and run before the next task such as a setTimeout callback."
+        },
+        {
+          "pattern": "(long|heavy|synchronous) (loops?|code|work) (never|don't|do not|cannot|can't) block",
+          "explanation": "Long synchronous code blocks the single main thread, so the page cannot respond or render."
+        }
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "advanced",
+      "role_tags": [
+        "Frontend Developer",
+        "Software Engineer"
+      ],
+      "skill_tags": [
+        "JavaScript",
+        "REST"
+      ],
+      "text": "How would you securely store authentication tokens in a single-page application?",
+      "reference_answer": "I avoid storing long-lived tokens in localStorage because any XSS can read them. A common approach keeps a short-lived access token in memory and a refresh token in an HttpOnly, Secure, SameSite cookie that JavaScript cannot read. The app silently refreshes the access token when it expires. I also protect against XSS with escaping and a content security policy, and against CSRF with SameSite cookies or anti-CSRF headers.",
+      "key_points": [
+        "avoid localStorage for tokens",
+        "access token in memory",
+        "HttpOnly refresh cookie",
+        "silent refresh",
+        "XSS and CSRF protection"
+      ],
+      "misconceptions": [
+        {
+          "pattern": "(store|save|keep|put) (the )?(tokens?|jwt).{0,30}localstorage (is|are)? ?(safe|secure|best|fine)",
+          "explanation": "Any XSS can read localStorage; long-lived tokens there are risky."
+        }
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "beginner",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Git"
+      ],
+      "text": "How do you use Git when working on a team?",
+      "reference_answer": "I create a branch for each feature or fix, make small commits with clear messages, and keep the branch up to date with the main branch. I open a pull request, ask for review, make sure tests pass in CI, and resolve conflicts carefully. I never commit secrets, and I use tags for releases and revert commits instead of rewriting shared history.",
+      "key_points": [
+        "feature branches",
+        "small clear commits",
+        "pull requests and review",
+        "tests in CI",
+        "no secrets in the repository"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "beginner",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Unit Testing",
+        "pytest"
+      ],
+      "text": "What kinds of automated tests do you write, and why?",
+      "reference_answer": "I write unit tests for individual functions and edge cases because they are fast and pinpoint bugs. Integration tests check that components such as the API and the database work together, and a few end-to-end tests cover the most important user journeys. I run them automatically in CI on every change, aim for meaningful coverage rather than a number, and write a test for every bug I fix.",
+      "key_points": [
+        "unit tests",
+        "integration tests",
+        "end-to-end tests",
+        "run in CI",
+        "test for every bug"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "beginner",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Data Structures",
+        "Algorithms"
+      ],
+      "text": "Explain Big O notation and give an example of improving an algorithm's complexity.",
+      "reference_answer": "Big O describes how the running time or memory of an algorithm grows with the input size in the worst case. For example, checking a list for duplicates with two nested loops is O(n squared). Using a hash set to remember items already seen makes it O(n) time, at the cost of O(n) extra memory. Choosing the right data structure is often the biggest improvement.",
+      "key_points": [
+        "growth with input size",
+        "worst case",
+        "nested loops example",
+        "hash set improvement",
+        "time and memory trade-off"
+      ],
+      "misconceptions": [
+        {
+          "pattern": "big o (measures|is) (the )?(exact|actual) (time|seconds|speed)",
+          "explanation": "Big O describes growth with input size, not exact running time."
+        }
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Unit Testing"
+      ],
+      "text": "Walk me through how you debug a problem you cannot reproduce easily.",
+      "reference_answer": "I collect as much evidence as possible: logs, error messages, the environment, inputs and timing. Then I form hypotheses about what differs from my setup, such as data, configuration, concurrency or versions, and add targeted logging to test them. I try to narrow it down by reproducing with production-like data, and once I find the cause I write a test that fails, fix it, and confirm the fix in the same environment.",
+      "key_points": [
+        "gather logs and evidence",
+        "form hypotheses",
+        "targeted logging",
+        "reproduce the conditions",
+        "test that proves the fix"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "OOP"
+      ],
+      "text": "What principles do you follow to write clean, maintainable code?",
+      "reference_answer": "I use clear names, keep functions small with a single responsibility, and avoid duplication by extracting shared logic. I prefer simple designs over clever ones, separate business logic from input and output, and handle errors explicitly. Tests and code reviews keep the code safe to change, and I leave short comments that explain why, not what.",
+      "key_points": [
+        "clear naming",
+        "single responsibility",
+        "avoid duplication",
+        "separation of concerns",
+        "tests and code review"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "System Design"
+      ],
+      "text": "How do you approach designing a new feature from requirements to release?",
+      "reference_answer": "I first clarify the problem, the users and how success will be measured, and list the open questions. Then I sketch a design with the data model, APIs and edge cases, review it with the team, and split the work into small deliverable steps. I build with tests, release behind a feature flag or to a small group first, monitor the results, and iterate based on feedback.",
+      "key_points": [
+        "clarify the problem and success metric",
+        "design and edge cases",
+        "team review",
+        "small steps with tests",
+        "gradual release and monitoring"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "beginner",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Python"
+      ],
+      "text": "What is the difference between a process and a thread?",
+      "reference_answer": "A process is a running program with its own memory space, so processes are isolated and communicate through mechanisms such as pipes or sockets. Threads run inside a process and share its memory, which makes communication fast but requires locks to avoid race conditions. In Python, the global interpreter lock limits CPU-bound threads, so I use processes for CPU-heavy work and threads or async for I/O-bound work.",
+      "key_points": [
+        "separate memory for processes",
+        "shared memory for threads",
+        "race conditions and locks",
+        "CPU-bound versus I/O-bound",
+        "concrete example"
+      ],
+      "misconceptions": [
+        {
+          "pattern": "threads? (have|has|get) (their|its) own (separate )?memory",
+          "explanation": "Threads share their process's memory; processes have separate memory."
+        }
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Docker"
+      ],
+      "text": "What problem does Docker solve, and how have you used containers?",
+      "reference_answer": "Docker packages an application with its dependencies into an image, so it runs the same on a laptop, in CI and in production. I write a Dockerfile with a small base image, install dependencies in a cached layer, and run the app as a non-root user. With docker compose I start the app together with a database for local development, and I keep secrets out of the image by passing them as environment variables.",
+      "key_points": [
+        "consistent environments",
+        "Dockerfile and images",
+        "small base image and layers",
+        "compose for local services",
+        "secrets as environment variables"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "CI/CD",
+        "GitHub Actions"
+      ],
+      "text": "What does a good CI/CD pipeline include?",
+      "reference_answer": "On every pull request the pipeline installs dependencies, runs linting and automated tests, and builds the application. After merging it builds a versioned artifact or image, deploys it to a staging environment, runs smoke tests, and then promotes it to production, ideally with a way to roll back quickly. Secrets are stored in the CI system, and failures block the merge.",
+      "key_points": [
+        "run tests on every change",
+        "linting and build",
+        "versioned artifacts",
+        "staging and smoke tests",
+        "rollback"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "advanced",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "System Design"
+      ],
+      "text": "How would you make a web application handle ten times more traffic?",
+      "reference_answer": "I would first measure where the bottleneck is with load testing and monitoring. Common steps are scaling the stateless application servers horizontally behind a load balancer, adding caching for frequent reads, optimising slow queries and adding indexes, using read replicas, and moving slow work to background queues. I would also add rate limiting and auto-scaling, and check that monitoring alerts on latency and errors.",
+      "key_points": [
+        "measure the bottleneck",
+        "horizontal scaling",
+        "caching",
+        "database optimisation",
+        "background queues and monitoring"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "beginner",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Python"
+      ],
+      "text": "How do you handle errors and exceptions in your code?",
+      "reference_answer": "I validate inputs early and fail with clear messages. I catch specific exceptions where I can actually handle them, for example retrying a network call, and let unexpected ones propagate to a central handler that logs the details and returns a safe message to the user. I never silently swallow errors, never show stack traces to users, and I test the failure paths.",
+      "key_points": [
+        "validate input early",
+        "catch specific exceptions",
+        "central error handler",
+        "log details safely",
+        "test failure paths"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "REST"
+      ],
+      "text": "What common web security vulnerabilities do you protect against?",
+      "reference_answer": "I protect against SQL injection with parameterised queries or an ORM, and against cross-site scripting by escaping output and using a content security policy. I prevent CSRF with SameSite cookies or tokens, enforce authorization on the server to stop insecure direct object references, hash passwords with a slow algorithm, keep secrets out of code, and keep dependencies updated.",
+      "key_points": [
+        "SQL injection",
+        "cross-site scripting",
+        "CSRF",
+        "server-side authorization",
+        "password hashing and secrets"
+      ],
+      "misconceptions": [
+        {
+          "pattern": "(build|concatenate) (the )?(sql|queries) (by|with|using) string",
+          "explanation": "Building SQL from strings enables SQL injection; use parameterised queries."
+        }
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "advanced",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "System Design"
+      ],
+      "text": "Describe a technical trade-off you made and how you decided.",
+      "reference_answer": "In a reporting project we had to choose between computing results on demand and precomputing them nightly. On demand was always fresh but slow, while precomputing was fast but up to a day old. I listed the requirements, measured query times, and asked users how fresh the data needed to be. We precomputed nightly with an option to refresh one report on demand, which cut load times from twenty seconds to under one.",
+      "key_points": [
+        "the options considered",
+        "criteria for the decision",
+        "data or measurements",
+        "the final choice",
+        "the outcome"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "beginner",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Python"
+      ],
+      "text": "How do you keep learning new technologies, and how did you learn the last one?",
+      "reference_answer": "I follow official documentation, release notes and a few trusted blogs, and I learn best by building something small. Recently I learned FastAPI by reading the tutorial, then building a small API with authentication, tests and a database. I compared it with Flask, noted the trade-offs, and shared a short summary with my team so they could use it too.",
+      "key_points": [
+        "learning sources",
+        "learning by building",
+        "a concrete recent example",
+        "comparison with alternatives",
+        "sharing knowledge"
+      ]
+    },
+    {
+      "type": "technical",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Linux"
+      ],
+      "text": "A production service suddenly returns errors. What do you do first?",
+      "reference_answer": "First I check the impact and communicate that we are investigating. Then I look at monitoring dashboards, error logs and recent changes such as deployments or configuration updates. If a recent deployment is the likely cause, I roll it back to restore service quickly, then find the root cause. Afterwards I write a short blameless post-mortem with actions to prevent it happening again.",
+      "key_points": [
+        "assess impact and communicate",
+        "check logs and monitoring",
+        "recent changes",
+        "roll back to restore service",
+        "post-mortem"
+      ]
+    },
+    {
+      "type": "behavioral",
+      "difficulty": "beginner",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Communication",
+        "Motivation"
+      ],
+      "text": "Tell me about yourself and why you are interested in this role.",
+      "reference_answer": "I recently graduated in computer science, and during my studies I focused on building practical projects. In my internship I worked on a data pipeline and a small web application used by my team. I enjoy turning messy problems into reliable tools. This role interests me because it combines building software with real users, and I want to grow in a team that values quality and learning.",
+      "key_points": [
+        "short background",
+        "relevant experience",
+        "what you enjoy",
+        "why this role",
+        "what you want to learn"
+      ]
+    },
+    {
+      "type": "behavioral",
+      "difficulty": "beginner",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Teamwork",
+        "Communication"
+      ],
+      "text": "Tell me about a time you disagreed with a teammate on a technical decision.",
+      "reference_answer": "In a group project, a teammate and I disagreed on which model architecture to use. Instead of arguing, I suggested we each run a two-day benchmark on the same data. The results favoured his approach, so we adopted it, and I documented the comparison for the report. We delivered on time, and I learned to settle technical debates with evidence and to stay open to being wrong.",
+      "key_points": [
+        "the situation and disagreement",
+        "how you communicated",
+        "using evidence",
+        "the result",
+        "what you learned"
+      ]
+    },
+    {
+      "type": "behavioral",
+      "difficulty": "beginner",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Time Management",
+        "Ownership"
+      ],
+      "text": "Tell me about a deadline you nearly missed. What did you do?",
+      "reference_answer": "Two weeks before a project deadline, I realised integration with an external API would take longer than planned. I told my manager immediately, proposed cutting a low-priority feature, and broke the remaining work into daily goals. I also asked a colleague to review my code each evening to avoid rework. We delivered on time, and since then I flag risks early and plan buffers for integrations.",
+      "key_points": [
+        "the situation and risk",
+        "early communication",
+        "prioritisation",
+        "concrete actions",
+        "result and lesson"
+      ]
+    },
+    {
+      "type": "behavioral",
+      "difficulty": "beginner",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Adaptability"
+      ],
+      "text": "Describe a time you had to learn a new tool quickly.",
+      "reference_answer": "In my internship I had one week to start using Docker for a deployment, which I had never used. I worked through the official getting-started guide, then containerised a small sample app before touching the real project. I asked a senior engineer to review my Dockerfile, fixed the issues he found, and deployed on time. I also wrote a short guide that the next intern used.",
+      "key_points": [
+        "the situation and deadline",
+        "how you learned",
+        "practising on something small",
+        "asking for feedback",
+        "the result"
+      ]
+    },
+    {
+      "type": "behavioral",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Ownership",
+        "Accountability"
+      ],
+      "text": "Tell me about a mistake you made and how you handled it.",
+      "reference_answer": "I once ran a database update script in the wrong environment and changed test data that a colleague was using. I told my team immediately, restored the data from the latest backup within an hour, and apologised to my colleague. Afterwards I added a confirmation step that prints the target environment before any script runs. The mistake never happened again, and I learned to own errors quickly.",
+      "key_points": [
+        "the mistake",
+        "taking ownership",
+        "how you fixed it",
+        "prevention",
+        "what you learned"
+      ]
+    },
+    {
+      "type": "behavioral",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Teamwork",
+        "Conflict Resolution"
+      ],
+      "text": "Describe a situation where you had to work with a difficult team member.",
+      "reference_answer": "In a university project one member often missed meetings, and the work was falling behind. I spoke to him privately and learned he was struggling with a part-time job. Together we moved meetings to evenings and gave him tasks he could do asynchronously with clear deadlines. His contributions improved, we finished the project, and I learned that understanding the cause works better than complaining.",
+      "key_points": [
+        "the situation",
+        "private conversation",
+        "understanding the cause",
+        "agreed solution",
+        "result"
+      ]
+    },
+    {
+      "type": "behavioral",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Ownership",
+        "Problem Solving"
+      ],
+      "text": "Tell me about a project you are proud of.",
+      "reference_answer": "I am proud of an attendance app I built for a student club. Members used paper sign-in sheets that were often lost. I interviewed organisers, built a simple web app with QR code check-in, and tested it at two events before launch. It was used by over three hundred members, cut check-in time in half, and organisers finally had reliable data for planning.",
+      "key_points": [
+        "the problem",
+        "your role and actions",
+        "how you validated it",
+        "measurable result",
+        "why you are proud"
+      ]
+    },
+    {
+      "type": "behavioral",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Adaptability",
+        "Communication"
+      ],
+      "text": "Describe a time you received critical feedback. How did you respond?",
+      "reference_answer": "In a code review, a senior engineer said my functions were too long and hard to test. My first reaction was defensive, but I asked him to show me an example of how he would restructure one. I refactored the module into smaller functions and added unit tests. My next reviews needed far fewer changes, and I now ask for feedback early instead of waiting for the final review.",
+      "key_points": [
+        "the feedback",
+        "how you reacted",
+        "actions taken",
+        "improvement",
+        "lesson learned"
+      ]
+    },
+    {
+      "type": "behavioral",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Ownership"
+      ],
+      "text": "Tell me about a time you took initiative beyond your assigned tasks.",
+      "reference_answer": "During my internship I noticed the team spent hours each week manually checking a daily data export for errors. Nobody had asked me to fix it, but I wrote a small script that validated the export and emailed a summary. I showed it to my manager, adjusted it based on the team's feedback, and it became part of the daily pipeline, saving about four hours a week.",
+      "key_points": [
+        "the problem you noticed",
+        "taking initiative",
+        "what you built or did",
+        "getting buy-in",
+        "measurable result"
+      ]
+    },
+    {
+      "type": "behavioral",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Time Management"
+      ],
+      "text": "How do you prioritise when you have several urgent tasks at once?",
+      "reference_answer": "I list the tasks and check each one's impact and real deadline with the people who requested them. I do the highest-impact, time-critical work first, delegate or renegotiate what I can, and tell stakeholders clearly when something will be late. For example, during exams week I had two project deadlines and a bug report, so I fixed the blocking bug first, then agreed a one-day extension for the less critical project.",
+      "key_points": [
+        "list and assess impact",
+        "clarify deadlines",
+        "communicate trade-offs",
+        "concrete example",
+        "outcome"
+      ]
+    },
+    {
+      "type": "behavioral",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Communication"
+      ],
+      "text": "Tell me about a time you had to explain a technical topic to a non-technical audience.",
+      "reference_answer": "I had to explain to a marketing manager why our recommendation model sometimes suggested odd products. I avoided jargon and compared the model to a shop assistant who learns from past purchases and can be misled by unusual orders. I showed two concrete examples and a simple chart of how accuracy improved with more data. She understood the limits and agreed to collect better data, which improved the recommendations.",
+      "key_points": [
+        "the audience and topic",
+        "avoiding jargon",
+        "analogy or example",
+        "checking understanding",
+        "result"
+      ]
+    },
+    {
+      "type": "behavioral",
+      "difficulty": "advanced",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Leadership",
+        "Teamwork"
+      ],
+      "text": "Describe a time you led a team or a project.",
+      "reference_answer": "I led a team of four students building a course scheduling tool. I organised weekly planning, split the work by each person's strengths and set up a shared task board. When we fell behind, I re-planned the scope with the team instead of pushing longer hours. We delivered a working product that the department tested with real students, and I learned that clear goals and listening matter more than control.",
+      "key_points": [
+        "team and goal",
+        "how you organised the work",
+        "handling a problem",
+        "result",
+        "leadership lesson"
+      ]
+    },
+    {
+      "type": "behavioral",
+      "difficulty": "advanced",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Accountability",
+        "Problem Solving"
+      ],
+      "text": "Tell me about a time a project failed or did not go as planned.",
+      "reference_answer": "Our team built a chatbot for a hackathon, but the demo failed because we relied on an external API that hit its rate limit. I took responsibility for not testing under load. Afterwards we added caching and a fallback response, and I wrote a checklist for future demos that includes load testing and offline backups. In the next competition our demo ran smoothly and we placed second.",
+      "key_points": [
+        "what went wrong",
+        "your responsibility",
+        "analysis of the cause",
+        "changes you made",
+        "later result"
+      ]
+    },
+    {
+      "type": "behavioral",
+      "difficulty": "advanced",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Analytical Thinking",
+        "Problem Solving"
+      ],
+      "text": "Describe a time you had to make a decision without all the information you wanted.",
+      "reference_answer": "During my internship we had to choose a database for a new service before usage numbers were known. I listed the decisions that would be hard to reverse, gathered the data we did have, and chose PostgreSQL because it fitted our current needs and the team's skills. I documented the assumptions and set a review point after three months. The review confirmed the choice, and the documentation made it easy to explain.",
+      "key_points": [
+        "the situation and uncertainty",
+        "information gathered",
+        "the decision and reasoning",
+        "managing risk",
+        "outcome"
+      ]
+    },
+    {
+      "type": "behavioral",
+      "difficulty": "beginner",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Motivation"
+      ],
+      "text": "Why do you want to work in this field, and where do you see yourself in three years?",
+      "reference_answer": "I enjoy solving problems where data and software make a visible difference for people, which I discovered while building my graduation project. In three years I want to be a reliable engineer who owns features end to end, from design to monitoring, and who mentors newer team members. I plan to get there by working on real products, learning from code reviews and taking on gradually larger responsibilities.",
+      "key_points": [
+        "genuine motivation",
+        "concrete experience",
+        "three-year goal",
+        "plan to get there",
+        "link to the role"
+      ]
+    },
+    {
+      "type": "behavioral",
+      "difficulty": "beginner",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Teamwork",
+        "Leadership"
+      ],
+      "text": "Tell me about a time you helped a colleague or classmate succeed.",
+      "reference_answer": "A classmate was struggling with SQL joins before our databases exam. I offered two evening sessions where we worked through practice problems together, starting with simple examples and drawing the tables on paper. I let her solve each problem herself and only gave hints. She passed with a high grade, and explaining the topic also deepened my own understanding.",
+      "key_points": [
+        "the person and problem",
+        "how you helped",
+        "encouraging independence",
+        "result",
+        "what you gained"
+      ]
+    },
+    {
+      "type": "behavioral",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Problem Solving",
+        "Ownership"
+      ],
+      "text": "Describe a time you improved a process or workflow.",
+      "reference_answer": "In my team, releases required a long manual checklist and often missed steps. I mapped the current process, identified the steps that could be automated, and built a simple CI pipeline that ran tests and created the release package. I introduced it gradually and trained the team. Release preparation went from half a day to twenty minutes, and missed steps disappeared.",
+      "key_points": [
+        "the old process and its problem",
+        "analysis",
+        "the improvement",
+        "adoption by the team",
+        "measurable result"
+      ]
+    },
+    {
+      "type": "behavioral",
+      "difficulty": "advanced",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Adaptability"
+      ],
+      "text": "Tell me about a time you had to adapt to a major change in requirements.",
+      "reference_answer": "Halfway through a client project, the client asked to support mobile users, which we had not planned. I organised a meeting to understand the reason and the priority, then estimated the impact with the team. We agreed to deliver the core features responsively first and postpone two minor features. I updated the plan and kept the client informed weekly. We launched on time with mobile support, and the client extended the contract.",
+      "key_points": [
+        "the change",
+        "understanding the reason",
+        "re-planning and trade-offs",
+        "communication",
+        "outcome"
+      ]
+    },
+    {
+      "type": "behavioral",
+      "difficulty": "advanced",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Communication",
+        "Leadership"
+      ],
+      "text": "Describe a time you had to persuade others to accept your idea.",
+      "reference_answer": "I believed our team should add automated tests before adding new features, but others felt it would slow us down. I collected data on how many hours we had spent fixing regressions in the last month and proposed a two-week trial on one module. During the trial, regressions in that module dropped to zero, so the team agreed to adopt tests for all new code.",
+      "key_points": [
+        "the idea and resistance",
+        "understanding their concerns",
+        "evidence",
+        "a low-risk trial",
+        "result"
+      ]
+    },
+    {
+      "type": "behavioral",
+      "difficulty": "intermediate",
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [
+        "Time Management",
+        "Adaptability"
+      ],
+      "text": "How do you handle stress and pressure at work or university?",
+      "reference_answer": "I break large tasks into small steps with clear daily goals, so progress is visible and less overwhelming. When pressure rises, I talk early with my manager or team about priorities rather than silently working longer. For example, during final exams and a project deadline, I planned each day, protected sleep and asked for a short extension on one assignment. I finished everything with good results and without burning out.",
+      "key_points": [
+        "breaking down tasks",
+        "early communication",
+        "concrete example",
+        "healthy habits",
+        "result"
+      ]
+    },
+    {
+      "kind": "skill_template",
+      "type": "technical",
+      "difficulty": null,
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [],
+      "text": "Your CV mentions {skill}. How have you used it in a project, and what result did it help you achieve?",
+      "reference_answer": "In a recent project I used {skill} to solve a specific problem. I explained the context first, then how I applied {skill}, the main decisions and trade-offs I made, and how I tested the result. The outcome was measurable, for example faster processing or fewer errors, and I learned what I would do differently next time.",
+      "key_points": [
+        "the project context",
+        "how you used {skill}",
+        "decisions and trade-offs",
+        "measurable result",
+        "lessons learned"
+      ]
+    },
+    {
+      "kind": "skill_template",
+      "type": "technical",
+      "difficulty": null,
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [],
+      "text": "What is the hardest problem you solved with {skill}, and how did you solve it?",
+      "reference_answer": "The hardest problem I solved with {skill} was a bug that only appeared with real data. I reproduced it with a small example, investigated how {skill} behaved in that case, and tested two possible fixes. I chose the simpler fix, added a test to prevent the problem returning, and documented it for the team. The issue was resolved and the system became more reliable.",
+      "key_points": [
+        "the problem",
+        "investigation",
+        "options considered",
+        "solution and test",
+        "result"
+      ]
+    },
+    {
+      "kind": "skill_template",
+      "type": "technical",
+      "difficulty": null,
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [],
+      "text": "If you joined our team, how would you apply your experience with {skill} in your first months?",
+      "reference_answer": "First I would learn how the team already uses {skill}, its conventions and its pain points, by reading the code and asking questions. Then I would take on a small, well-defined task to deliver value early, and share any best practices from my experience with {skill}, such as testing or performance improvements, while staying open to the team's way of working.",
+      "key_points": [
+        "learn the current setup",
+        "start with a small task",
+        "share best practices",
+        "testing or performance",
+        "collaboration"
+      ]
+    },
+    {
+      "kind": "skill_template",
+      "type": "technical",
+      "difficulty": null,
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [],
+      "text": "What are the main strengths and limitations of {skill} compared with an alternative you know?",
+      "reference_answer": "The main strength of {skill} is that it solves its core problem well and has good documentation and community support. Its limitations include performance or complexity in some situations. Compared with an alternative, I would choose {skill} when its strengths match the project's needs, and the alternative when the project needs something {skill} does poorly. I would base the choice on requirements and a small experiment.",
+      "key_points": [
+        "strengths of {skill}",
+        "limitations",
+        "a named alternative",
+        "when to choose each",
+        "evidence-based choice"
+      ]
+    },
+    {
+      "kind": "project_template",
+      "type": "technical",
+      "difficulty": null,
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [],
+      "text": "In your project “{project}”, what was your role, and what was the hardest technical decision you made?",
+      "reference_answer": "In “{project}” I was responsible for a clear part of the work. I explained the goal of the project, the main technical decision, the options I compared and why I chose one, how I tested that it worked, and the measurable result. I finished with what I would change next time.",
+      "key_points": [
+        "the project goal",
+        "your own role",
+        "the decision and the options compared",
+        "how you validated it",
+        "the result and lessons learned"
+      ]
+    },
+    {
+      "kind": "project_template",
+      "type": "technical",
+      "difficulty": null,
+      "role_tags": [
+        "general"
+      ],
+      "skill_tags": [],
+      "text": "Walk me through how you would improve or scale your project “{project}” if it had ten times more users or data.",
+      "reference_answer": "For “{project}” I would first measure the current bottleneck, then prioritise changes such as caching, better data storage or batching, background processing and monitoring. I would explain the trade-offs of each change, how I would test it under load, and how I would know the improvement worked.",
+      "key_points": [
+        "measure the bottleneck first",
+        "concrete scaling changes",
+        "trade-offs",
+        "testing under load",
+        "how to measure success"
+      ]
+    }
+  ]
+}

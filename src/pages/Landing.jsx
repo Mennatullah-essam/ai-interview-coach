@@ -6,6 +6,7 @@ import Chip from '../components/Chip';
 import { Reveal, Stagger, StaggerItem } from '../components/Reveal';
 import { HOW_IT_WORKS, LANDING_FEATURES } from '../data/constants';
 import { ease, fadeUp, staggerContainer } from '../animations/variants';
+import { useAuth } from '../hooks/useAuth';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 const HEADLINE = ['Walk', 'into', 'every', 'interview'];
@@ -30,6 +31,8 @@ function HeroBackdrop() {
 export default function Landing() {
   useDocumentTitle('');
   const reduce = useReducedMotion();
+  const { status } = useAuth();
+  const start = status === 'authenticated' ? '/cv-upload' : '/signup';
   const scrollToHow = () => document.getElementById('how')?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
 
   return (
@@ -54,10 +57,10 @@ export default function Landing() {
               </motion.span>
             </motion.h1>
             <StaggerItem as="p" className="sub">
-              Upload your CV, pick your dream role, and practice with questions built around your experience. Get objective scoring and actionable coaching in real time.
+              Upload your CV, pick your target role, and practise with questions selected for your skills and role. Get automated scoring and actionable coaching after every answer.
             </StaggerItem>
             <StaggerItem className="row center">
-              <Button variant="primary" to="/cv-upload">Start Interview →</Button>
+              <Button variant="primary" to={start}>Start Interview →</Button>
               <Button onClick={scrollToHow}>How It Works</Button>
             </StaggerItem>
           </Stagger>
@@ -84,7 +87,7 @@ export default function Landing() {
             ))}
           </Stagger>
           <Reveal className="center mt-xl" delay={0.1}>
-            <Button variant="primary" to="/cv-upload">Get started</Button>
+            <Button variant="primary" to={start}>Get started</Button>
           </Reveal>
         </section>
       </main>

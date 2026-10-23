@@ -1,6 +1,24 @@
-# Runtime dependencies for the backend (Milestone 1).
+# Runtime dependencies for the backend.
 # Ranges allow bug-fix and minor updates but block the next major version.
 # After a successful install you can record exact versions with:
 #   pip freeze > requirements.lock.txt
+
+# Web framework and server (Milestone 1)
 fastapi>=0.115,<1.0
 uvicorn>=0.30,<1.0
+
+# Database (Milestone 2)
+sqlalchemy>=2.0,<2.2
+alembic>=1.13,<2.0
+# [binary] ships prebuilt wheels incl. libpq, so no compiler or PostgreSQL
+# client install is needed on Windows.
+psycopg[binary]>=3.2,<4.0
+pydantic-settings>=2.7,<3.0
+
+# Authentication, uploads and CV parsing (Milestone 3)
+PyJWT>=2.8,<3.0              # signed access tokens (HS256)
+python-multipart>=0.0.9      # required by FastAPI for file uploads
+pypdf>=5.0,<7.0              # PDF text extraction (DOCX uses the standard library)
+
+# Passwords are hashed with scrypt from Python's standard library: no extra package.
+# The optional local embedding model is in requirements-ml.txt.

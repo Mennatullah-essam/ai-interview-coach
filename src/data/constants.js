@@ -11,7 +11,25 @@ export const DIFFICULTIES = ['Beginner', 'Intermediate', 'Advanced'];
 export const QUESTION_COUNTS = [5, 10, 15];
 export const HISTORY_FILTERS = ['All', 'Technical', 'Behavioral', 'Mixed'];
 
-export const DEFAULT_CONFIG = { role: 'AI Engineer', type: 'Technical', diff: 'Intermediate', n: 10 };
+export const DEFAULT_CONFIG = { role: 'AI Engineer', type: 'Technical', diff: 'Intermediate', n: 10, jobDescription: '', adaptive: false };
+export const MAX_JOB_DESCRIPTION_LENGTH = 5000;
+export const EXPERIENCE_LEVELS = [
+  { value: 'student', label: 'Student' },
+  { value: 'entry', label: 'Entry level' },
+  { value: 'junior', label: 'Junior' },
+  { value: 'mid', label: 'Mid level' },
+  { value: 'senior', label: 'Senior' },
+];
+/** Why a question was asked, as a short label. */
+export const QUESTION_CATEGORIES = {
+  core: 'Role core',
+  cv_skill: 'From your CV',
+  project: 'Your project',
+  skill_gap: 'Skill gap',
+  coverage: 'Role requirement',
+  behavioral: 'Behavioral',
+  follow_up: 'Follow-up',
+};
 
 export const MINUTES_PER_QUESTION = 3;
 export const MIN_ANSWER_LENGTH = 30;
@@ -29,16 +47,16 @@ export const NAV_ITEMS = [
 ];
 
 export const LANDING_FEATURES = [
-  { icon: '📄', title: 'CV-Aware Interview Questions', text: 'Questions generated from your own experience and target role.' },
-  { icon: '🧠', title: 'AI Answer Evaluation', text: 'Semantic scoring of every answer against strong responses.' },
-  { icon: '🎯', title: 'Personalized Feedback', text: 'Strengths, weaknesses and ideal-answer examples.' },
-  { icon: '📈', title: 'Performance Tracking', text: 'See your confidence and skills improve session by session.' },
+  { icon: '📄', title: 'CV-Aware Interview Questions', text: 'Questions selected from a curated bank and tailored to your CV skills and target role.' },
+  { icon: '🧠', title: 'Automated Answer Evaluation', text: 'Every answer is scored on six explained dimensions: relevance, key concepts, technical accuracy, structure, evidence and communication.' },
+  { icon: '🎯', title: 'Actionable Feedback', text: 'Missing concepts, concrete suggestions, an answer outline and a personal improvement plan.' },
+  { icon: '📈', title: 'Performance Tracking', text: 'See your scores and skills improve session by session.' },
 ];
-export const HOW_IT_WORKS = ['Upload your CV', 'Choose a target role', 'Answer tailored questions', 'Get AI coaching'];
+export const HOW_IT_WORKS = ['Create your account', 'Upload your CV', 'Answer tailored questions', 'Get automated coaching'];
 
 export const COACH_TIPS = ['Aim for 1–2 minutes', 'Use specific numbers', 'Mention your role'];
 export const THINKING_MESSAGES = [
-  'Scoring relevance, clarity and technical depth',
+  'Scoring relevance, clarity, depth and structure',
   'Comparing against strong example answers',
   'Preparing your feedback',
 ];

@@ -22,7 +22,10 @@ htmlcov/
 .env.*
 !.env.example
 
-# Local databases (for later milestones)
+# Private uploaded CV files (never commit personal data)
+storage/
+
+# Local databases
 *.sqlite3
 *.db
 

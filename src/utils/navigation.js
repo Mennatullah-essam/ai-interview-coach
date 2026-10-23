@@ -5,5 +5,7 @@ export const isFocusRoute = (pathname) => pathname === '/interview/session' || p
 export function getActiveNavPath(pathname) {
   if (pathname.startsWith('/interview')) return '/cv-upload';
   if (pathname === '/results') return '/history';
+  if (pathname.startsWith('/profile')) return '/profile';
+  if (pathname.startsWith('/plan')) return '/performance';
   return pathname;
 }

@@ -1,0 +1,86 @@
+{
+  "_comment": "All scoring constants (API spec 16.4 + Milestone 4 rubric). DRAFT values chosen by hand, NOT calibrated against human ratings (spec 16.9 not yet run). Changing any value requires a new version string. v2 (Milestone 5): evidence-based concept statuses (demonstrated/partial/mentioned), rubric aliases, unsupported-claim penalties, project-question weights.",
+  "version": "v2",
+  "similarity_map": {
+    "lexical": {
+      "low": 0.05,
+      "high": 0.45
+    },
+    "sbert": {
+      "low": 0.2,
+      "high": 0.75
+    }
+  },
+  "off_topic": {
+    "lexical": {
+      "question_below": 0.04,
+      "reference_below": 0.06
+    },
+    "sbert": {
+      "question_below": 0.15,
+      "reference_below": 0.25
+    },
+    "relevance_cap": 35
+  },
+  "keypoint": {
+    "lexical_word_share": 0.6,
+    "sbert_similarity": 0.55
+  },
+  "guards": {
+    "no_concept_relevance_cap": 0.6,
+    "misconception_penalty": 0.4,
+    "keyword_list_cap": 0.5,
+    "unsupported_penalty": 0.12,
+    "unsupported_max_penalty": 0.25,
+    "unsupported_specificity_factor": 0.3
+  },
+  "dimension_weights": {
+    "technical": {
+      "relevance": 0.2,
+      "coverage": 0.25,
+      "correctness": 0.2,
+      "structure": 0.1,
+      "specificity": 0.15,
+      "communication": 0.1
+    },
+    "behavioral": {
+      "relevance": 0.25,
+      "coverage": 0.15,
+      "correctness": 0.0,
+      "structure": 0.25,
+      "specificity": 0.2,
+      "communication": 0.15
+    }
+  },
+  "clarity": {
+    "words_band": {
+      "technical": [
+        50,
+        260
+      ],
+      "behavioral": [
+        60,
+        300
+      ]
+    },
+    "sentence_words_band": [
+      6,
+      32
+    ],
+    "min_unique_ratio": 0.45
+  },
+  "feedback": {
+    "strong": 70,
+    "weak": 55
+  },
+  "category_weights": {
+    "project": {
+      "relevance": 0.2,
+      "coverage": 0.15,
+      "correctness": 0.1,
+      "structure": 0.2,
+      "specificity": 0.25,
+      "communication": 0.1
+    }
+  }
+}
