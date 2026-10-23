@@ -1,0 +1,18 @@
+# Never send secrets, private data or local build output to the image build.
+.git
+**/.env
+**/.env.*
+!**/.env.example
+**/.venv
+**/venv
+**/node_modules
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.ruff_cache
+backend/storage
+dist
+*.log
+*.dump
+*.backup
+*.sql

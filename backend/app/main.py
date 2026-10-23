@@ -8,9 +8,13 @@ GET /health and GET /health/db from Milestones 1-2 are kept unchanged.
 """
 
 import logging
+import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Request, Response, status
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
@@ -117,3 +121,38 @@ def health_db(response: Response) -> dict[str, str]:
         return {"status": "healthy", "database": "reachable"}
     response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
     return {"status": "unhealthy", "database": "unreachable"}
+
+
+# --- built frontend (production) ---------------------------------------------------------------------
+# In the Docker image the React build is copied to FRONTEND_DIST and served by this
+# same app, so the website and the API share one origin: the refresh cookie stays
+# first-party (SameSite=Strict) and no CORS is needed. In local development the
+# folder does not exist and nothing below is registered (use `npm run dev`).
+FRONTEND_DIST = Path(os.environ.get("FRONTEND_DIST", Path(__file__).resolve().parents[2] / "dist"))
+_NOT_FRONTEND = ("api/", "docs", "redoc", "openapi.json", "health")
+
+
+def mount_frontend(application: FastAPI, dist: Path) -> bool:
+    index = dist / "index.html"
+    if not index.is_file():
+        return False
+    root = dist.resolve()
+    if (dist / "assets").is_dir():
+        # Vite file names contain a content hash, so they can be cached for a long time.
+        application.mount("/assets", StaticFiles(directory=dist / "assets"), name="assets")
+
+    @application.get("/{path:path}", include_in_schema=False)
+    def frontend(path: str, request: Request):
+        if path.startswith(_NOT_FRONTEND):
+            return error_response(request, 404, "NOT_FOUND", "Not found.")
+        candidate = (root / path).resolve()
+        if path and candidate.is_file() and candidate.is_relative_to(root):
+            return FileResponse(candidate)  # e.g. favicon.svg
+        # Every other path is a client-side route (/dashboard, /results, ...): serve the app.
+        return FileResponse(index, headers={"Cache-Control": "no-cache"})
+
+    return True
+
+
+if mount_frontend(app, FRONTEND_DIST):
+    logger.info("Serving the built frontend from %s", FRONTEND_DIST)

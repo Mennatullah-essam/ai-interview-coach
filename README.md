@@ -69,6 +69,17 @@ Everything works offline with no AI keys: questions are retrieved from the curat
 
 The interview setup screen shows which mode is active, and every follow-up says whether it was rule-based or proposed by a model.
 
+## Deploy for free (Render + Neon)
+
+The `Dockerfile` builds the React app and runs FastAPI, which serves both the website and the API from one origin, so the HttpOnly refresh cookie keeps working without CORS or a proxy.
+
+1. Create a free PostgreSQL database on [Neon](https://neon.com) and copy its connection string; change `postgresql://` to `postgresql+psycopg://`.
+2. On [Render](https://render.com), create a **Web Service** from this repository, runtime **Docker**, plan **Free**, and set these environment variables (never commit them):
+   `APP_ENV=production`, `DATABASE_URL=<Neon string>`, `JWT_SECRET=<python -c "import secrets; print(secrets.token_urlsafe(48))">`, `ALLOWED_HOSTS=<your-service>.onrender.com`, `CORS_ORIGINS=https://<your-service>.onrender.com`, `SIMILARITY_BACKEND=lexical`, `PASSWORD_HASH_COST=15`.
+3. Each start runs `alembic upgrade head` and the question-bank seed (both safe to repeat), then starts the server.
+
+Free-tier limits: the service sleeps after 15 minutes without traffic (about a minute to wake up), and uploaded CV files are not kept across restarts or redeploys (the extracted profile and interviews are stored in the database). Use test CVs for a public demo.
+
 ## Routes
 
 | Path | Screen | Access |
