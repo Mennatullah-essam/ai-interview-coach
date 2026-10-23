@@ -69,7 +69,11 @@ Everything works offline with no AI keys: questions are retrieved from the curat
 
 The interview setup screen shows which mode is active, and every follow-up says whether it was rule-based or proposed by a model.
 
-## Deploy for free (Render + Neon)
+## Deploy for free
+
+**Azure for Students (no credit card): see [DEPLOY_AZURE.md](DEPLOY_AZURE.md).** The Render instructions below need a card for verification.
+
+### Render + Neon
 
 The `Dockerfile` builds the React app and runs FastAPI, which serves both the website and the API from one origin, so the HttpOnly refresh cookie keeps working without CORS or a proxy.
 
